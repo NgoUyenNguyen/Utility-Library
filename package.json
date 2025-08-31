@@ -1,0 +1,15 @@
+{
+  "name": "com.ngouyennguyen.utilitylibrary",
+  "version": "1.0.0",
+  "displayName": "Utility Library",
+  "description": "Library includes utilities to make game easier",
+  "documentationUrl": "",
+  "changelogUrl": "",
+  "licensesUrl": "",
+  "keywords": [],
+  "author": {
+    "name": "NgoUyenNguyen",
+    "email": "nguyenphucnguyenlhp@gmail.com"
+  },
+  "unity": "6000.0"
+}

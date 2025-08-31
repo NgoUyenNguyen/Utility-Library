@@ -1,0 +1,16 @@
+{
+    "name": "NgoUyenNguyen.UtilLib.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:6217b0b21bb237b40bb80d3b33e4287f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -53,7 +53,7 @@ namespace NgoUyenNguyen.GridSystem
         /// <summary>
         /// Prefab to be spawned in grid
         /// </summary>
-        public Cell cellPrefab { get => _cellPrefab; set => _cellPrefab = value; }
+        public Cell cellPrefab { get => _cellPrefab; private set => _cellPrefab = value; }
 
         /// <summary>
         /// Size of grid
@@ -282,7 +282,7 @@ namespace NgoUyenNguyen.GridSystem
                 Assert.AreEqual(size.y, map.GetLength(1));
             }
 
-            this.cellPrefab = cell;
+            this.cellPrefab = cellPrefab.GetComponent<Cell>();
 
             for (int x = 0; x < size.x; x++)
             {

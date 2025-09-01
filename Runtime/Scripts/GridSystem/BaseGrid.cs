@@ -187,6 +187,8 @@ namespace NgoUyenNguyen.GridSystem
                 Assert.AreEqual(size.y, map.GetLength(1));
             }
 
+            cellPrefab = cell;
+
             for (int x = 0; x < size.x; x++)
             {
                 for (int y = 0; y < size.y; y++)
@@ -279,6 +281,8 @@ namespace NgoUyenNguyen.GridSystem
                 Assert.AreEqual(size.x, map.GetLength(0));
                 Assert.AreEqual(size.y, map.GetLength(1));
             }
+
+            this.cellPrefab = cell;
 
             for (int x = 0; x < size.x; x++)
             {

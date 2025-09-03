@@ -1,6 +1,6 @@
 {
   "name": "com.ngouyennguyen.utilitylibrary",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "displayName": "Utility Library",
   "description": "Library includes utilities to make game easier",
   "documentationUrl": "",
@@ -11,5 +11,8 @@
     "name": "NgoUyenNguyen",
     "email": "nguyenphucnguyenlhp@gmail.com"
   },
-  "unity": "6000.0"
+  "unity": "6000.0",
+  "dependencies": {
+    "com.unity.addressables": "2.3.16"
+  }
 }

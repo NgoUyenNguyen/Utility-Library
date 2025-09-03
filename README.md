@@ -6,10 +6,11 @@ Library includes utilities to make game easier.
 
 Add this package to your Unity project via Package Manager.
 
-## Usage
+## Include
 
-- Function A
-- Function B
+- State Machine
+- Grid System
+- Base Level Editor window
 
 ## Author
 

@@ -11,7 +11,6 @@ All notable changes to this project will be documented in this file.
 - Initial release of Utility Library.
 - Added reusable utility scripts for common game functions.
 - Prefabs for 3D tiles placed in `Runtime/Prefabs`.
-- Example scenes in `Samples/`.
 
 ### Changed
 - N/A
@@ -24,6 +23,7 @@ All notable changes to this project will be documented in this file.
 ## [1.0.1] - 2025-09-03
 ### Added
 - Base class for Level Editor window
+- Shaders
 
 ### Changed
 - N/A

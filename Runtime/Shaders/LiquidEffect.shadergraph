@@ -2916,7 +2916,7 @@
     "m_Title": "Foam/Edge Frontface",
     "m_Position": {
         "x": 541.0,
-        "y": 718.0000610351563
+        "y": 718.0
     }
 }
 
@@ -4167,7 +4167,7 @@
     "m_ObjectId": "4a943008ec3544f3b366094ece5d9648",
     "m_Title": "Mesh Center World Position - Transform Position",
     "m_Position": {
-        "x": 1154.0001220703125,
+        "x": 1154.0,
         "y": -709.0
     }
 }
@@ -4400,7 +4400,7 @@
     "m_Title": "Alpha",
     "m_Position": {
         "x": 436.0,
-        "y": 1223.9998779296875
+        "y": 1224.0
     }
 }
 
@@ -5804,8 +5804,8 @@
     "m_ObjectId": "78b78df4ba404e7595086a1f6df59b07",
     "m_Title": "Sine Wave Based on Movement",
     "m_Position": {
-        "x": -963.0000610351563,
-        "y": 897.0001220703125
+        "x": -963.0,
+        "y": 897.0
     }
 }
 
@@ -8163,8 +8163,8 @@
     "m_ObjectId": "c4e1fb3ecb644dcb9269f541da5aaaca",
     "m_Title": "FrontFaceTexture",
     "m_Position": {
-        "x": 1023.0001831054688,
-        "y": -123.99992370605469
+        "x": 1023.0,
+        "y": -124.0
     }
 }
 
@@ -8427,7 +8427,7 @@
     "m_Title": "Foam/Edge Backface",
     "m_Position": {
         "x": 1727.0,
-        "y": 391.00006103515627
+        "y": 391.0
     }
 }
 
@@ -9901,8 +9901,8 @@
     "m_ObjectId": "fbd62648a3b540f28647962928511235",
     "m_Title": "Movement",
     "m_Position": {
-        "x": -709.0000610351563,
-        "y": 838.0000610351563
+        "x": -709.0,
+        "y": 838.0
     }
 }
 

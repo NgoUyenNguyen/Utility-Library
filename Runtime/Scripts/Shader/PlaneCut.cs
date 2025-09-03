@@ -5,9 +5,18 @@ namespace NgoUyenNguyen.Shader
 {
     public class PlaneCut : MonoBehaviour
     {
-        [field: SerializeField] public Renderer objRend { get; private set; }
-        [field: SerializeField] public MeshFilter objMeshFilter { get; private set; }
-        [field: SerializeField] public Transform point { get; private set; }
+        [Header("Cut Renderer")]
+        [SerializeField] private Renderer _objRend;
+        [Header("Moving Point on Mesh")]
+        [SerializeField] private MeshFilter _objMeshFilter;
+        [SerializeField] private Transform _point;
+
+
+
+
+        public Renderer objRend { get => _objRend; set => _objRend = value; }
+        public MeshFilter objMeshFilter { get => _objMeshFilter; set => _objMeshFilter = value; }
+        public Transform point { get => _point; set => _point = value; }
 
 
 
@@ -18,11 +27,14 @@ namespace NgoUyenNguyen.Shader
         void Update()
         {
             // Set Alpha Clipping
-            objRend.material.SetVector("_PlaneOrigin", transform.position - transform.up);
-            objRend.material.SetVector("_PlaneNormal", transform.up);
+            _objRend.material.SetVector("_PlaneOrigin", transform.position - transform.up);
+            _objRend.material.SetVector("_PlaneNormal", transform.up);
 
             // Move point to the next point in a clockwise direction
-            point.position = GetNextPointClockwise(GetIntersectionPoints(objMeshFilter, new Plane(transform.up, transform.position)), point.position);
+            if (_point != null)
+            {
+                _point.position = GetNextPointClockwise(GetIntersectionPoints(_objMeshFilter, new Plane(transform.up, transform.position)), _point.position);
+            }
         }
 
 

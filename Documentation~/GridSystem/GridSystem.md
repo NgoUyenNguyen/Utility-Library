@@ -67,15 +67,7 @@ foreach (Cell cell in Grid)
 |**[WorldToIndex](WorldToIndex.md)**|Method to get index from **WolrdSpace** position|
 |**[IndexToLocal](IndexToLocal.md)**|Get **LocalSpace** position from Index|
 |**[IndexToWorld](IndexToWorld.md)**|Get **WolrdSpace** position from Index|
-|****||
-|****||
-|****||
-|****||
-|****||
-|****||
-|****||
-|****||
-|****||
-|****||
-|****||
-|****||
+|**[GetNeighbor](GetNeighbor.md)**|Method to get another cell from one cell|
+|**[GetNeighbors](GetNeighbors.md)**|Method to get all neighbor cells surrounding one cell|
+|**[GetNeighborsInDiagonal](GetNeighborsInDiagonal.md)**|Method to get only diagonal neighbor cells from one cell|
+|**[GetNeighborsIgnoreDiagonal](GetNeighborsIgnoreDiagonal.md)**|Method to get neighbor cells from one cell , ignore diagonally|

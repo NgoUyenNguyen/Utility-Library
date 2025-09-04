@@ -387,7 +387,7 @@ namespace NgoUyenNguyen.GridSystem
         {
             if (!cellMap.Contains(cell))
             {
-                Debug.LogError($"{this} not contail {cell}");
+                Debug.LogError($"{name} not contail {cell.name}");
                 return default;
             }
             return IndexToLocal(cell.index);
@@ -575,6 +575,11 @@ namespace NgoUyenNguyen.GridSystem
         /// <returns>Neighbor cell from <paramref name="cell"/> plus <paramref name="indexDelta"/></returns>
         public Cell GetNeighbor(Cell cell, Vector2Int indexDelta)
         {
+            if (!cellMap.Contains(cell))
+            {
+                Debug.LogError($"{name} not contail {cell.name}");
+                return default;
+            }
             return this[cell.index.x + indexDelta.x, cell.index.y + indexDelta.y];
         }
 
@@ -587,6 +592,12 @@ namespace NgoUyenNguyen.GridSystem
         /// </returns>
         public HashSet<Cell> GetNeighbors(Cell cell)
         {
+            if (!cellMap.Contains(cell))
+            {
+                Debug.LogError($"{name} not contail {cell.name}");
+                return default;
+            }
+
             HashSet<Cell> neighbors = new HashSet<Cell>();
 
             for (int x = -1; x <= 1; x++)
@@ -616,6 +627,12 @@ namespace NgoUyenNguyen.GridSystem
         /// </returns>
         public HashSet<Cell> GetNeighborsInDiagonal(Cell cell)
         {
+            if (!cellMap.Contains(cell))
+            {
+                Debug.LogError($"{name} not contail {cell.name}");
+                return default;
+            }
+
             HashSet<Cell> neighbors = new HashSet<Cell>();
 
             for (int x = -1; x <= 1; x++)
@@ -645,6 +662,12 @@ namespace NgoUyenNguyen.GridSystem
         /// </returns>
         public HashSet<Cell> GetNeighborsIgnoreDiagonal(Cell cell)
         {
+            if (!cellMap.Contains(cell))
+            {
+                Debug.LogError($"{name} not contail {cell.name}");
+                return default;
+            }
+
             HashSet<Cell> neighbors = new HashSet<Cell>();
 
             for (int x = -1; x <= 1; x++)

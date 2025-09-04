@@ -44,7 +44,7 @@ namespace NgoUyenNguyen.StateMachine
         /// <summary>
         /// Method to get the next StateKey based on the current state logic
         /// </summary>
-        /// <returns>Key to access next state</returns>
+        /// <returns>stateKey to access next state</returns>
         public abstract EState GenerateNextState();
     }
 }

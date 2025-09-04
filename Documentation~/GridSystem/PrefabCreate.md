@@ -4,7 +4,7 @@
 
 ## Declaration
 ```csharp
-public void PrefabCreate(int width, int height, GameObject cellPrefab, bool[,] map = null)
+public void PrefabCreate(int width, int height, GameObject cellPrefab)
 ```
 
 ### Parameters
@@ -17,7 +17,7 @@ public void PrefabCreate(int width, int height, GameObject cellPrefab, bool[,] m
 
 ## Declaration
 ```csharp
-public void PrefabCreate(Vector2Int size, GameObject cellPrefab, bool[,] map = null)
+public void PrefabCreate(Vector2Int size, GameObject cellPrefab)
 ```
 
 ### Parameters

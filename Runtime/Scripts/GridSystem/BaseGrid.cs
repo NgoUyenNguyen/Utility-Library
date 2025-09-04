@@ -430,7 +430,7 @@ namespace NgoUyenNguyen.GridSystem
         }
 
         /// <summary>
-        /// Method to get <c>Index</c> in <see cref="_cellMap"/> from <c>WorldSpace</c> position
+        /// Method to get <c>Index</c> from <c>WorldSpace</c> position
         /// </summary>
         /// <remarks>
         /// If input position is out of bounds, return the nearest <c>Index</c>
@@ -443,7 +443,7 @@ namespace NgoUyenNguyen.GridSystem
         }
 
         /// <summary>
-        /// Method to get <c>Index</c> in <see cref="_cellMap"/> from <c>LocalSpace</c> position
+        /// Method to get <c>Index</c> from <c>LocalSpace</c> position
         /// </summary>
         /// <remarks>
         /// If input position is out of bounds, return the nearest <c>Index</c>
@@ -496,7 +496,7 @@ namespace NgoUyenNguyen.GridSystem
         }
 
         /// <summary>
-        /// Get <c>WorldSpace</c> position from <c>Index</c>
+        /// Method to get <c>WorldSpace</c> position from <c>Index</c>
         /// </summary>
         /// <param name="index"></param>
         /// <returns><c>WorldSpace</c> position</returns>
@@ -506,7 +506,7 @@ namespace NgoUyenNguyen.GridSystem
         }
 
         /// <summary>
-        /// Get <c>LocalSpace</c> position from <c>Index</c>
+        /// Method to get <c>LocalSpace</c> position from <c>Index</c>
         /// </summary>
         /// <param name="index"></param>
         /// <returns><c>LocalSpace</c> position</returns>

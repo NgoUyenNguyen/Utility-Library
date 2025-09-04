@@ -2,13 +2,23 @@
 ***Base system to create a state framework, including an abstract class BaseState 
 and an abstract class StateMachine. For using, recommend creating an intermediate abstract class State inheriting from the BaseState to add more logic.***
 
-  ![Illustration](Images/StructureIllustration.png)
 ## BASESTATE INCLUDES:
 
 ### Properties
 |**Property**|**Description**|
 |---|---|
-|StateKey| A key equivalent to each State for StateMachine managing|
+|[StateKey](StateMachine/StateKey.md)| A key equivalent to each State for StateMachine managing|
+<table style="width:100%">
+  <tr>
+    <th>Property</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><a href="StateMachine/StateKey.md">StateKey</a></td>
+    <td>A key equivalent to each State for StateMachine managing</td>
+  </tr>
+  
+</table>
 
 ### Abstract Methods
 |**Method**|**Description**|

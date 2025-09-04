@@ -17,6 +17,9 @@ namespace NgoUyenNguyen.GridSystem
             RemoveGridReference();
         }
 
+        /// <summary>
+        /// Method to remove reference to <c>Grid</c>
+        /// </summary>
         public void RemoveGridReference()
         {
             if (grid == null) return;

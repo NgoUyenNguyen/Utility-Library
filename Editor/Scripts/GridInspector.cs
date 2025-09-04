@@ -102,7 +102,7 @@ namespace NgoUyenNguyen.Editor
                 || spaceProp.intValue != (int)grid.space)
             {
                 serializedObject.ApplyModifiedProperties();
-                grid.CalculateCellPosition();
+                grid.CalculateCellsPosition();
             }
             else
             {
@@ -201,7 +201,7 @@ namespace NgoUyenNguyen.Editor
                             // Add Cell
                             Undo.RegisterCreatedObjectUndo(grid.SpawnCellPrefab(grid.cellPrefab, new Vector2Int(x, y)).gameObject, "Instantiate Prefab");
                             serializedObject.ApplyModifiedProperties();
-                            grid.CalculateCellPosition();
+                            grid.CalculateCellsPosition();
                         }
                         EditorUtility.SetDirty(grid);
                         UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(grid.gameObject.scene);
@@ -242,7 +242,7 @@ namespace NgoUyenNguyen.Editor
                             grid.SpawnCellPrefab(grid.cellPrefab, new Vector2Int(x, y));
                         }
                     }
-                    grid.CalculateCellPosition();
+                    grid.CalculateCellsPosition();
                 }
             }
 
@@ -259,7 +259,7 @@ namespace NgoUyenNguyen.Editor
                 foreach (var t in targets)
                 {
                     var grid = t as BaseGrid;
-                    grid.CalculateCellPosition();
+                    grid.CalculateCellsPosition();
                     EditorUtility.SetDirty(grid);
                 }
             }

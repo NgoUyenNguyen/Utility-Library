@@ -171,7 +171,7 @@ namespace NgoUyenNguyen.StateMachine
 
 
         /// <summary>
-        /// Method to add a states to the state machine
+        /// Method to add states to the state machine
         /// </summary>
         protected void AddStates(params BaseState<EState>[] states)
         {
@@ -187,7 +187,7 @@ namespace NgoUyenNguyen.StateMachine
         }
 
         /// <summary>
-        /// Method to remove a states from the state machine
+        /// Method to remove states from the state machine
         /// </summary>
         protected void RemoveStates(params BaseState<EState>[] states)
         {
@@ -202,14 +202,14 @@ namespace NgoUyenNguyen.StateMachine
             }
         }
 
-        protected BaseState<EState> GetState(EState key)
+        protected BaseState<EState> GetState(EState stateKey)
         {
-            if (!statesDictionary.ContainsKey(key))
+            if (!statesDictionary.ContainsKey(stateKey))
             {
-                Debug.LogError($"{name}: State {key} does not exist in the state machine.");
+                Debug.LogError($"{name}: State {stateKey} does not exist in the state machine.");
                 return null;
             }
-            return statesDictionary[key];
+            return statesDictionary[stateKey];
         }
 
 

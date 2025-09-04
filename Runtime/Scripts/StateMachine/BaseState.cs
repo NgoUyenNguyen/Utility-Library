@@ -42,7 +42,7 @@ namespace NgoUyenNguyen.StateMachine
         /// </summary>
         public abstract void ExitState();
         /// <summary>
-        /// Method to get the next StateKey based on the current state logic
+        /// Method to get the next stateKey based on the current state logic
         /// </summary>
         /// <returns>stateKey to access next state</returns>
         public abstract EState GenerateNextState();

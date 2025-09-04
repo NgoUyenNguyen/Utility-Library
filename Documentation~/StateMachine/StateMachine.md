@@ -24,29 +24,34 @@ and an abstract class StateMachine. For using, recommend creating an intermediat
 ### Properties
 |**Property**|**Description**|
 |---|---|
-|CurrentState| The current state of the state machine|
+|[currentState](currentState.md)| The current state of the state machine|
 
 ### Events
 |**Event**|**Description**|
 |---|---|
-|OnStateChanged| Callback fired whenever state changes|
+|[OnStateChanged](OnStateChanged.md)| Callback fired whenever state changes|
 
 ### Public Methods
 |**Method**|**Description**|
 |---|---|
-|AddStates|Add states to the state machine|
-|RemoveStates|Remove states from the state machine|
-|GetState|Get state from key|
+|[SetNextState](SetNextState.md)|Method for outer to set the next state of the state machine|
+
+### Protected Methods
+|**Method**|**Description**|
+|---|---|
+|[AddStates](AddStates.md)|Add states to the state machine|
+|[RemoveStates](RemoveStates.md)|Remove states from the state machine|
+|[GetState](GetState.md)|Get state from key|
 
 ### Abstract Methods
 |**Method**|**Description**|
 |---|---|
-|InitializeStates|register all states by using AddStates|
-|InitializeEntryState|Define the entry state|
+|[InitializeStates](InitializeStates.md)|Method to register all states|
+|[InitializeEntryState](InitializeEntryState.md)|Method to define the entry state|
 
 ### Virtual Methods
 |**Method**|**Description**|
 |---|---|
-|OnAwake|Method is called in Awake|
-|OnStart|Method is called in Start|
+|[OnAwake](OnAwake.md)|Method is called in Awake|
+|[OnStart](OnStart.md)|Method is called in Start|
 

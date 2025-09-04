@@ -1,4 +1,4 @@
-# [BaseState](StateMachine.md##BASESTATE-INCLUDES:).ExitState
+# [BaseState](StateMachine.md##BASESTATE-INCLUDES).ExitState
 ---
 ## Declaration
 ```csharp

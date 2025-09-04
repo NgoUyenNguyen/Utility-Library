@@ -1,4 +1,4 @@
-# [BaseState](StateMachine.md##BASESTATE-INCLUDES:).GenerateNextState
+# [BaseState](StateMachine.md##BASESTATE-INCLUDES).GenerateNextState
 ---
 ## Declaration
 ```csharp

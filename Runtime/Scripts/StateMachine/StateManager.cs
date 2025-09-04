@@ -26,7 +26,7 @@ namespace NgoUyenNguyen.StateMachine
 
         private BaseState<EState> _currentState;
         /// <summary>
-        /// The current state of the state machine
+        /// The current state of the <c>StateManager</c>
         /// </summary>
         public BaseState<EState> currentState
         {
@@ -171,8 +171,9 @@ namespace NgoUyenNguyen.StateMachine
 
 
         /// <summary>
-        /// Method to add states to the state machine
+        /// Method to add <c>States</c> to <c>StateManager</c>
         /// </summary>
+        /// <param name="states"><c>States</c> to be added</param>
         protected void AddStates(params BaseState<EState>[] states)
         {
             foreach (var state in states)
@@ -187,8 +188,9 @@ namespace NgoUyenNguyen.StateMachine
         }
 
         /// <summary>
-        /// Method to remove states from the state machine
+        /// Method to remove <c>States</c> to <c>StateManager</c>
         /// </summary>
+        /// <param name="states"><c>States</c> to be removed</param>
         protected void RemoveStates(params BaseState<EState>[] states)
         {
             foreach (var state in states)
@@ -202,6 +204,11 @@ namespace NgoUyenNguyen.StateMachine
             }
         }
 
+        /// <summary>
+        /// Method to get <c>State</c> from <c>stateKey</c>
+        /// </summary>
+        /// <param name="stateKey"></param>
+        /// <returns></returns>
         protected BaseState<EState> GetState(EState stateKey)
         {
             if (!statesDictionary.ContainsKey(stateKey))
@@ -216,25 +223,25 @@ namespace NgoUyenNguyen.StateMachine
 
 
         /// <summary>
-        /// Method to initialize states in StatesDictionary
+        /// Method to register all <c>States</c> to <c>StateManager</c>
         /// </summary>
         /// <remarks>
-        /// Register all states by AddStates() to the statesDictionary.
+        /// Register all <c>States</c> by AddStates().
         /// </remarks>
         protected abstract void InitializeStates();
         /// <summary>
-        /// Method to set the EntryState
+        /// Method to define the entry <c>State</c>
         /// </summary>
         /// <returns>
-        /// returns key of EntryState
+        /// returns <c>stateKey</c> of entry <c>State</c>
         /// </returns>
         protected abstract EState InitializeEntryState();
         /// <summary>
-        /// Method is called in the Awake() method of the StateManager 
+        /// Method is called in the Awake() method of the <c>StateManager</c> 
         /// </summary>
         protected virtual void OnAwake() { }
         /// <summary>
-        /// Method is called in the Start() method of the StateManager 
+        /// Method is called in the Start() method of the <c>StateManager</c>
         /// </summary>
         protected virtual void OnStart() { }
 
@@ -244,8 +251,9 @@ namespace NgoUyenNguyen.StateMachine
 
 
         /// <summary>
-        /// Method for outer to set the next state of the state machine.
+        /// Method for outer to set the next state of the <c>StateManager</c>
         /// </summary>
+        /// <param name="nextStateKey"><c>stateKey</c> of the next <c>State</c></param>
         public void SetNextState(EState nextStateKey)
         {
             // Check if the next state key exists in the states dictionary

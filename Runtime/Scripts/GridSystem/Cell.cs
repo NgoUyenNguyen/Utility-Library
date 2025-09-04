@@ -4,6 +4,9 @@ namespace NgoUyenNguyen.GridSystem
 {
     public class Cell : MonoBehaviour
     {
+        /// <summary>
+        /// <c>Grid</c> index of <c>Cell</c>
+        /// </summary>
         [field: SerializeField] public Vector2Int index { get; set; }
         [field: SerializeField] public BaseGrid grid { get; set; }
 

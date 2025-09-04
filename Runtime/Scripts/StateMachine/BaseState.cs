@@ -21,7 +21,7 @@ namespace NgoUyenNguyen.StateMachine
 
 
         /// <summary>
-        /// The key that identifies the state in Dictionary of states in the state machine.
+        /// The key that identifies the <c>State</c>
         /// </summary>
         public EState stateKey { get; }
 
@@ -30,21 +30,21 @@ namespace NgoUyenNguyen.StateMachine
 
 
         /// <summary>
-        /// Methods called once when a State is entered
+        /// Methods called once when <c>State</c> is entered
         /// </summary>
         public abstract void EnterState();
         /// <summary>
-        /// Method called every frame while in the State
+        /// Method called every frame while in the <c>State</c>
         /// </summary>
         public abstract void UpdateState();
         /// <summary>
-        /// Methods called once when a State is exited
+        /// Methods called once when <c>State</c> is exited
         /// </summary>
         public abstract void ExitState();
         /// <summary>
-        /// Method to get the next stateKey based on the current state logic
+        /// Method to get the next <c>stateKey</c> based on the current state logic
         /// </summary>
-        /// <returns>stateKey to access next state</returns>
+        /// <returns><c>stateKey</c> to access next <c>State</c></returns>
         public abstract EState GenerateNextState();
     }
 }

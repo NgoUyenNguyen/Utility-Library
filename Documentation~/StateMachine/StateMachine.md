@@ -6,52 +6,52 @@ and an abstract class StateMachine. For using, recommend creating an intermediat
 ## BASESTATE INCLUDES:
 
 ### Properties
-|**Property**|**Description**|
+|Property|Description|
 |---|---|
-|[stateKey](StateKey.md)| A key equivalent to each State for StateManager managing|
+|**[stateKey](StateKey.md)**| A key equivalent to each State for StateManager managing|
 
 ### Abstract Methods
-|**Method**|**Description**|
+|Method|Description|
 |---|---|
-|[EnterState](EnterState.md)| Methods called once when a State is entered|
-|[UpdateState](UpdateState.md)|Method called every frame while in the State|
-|[ExitState](ExitState.md)|Methods called once when a State is exited|
-|[GenerateNextState](GenerateNextState.md)|Method to generate the next state based on the current state logic.|
+|**[EnterState](EnterState.md)**| Methods called once when a State is entered|
+|**[UpdateState](UpdateState.md)**|Method called every frame while in the State|
+|**[ExitState](ExitState.md)**|Methods called once when a State is exited|
+|**[GenerateNextState](GenerateNextState.md)**|Method to generate the next state based on the current state logic.|
   
 ---
 ## STATEMANAGER INCLUDES:
 
 ### Properties
-|**Property**|**Description**|
+|Property|Description|
 |---|---|
-|[currentState](currentState.md)| The current state of the state machine|
+|**[currentState](currentState.md)**| The current state of the state machine|
 
 ### Events
-|**Event**|**Description**|
+|Event|Description|
 |---|---|
-|[OnStateChanged](OnStateChanged.md)| Callback fired whenever state changes|
+|**[OnStateChanged](OnStateChanged.md)**| Callback fired whenever state changes|
 
 ### Public Methods
-|**Method**|**Description**|
+|Method|Description|
 |---|---|
-|[SetNextState](SetNextState.md)|Method for outer to set the next state of the state machine|
+|**[SetNextState](SetNextState.md)**|Method for outer to set the next state of the state machine|
 
 ### Protected Methods
-|**Method**|**Description**|
+|Method|Description|
 |---|---|
-|[AddStates](AddStates.md)|Add states to the state machine|
-|[RemoveStates](RemoveStates.md)|Remove states from the state machine|
-|[GetState](GetState.md)|Get state from key|
+|**[AddStates](AddStates.md)**|Add states to the state machine|
+|**[RemoveStates](RemoveStates.md)**|Remove states from the state machine|
+|**[GetState](GetState.md)**|Get state from key|
 
 ### Abstract Methods
-|**Method**|**Description**|
+|Method|Description|
 |---|---|
-|[InitializeStates](InitializeStates.md)|Method to register all states|
-|[InitializeEntryState](InitializeEntryState.md)|Method to define the entry state|
+|**[InitializeStates](InitializeStates.md)**|Method to register all states|
+|**[InitializeEntryState](InitializeEntryState.md)**|Method to define the entry state|
 
 ### Virtual Methods
-|**Method**|**Description**|
+|Method|Description|
 |---|---|
-|[OnAwake](OnAwake.md)|Method is called in Awake|
-|[OnStart](OnStart.md)|Method is called in Start|
+|**[OnAwake](OnAwake.md)**|Method is called in Awake|
+|**[OnStart](OnStart.md)**|Method is called in Start|
 

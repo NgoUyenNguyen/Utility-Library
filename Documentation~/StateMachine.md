@@ -7,7 +7,7 @@ and an abstract class StateMachine. For using, recommend creating an intermediat
 ### Properties
 |**Property**|**Description**|
 |---|---|
-|[StateKey](StateKey.md)| A key equivalent to each State for StateMachine managing|
+|[StateKey](StateMachine/StateKey.md)| A key equivalent to each State for StateMachine managing|
 
 ### Abstract Methods
 |**Method**|**Description**|

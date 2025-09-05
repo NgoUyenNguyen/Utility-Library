@@ -1,6 +1,7 @@
-﻿# State-Machine
-***Base system to create a state framework, including an abstract class BaseState 
-and an abstract class StateMachine. For using, recommend creating an intermediate abstract class State inheriting from the BaseState to add more logic.***
+﻿# State Machine
+***Base system to create a state framework, allow seperating runitime logic to different states.***
+
+**[Usage](Usage.md)**
 
 ---
 ## BASESTATE INCLUDES:

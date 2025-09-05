@@ -8,7 +8,7 @@ namespace NgoUyenNguyen.Editor
         private static Vector2 scrollPos;
         protected BaseLevel currentLevel;
         protected LevelReference levelReference;
-        public abstract GameObject levelTemplate {  get; }
+        protected abstract GameObject levelTemplate {  get; }
 
 
 
@@ -45,6 +45,6 @@ namespace NgoUyenNguyen.Editor
         /// <summary>
         /// Implement your own editor GUI here
         /// </summary>
-        public abstract void OnDrawGUI();
+        protected abstract void OnDrawGUI();
     }
 }

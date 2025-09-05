@@ -11,6 +11,8 @@ Add this package to your Unity project via Package Manager.
 - State Machine
 - Grid System
 - Base Level Editor window
+- Shaders
+- Other extensions
 
 ## Author
 

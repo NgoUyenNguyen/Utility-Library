@@ -26,7 +26,19 @@ All notable changes to this project will be documented in this file.
 - Shaders
 
 ### Changed
+- Documentation
+
+### Fixed
 - N/A
+
+---
+
+## [1.1.0] - 2025-09-07
+### Added
+- Interface and Abstract class serialize attributes
+
+### Changed
+- Documentation
 
 ### Fixed
 - N/A

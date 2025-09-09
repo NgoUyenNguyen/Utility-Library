@@ -1,4 +1,4 @@
-# MyPackage
+# Uttility Library
 
 Library includes utilities to make game easier
 

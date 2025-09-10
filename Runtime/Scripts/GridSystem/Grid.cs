@@ -11,6 +11,30 @@ using UnityEngine;
 public abstract class Grid<T> : BaseGrid where T : Cell
 {
     /// <summary>
+    /// Access <c>Cell</c> in <c>Grid</c> through (<paramref name="x"/>, <paramref name="y"/>) coordinate
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <returns></returns>
+    public new T this[int x, int y]
+    {
+        get { return base[x, y] as T; }
+        set { base[x, y] = value; }
+    }
+
+    /// <summary>
+    /// Access <c>Cell</c> in <c>Grid</c> through index
+    /// </summary>
+    /// <param name="index"></param>
+    /// <returns></returns>
+    public new T this[Vector2Int index]
+    {
+        get { return base[index] as T; }
+        set { base[index] = value; }
+    }
+
+
+    /// <summary>
     /// <c>ONLY USE IN EDITOR</c><br/>
     /// Method to spawn prefab at specific <c>Index</c>
     /// </summary>

@@ -14,5 +14,5 @@
     "dependencies": {
         "com.unity.addressables": "2.3.16"
     },
-    "unity": "2023.3"
+    "unity": "2021.3"
 }

@@ -580,6 +580,11 @@ namespace NgoUyenNguyen.GridSystem
                 Debug.LogError($"{name} not contail {cell.name}");
                 return default;
             }
+            if (cell.index.x + indexDelta.x < 0 || cell.index.x + indexDelta.x >= size.x
+                || cell.index.y + indexDelta.y < 0 || cell.index.y + indexDelta.y >= size.y)
+            {
+                return null;
+            }
             return this[cell.index.x + indexDelta.x, cell.index.y + indexDelta.y];
         }
 

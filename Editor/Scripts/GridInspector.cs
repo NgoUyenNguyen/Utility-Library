@@ -22,6 +22,7 @@ namespace NgoUyenNguyen.Editor
         private SerializedProperty cellSizeProp;
         private SerializedProperty alignmentProp;
         private SerializedProperty spaceProp;
+        private SerializedProperty layoutProp;
         private SerializedProperty prefabInitializedProp;
 
 
@@ -37,6 +38,7 @@ namespace NgoUyenNguyen.Editor
         {
             AssignProperties();
 
+            // Load default cell prefab and icon
             defaultCellPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(CELL_PREFAB_PATH).GetComponent<Cell>();
             activeTex = AssetDatabase.LoadAssetAtPath<Texture2D>(CELL_ICON_PATH);
             if (!(target as BaseGrid).prefabInitialized || cellPrefabProp.objectReferenceValue == null)
@@ -58,6 +60,7 @@ namespace NgoUyenNguyen.Editor
 
 
 
+        // Method to assign properties to equivalent fields
         private void AssignProperties()
         {
             cellMapProp = serializedObject.FindProperty("_cellMap");
@@ -66,26 +69,31 @@ namespace NgoUyenNguyen.Editor
             cellSizeProp = serializedObject.FindProperty("_cellSize");
             alignmentProp = serializedObject.FindProperty("_alignment");
             spaceProp = serializedObject.FindProperty("_space");
+            layoutProp = serializedObject.FindProperty("_layout");
             prefabInitializedProp = serializedObject.FindProperty("prefabInitialized");
         }
 
+        // Method to handle undo and redo
         private void OnUndoRedo()
         {
-
             var grid = target as BaseGrid;
-
+            
+            // Undo grid size
             if (sizeProp.vector2IntValue != grid.size)
             {
-                grid.PrefabCreate(grid.size, grid.cellPrefab.gameObject);
-                var cells = grid.GetComponentsInChildren<Cell>();
+                grid.PrefabCreate(grid.size, grid.cellPrefab.gameObject); // Recreate grid
+                var cells = grid.GetComponentsInChildren<Cell>(); // Find all child cell objects
                 for (int i = cells.Length - 1; i >= 0; i--)
                 {
+                    if (cells[i].transform == grid.transform) continue;
+                    // If cell is not in the new grid, destroy it
                     if (!grid.cellMap.Contains(cells[i]))
                     {
                         DestroyImmediate(cells[i].gameObject);
                     }
                 }
             }
+            // Undo cell prefab
             else if (cellPrefabProp.objectReferenceValue != grid.cellPrefab)
             {
                 serializedObject.ApplyModifiedProperties();
@@ -93,16 +101,35 @@ namespace NgoUyenNguyen.Editor
                 {
                     for (int y = 0; y < grid.size.y; y++)
                     {
-                        grid.SpawnCellPrefab(grid.cellPrefab, new Vector2Int(x, y));
+                        grid.SpawnCellPrefab(grid.cellPrefab, new Vector2Int(x, y)); // Replace cell prefab
                     }
                 }
+                
+                var cells = grid.GetComponentsInChildren<Cell>(); // Find all child cell objects
+                for (int i = cells.Length - 1; i >= 0; i--)
+                {
+                    if (cells[i].transform == grid.transform) continue;
+                    // If cell is not in the new grid, destroy it
+                    if (!grid.cellMap.Contains(cells[i]))
+                    {
+                        DestroyImmediate(cells[i].gameObject);
+                    }
+                }
+                grid.CalculateCellsPosition();
             }
+            // Undo cell size, alignment, or space
             else if (cellSizeProp.floatValue != grid.cellSize
                 || alignmentProp.intValue != (int)grid.alignment
                 || spaceProp.intValue != (int)grid.space)
             {
                 serializedObject.ApplyModifiedProperties();
-                grid.CalculateCellsPosition();
+                grid.CalculateCellsPosition(); // Recalculate cell position
+            }
+            // Undo layout
+            else if (layoutProp.intValue != (int)grid.layout)
+            {
+                serializedObject.ApplyModifiedProperties();
+                grid.PrefabCreate(grid.size, grid.cellPrefab.gameObject);
             }
             else
             {
@@ -129,7 +156,7 @@ namespace NgoUyenNguyen.Editor
         {
             var grid = target as BaseGrid;
 
-            DrawGridSetting();
+            DrawGridSetting(grid);
 
             DrawDefaultInspector();
         }
@@ -137,7 +164,7 @@ namespace NgoUyenNguyen.Editor
 
 
 
-        private void DrawGridSetting()
+        private void DrawGridSetting(BaseGrid grid)
         {
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
@@ -145,13 +172,13 @@ namespace NgoUyenNguyen.Editor
             GUILayout.Label("Grid Setting", EditorStyles.boldLabel);
 
             GUILayout.Space(10);
-            PropertyDrawer();
+            PropertyDrawer(grid);
             GUILayout.Space(10);
 
             GUILayout.Space(10);
             if (targets.Length == 1)
             {
-                GridMapDraw();
+                GridMapDrawer(grid);
             }
             else
             {
@@ -165,7 +192,7 @@ namespace NgoUyenNguyen.Editor
             serializedObject.ApplyModifiedProperties();
         }
 
-        private void GridMapDraw()
+        private void GridMapDrawer(BaseGrid grid)
         {
             serializedObject.Update();
 
@@ -173,7 +200,6 @@ namespace NgoUyenNguyen.Editor
             GUILayout.FlexibleSpace();
             EditorGUILayout.BeginVertical();
 
-            var grid = target as BaseGrid;
             for (int y = sizeProp.vector2IntValue.y - 1; y >= 0; y--)
             {
                 EditorGUILayout.BeginHorizontal();
@@ -215,12 +241,14 @@ namespace NgoUyenNguyen.Editor
             EditorGUILayout.EndHorizontal();
         }
 
-        private void PropertyDrawer()
+        private void PropertyDrawer(BaseGrid grid)
         {
             serializedObject.Update();
 
-            EditorGUI.BeginChangeCheck();
+            #region Prefab Setting
+
             // Set Prefab
+            EditorGUI.BeginChangeCheck();
             EditorGUILayout.PropertyField(cellPrefabProp);
             serializedObject.ApplyModifiedProperties();
             if (EditorGUI.EndChangeCheck())
@@ -233,12 +261,11 @@ namespace NgoUyenNguyen.Editor
 
                 foreach (var t in targets)
                 {
-                    var grid = t as BaseGrid;
                     for (int x = 0; x < grid.size.x; x++)
                     {
                         for (int y = 0; y < grid.size.y; y++)
                         {
-                            if (grid[x, y] == null) continue;
+                            if (grid.cellMap[x + y * grid.size.x] == null) continue;
                             grid.SpawnCellPrefab(grid.cellPrefab, new Vector2Int(x, y));
                         }
                     }
@@ -246,10 +273,31 @@ namespace NgoUyenNguyen.Editor
                 }
             }
 
+            #endregion
+
+            #region Layout Setting
+
+            //Set Layout
             EditorGUI.BeginChangeCheck();
-            // Set Alignmet
+            EditorGUILayout.PropertyField(layoutProp);
+            if (EditorGUI.EndChangeCheck())
+            {
+                foreach (var t in targets)
+                {
+                    serializedObject.ApplyModifiedProperties();
+                    grid.PrefabCreate(grid.size, grid.cellPrefab.gameObject);
+                }
+            }
+
+            #endregion
+
+
+            #region Alignment, Space, and Cell Size Setting
+
+            EditorGUI.BeginChangeCheck();
+            // Set Alignment
             EditorGUILayout.PropertyField(alignmentProp);
-            //Set Space
+            // Set Space
             EditorGUILayout.PropertyField(spaceProp);
             // Set Cell Size
             EditorGUILayout.PropertyField(cellSizeProp);
@@ -258,26 +306,45 @@ namespace NgoUyenNguyen.Editor
             {
                 foreach (var t in targets)
                 {
-                    var grid = t as BaseGrid;
                     grid.CalculateCellsPosition();
-                    EditorUtility.SetDirty(grid);
                 }
+                EditorUtility.SetDirty(grid);
             }
+
+            #endregion
+
+            #region Size Setting
 
             EditorGUI.BeginChangeCheck();
             // Set Size
             EditorGUILayout.PropertyField(sizeProp);
+            
+            if (sizeProp.vector2IntValue.x < 0) 
+                sizeProp.vector2IntValue = new Vector2Int(0, sizeProp.vector2IntValue.y);
+            if (sizeProp.vector2IntValue.y < 0)
+                sizeProp.vector2IntValue = new Vector2Int(sizeProp.vector2IntValue.x, 0);
+            
             serializedObject.ApplyModifiedProperties();
             if (EditorGUI.EndChangeCheck())
             {
                 foreach (var t in targets)
                 {
-                    var grid = t as BaseGrid;
-                    //Undo.RecordObject(grid, "Instantiate Prefab");
                     grid.PrefabCreate(grid.size, grid.cellPrefab.gameObject);
-                    EditorUtility.SetDirty(grid);
                 }
+                var cells = grid.GetComponentsInChildren<Cell>(); // Find all child cell objects
+                for (int i = cells.Length - 1; i >= 0; i--)
+                {
+                    if (cells[i].transform == grid.transform) continue;
+                    // If cell is not in the new grid, destroy it
+                    if (!grid.cellMap.Contains(cells[i]))
+                    {
+                        DestroyImmediate(cells[i].gameObject);
+                    }
+                }
+                EditorUtility.SetDirty(grid);
             }
+
+            #endregion
         }
     }
 }

@@ -7,16 +7,11 @@ namespace NgoUyenNguyen.GridSystem
         /// <summary>
         /// <c>Grid</c> index of <c>Cell</c>
         /// </summary>
-        [field: SerializeField] public Vector2Int index { get; set; }
-        [field: SerializeField] public BaseGrid grid { get; set; }
+        [field: SerializeField, HideInInspector] public Vector2Int index { get; set; }
+        [field: SerializeField, HideInInspector] public BaseGrid grid { get; set; }
 
 
-
-        protected virtual void OnDestroy()
-        {
-            RemoveGridReference();
-        }
-
+        
         /// <summary>
         /// Method to remove reference to <c>Grid</c>
         /// </summary>

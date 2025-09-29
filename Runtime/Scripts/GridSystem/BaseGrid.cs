@@ -57,7 +57,7 @@ namespace NgoUyenNguyen.GridSystem
     /// <remarks>The <see cref="BaseGrid"/> class provides functionality for creating, managing, and
     /// interacting with a grid of cells. Likely a collection, 
     /// <see cref="BaseGrid"/> can access cells through index like a 2D array and iterated by foreach loop</remarks>
-    public abstract class BaseGrid : MonoBehaviour
+    public abstract partial class BaseGrid : MonoBehaviour
     {
         #region Fields
 
@@ -535,19 +535,26 @@ namespace NgoUyenNguyen.GridSystem
 
             if (_cellMap[xIndex + yIndex * size.x] != null) return _cellMap[xIndex + yIndex * size.x];
 
-            float minDist = float.MaxValue;
-            int nearestCellIndex = -1;
-            for (int i = 0; i < _cellMap.Length; i++)
+            int maxRadius = Mathf.Max(size.x, size.y);
+            for (int radius = 1; radius <= maxRadius; radius++)
             {
-                float dist = Vector3.Distance(localPos, _cellMap[i].transform.localPosition);
-                if (dist < minDist)
+                var ring = GetRing<Cell>(IndexToAxial(index), radius);
+                if (ring.Count == 0) continue;
+                
+                float minDist = float.MaxValue;
+                Cell nearestCell = null;
+                foreach (var cell in ring)
                 {
-                    minDist = dist;
-                    nearestCellIndex = i;
+                    float dist = Vector3.Distance(localPos, cell.transform.localPosition);
+                    if (dist < minDist)
+                    {
+                        minDist = dist;
+                        nearestCell = cell;
+                    }
                 }
+                if (nearestCell != null) return nearestCell;
             }
-
-            return _cellMap[nearestCellIndex];
+            return null;
         }
 
         private Cell Square_LocalToCell(Vector3 localPos)
@@ -558,19 +565,26 @@ namespace NgoUyenNguyen.GridSystem
 
             if (_cellMap[xIndex + yIndex * size.x] != null) return _cellMap[xIndex + yIndex * size.x];
 
-            float minDist = float.MaxValue;
-            int nearestCellIndex = -1;
-            for (int i = 0; i < _cellMap.Length; i++)
+            int maxRadius = Mathf.Max(size.x, size.y);
+            for (int radius = 1; radius <= maxRadius; radius++)
             {
-                float dist = Vector3.Distance(localPos, _cellMap[i].transform.localPosition);
-                if (dist < minDist)
+                var ring = GetRing<Cell>(index, radius);
+                if (ring.Count == 0) continue;
+                
+                float minDist = float.MaxValue;
+                Cell nearestCell = null;
+                foreach (var cell in ring)
                 {
-                    minDist = dist;
-                    nearestCellIndex = i;
+                    float dist = Vector3.Distance(localPos, cell.transform.localPosition);
+                    if (dist < minDist)
+                    {
+                        minDist = dist;
+                        nearestCell = cell;
+                    }
                 }
+                if (nearestCell != null) return nearestCell;
             }
-
-            return _cellMap[nearestCellIndex];
+            return null;
         }
 
         /// <summary>
@@ -885,9 +899,70 @@ namespace NgoUyenNguyen.GridSystem
             return GetNeighbors(cell, NeighborFilter.None);
         }
 
+        /// <summary>
+        /// Method to get a ring of <c>Cell</c> with from a center and radius
+        /// </summary>
+        /// <param name="cell">Center <c>Cell</c> of the ring </param>
+        /// <param name="radius">Radius of the ring</param>
+        /// <returns><see cref="HashSet{T}"/> Ring</returns>
+        public HashSet<T> GetRing<T>(T cell, int radius) where T : Cell
+        {
+            if (!cellMap.Contains(cell))
+            {
+                throw new ArgumentException(
+                    $"{name} does not contain {cell.name}", nameof(cell));
+            }
 
+            return GetRing<T>(cell.index, radius);
+        }
+
+        /// <summary>
+        /// Method to get a ring of <c>Cell</c> with from a center and radius
+        /// </summary>
+        /// <param name="center">Center index of the ring</param>
+        /// <param name="radius">Radius of the ring</param>
+        /// <returns><see cref="HashSet{T}"/> Ring</returns>
+        public HashSet<T> GetRing<T>(Vector2Int center, int radius) where T : Cell
+        {
+            return _layout switch
+            {
+                CellLayout.Square => Square_GetRing<T>(center, radius),
+                CellLayout.Hexagon => Hexagon_GetRing<T>(center, radius),
+                _ => null
+            };
+        }
+        
         #region Square
 
+        private HashSet<T> Square_GetRing<T>(Vector2Int center, int radius) where T : Cell
+        {
+            var ring = new HashSet<T>();
+            for (int x = -radius; x <= radius; x++)
+            {
+                for (int y = -radius; y <= radius; y++)
+                {
+                    if (Mathf.Abs(x) != radius && Mathf.Abs(y) != radius) continue;
+                
+                    var neighborIndex = center + new Vector2Int(x, y);
+                    var neighbor = default(T);
+                    if (neighborIndex.x >= 0 &&
+                        neighborIndex.x < _size.x &&
+                        neighborIndex.y >= 0 &&
+                        neighborIndex.y < _size.y)
+                    {
+                        neighbor = _cellMap[neighborIndex.x + neighborIndex.y * _size.x] as T;
+                    }
+
+                    if (neighbor != null)
+                    {
+                        ring.Add(neighbor);
+                    }
+                }
+            }
+        
+            return ring;
+        }
+        
         private HashSet<T> Square_GetAllNeighbors<T>(T cell) where T : Cell
         {
             HashSet<T> neighbors = new();
@@ -902,7 +977,7 @@ namespace NgoUyenNguyen.GridSystem
 
                     if (neighbor != null) // Ignore null neighbors
                     {
-                        neighbors.Add(neighbor as T);
+                        neighbors.Add((T)neighbor);
                     }
                 }
             }
@@ -925,7 +1000,7 @@ namespace NgoUyenNguyen.GridSystem
 
                     if (neighbor != null) // Ignore null neighbors
                     {
-                        neighbors.Add(neighbor as T);
+                        neighbors.Add((T)neighbor);
                     }
                 }
             }
@@ -947,7 +1022,7 @@ namespace NgoUyenNguyen.GridSystem
 
                     if (neighbor != null) // Ignore null neighbors
                     {
-                        neighbors.Add(neighbor as T);
+                        neighbors.Add((T)neighbor);
                     }
                 }
             }
@@ -971,7 +1046,7 @@ namespace NgoUyenNguyen.GridSystem
 
                     if (neighbor != null) // Ignore null neighbors
                     {
-                        neighbors.Add(neighbor as T);
+                        neighbors.Add((T)neighbor);
                     }
                 }
             }
@@ -979,6 +1054,35 @@ namespace NgoUyenNguyen.GridSystem
             return neighbors;
         }
 
+        private HashSet<T> Hexagon_GetRing<T>(Vector2Int center, int radius) where T : Cell
+        {
+            var ring = new HashSet<T>();
+            for (int x = -radius; x <= radius; x++)
+            {
+                for (int y = -radius; y <= radius; y++)
+                {
+                    if (Mathf.Abs(x + y) > radius ||
+                        (Mathf.Abs(x) != radius && Mathf.Abs(y) != radius && Mathf.Abs(x + y) != radius)) 
+                        continue;
+                    var neighborIndex = AxialToIndex(center + new Vector2Int(x, y));
+                    var neighbor = default(T);
+                    if (neighborIndex.x >= 0 &&
+                        neighborIndex.x < _size.x &&
+                        neighborIndex.y >= 0 &&
+                        neighborIndex.y < _size.y)
+                    {
+                        neighbor = _cellMap[neighborIndex.x + neighborIndex.y * _size.x] as T;
+                    }
+                    
+                    if (neighbor != null)
+                    {
+                        ring.Add(neighbor);
+                    }
+                }
+            }
+            return ring;
+        }
+        
         #endregion
 
         #endregion

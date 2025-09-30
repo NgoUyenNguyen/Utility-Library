@@ -62,6 +62,7 @@ namespace NgoUyenNguyen.GridSystem
         {
             foreach (var t in cellMap)
             {
+                if (t == null) continue;
                 yield return t as T;
             }
         }

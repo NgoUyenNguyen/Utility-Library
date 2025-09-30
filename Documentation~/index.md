@@ -10,7 +10,7 @@ Library includes utilities to make game easier
 - [State Machine](StateMachine/StateMachine.md)
 - [Grid System](GridSystem/GridSystem.md)
 - [Base Level Editor](BaseLevelEditor.md)
-- [Generic Path Finding](GenericPathFinding/PathFinding.md)
+- [Generic Path Finding](GenericPathFinding/PathHandler.md)
 
 ---
 

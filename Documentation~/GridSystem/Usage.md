@@ -11,6 +11,12 @@ Get an example of case using child of Cell component:
 ```csharp
 public class ExampleCell : Cell
 {	
+    private void Destroy()
+    {
+        // You should call this function when the cell is destroyed 
+        // to ensure the cell is removed from the grid.
+        RemoveGridReference()
+    }
 }
 ```
 Add this script to a [GameObject](https://docs.unity3d.com/6000.0/Documentation/ScriptReference/GameObject.html)

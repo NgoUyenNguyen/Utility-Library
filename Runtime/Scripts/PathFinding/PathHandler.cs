@@ -36,25 +36,25 @@ namespace NgoUyenNguyen.PathFinding
     /// Provides pathfinding functionality using customizable parameters for determining neighbors, distances, and heuristics.
     /// </summary>
     /// <typeparam name="T">The type of the node used in the pathfinding algorithm. Must implement the IMonoPath interface.</typeparam>
-    public class PathFinding<T> where T : class, IMonoPath
+    public class PathHandler<T> where T : class, IMonoPath
     {
-        private readonly GetNextNode<T> getNext;
+        private readonly GetNextNode<T> getNextNode;
         private readonly GetDistanceToGoal<T> getDistanceToGoal;
         private readonly GetDistanceToNeighbor<T> getDistanceToNeighbor;
 
         /// <summary>
-        /// Initializes a new instance of the PathFinding class with the specified path-finding parameters.
+        /// Initializes a new instance of the PathHandler class with the specified path-finding parameters.
         /// This constructor sets up the core functionality needed for pathfinding operations.
         /// </summary>
-        /// <param name="getNext">A function that returns all possible next nodes from a given node. Used to generate the neighboring nodes during path traversal.</param>
+        /// <param name="getNextNode">A function that returns all possible next nodes from a given node. Used to generate the neighboring nodes during path traversal.</param>
         /// <param name="getDistanceToGoal">A function that calculates and returns the estimated distance (heuristic) from a given node to the goal node.</param>
         /// <param name="getDistanceToNeighbor">A function that calculates and returns the distance between one node and its neighbor.</param>
-        public PathFinding(
-            GetNextNode<T> getNext,
+        public PathHandler(
+            GetNextNode<T> getNextNode,
             GetDistanceToGoal<T> getDistanceToGoal,
             GetDistanceToNeighbor<T> getDistanceToNeighbor)
         {
-            this.getNext = getNext;
+            this.getNextNode = getNextNode;
             this.getDistanceToGoal = getDistanceToGoal;
             this.getDistanceToNeighbor = getDistanceToNeighbor;
         }
@@ -92,7 +92,7 @@ namespace NgoUyenNguyen.PathFinding
                 }
 
                 // Evaluate each neighbor of the current node
-                foreach (var neighbor in getNext(current.Data))
+                foreach (var neighbor in getNextNode(current.Data))
                 {
                     // Ignore unwalkable neighbors
                     if (!neighbor.Walkable) continue;

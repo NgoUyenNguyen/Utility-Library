@@ -38,8 +38,7 @@ This Grid component supports foreach iterating
 ```csharp
 foreach (Cell cell in Grid)
 {
-	// Iterating through all cell, 
-	// including null ones
+	// Iterating through all cells in grid
 }
 ```
 

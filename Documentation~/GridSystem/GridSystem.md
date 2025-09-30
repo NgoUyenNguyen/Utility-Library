@@ -14,9 +14,9 @@ and support accessing and iterating like a collection.***
 |**[grid](grid.md)**| Grid reference        |
 
 ### Public Methods
-|Method|Description|
-|---|---|
-|**[RemoveGridReference](RemoveGridReference.md)**|Remove reference to Grid|
+|Method| Description                                                                               |
+|---|-------------------------------------------------------------------------------------------|
+|**[RemoveGridReference](RemoveGridReference.md)**| Remove reference to Grid.<br/>This method should be called<br/>in OnDestroy() of the cell |
 
 ---
 
@@ -54,21 +54,21 @@ foreach (Cell cell in Grid)
 |**[layout](layout.md)**|Layout of <c>Grid</c>|
 
 ### Public Methods
-| Method                                                  |Description|
-|---------------------------------------------------------|---|
-| **[PrefabCreate](PrefabCreate.md)**                     |**USE ONLY IN EDITOR**<br> Method to create grid which remaining its connecting to original cell prefab|
-| **[Create](Create.md)**                                 |Method to create grid|
+| Method                                            |Description|
+|---------------------------------------------------|---|
+| **[PrefabCreate](PrefabCreate.md)**               |**USE ONLY IN EDITOR**<br> Method to create grid which remaining its connecting to original cell prefab|
+| **[Create](Create.md)**                           |Method to create grid|
 | **[CalculateCellsPosition](CalculateCellsPosition.md)** |Method to calculate cells **LocalSpace** position|
-| **[CellToLocal](CellToLocal.md)**                       |Method to get **LocalSpace** position from Cell|
-| **[CellToWorld](CellToWorld.md)**                       |Method to get **WolrdSpace** position from Cell|
-| **[LocalToCell](LocalToCell.md)**                       |Method to get Cell from **LocalSpace** position|
-| **[WorldToCell](WorldToCell.md)**                       |Method to get Cell from **WolrdSpace** position|
-| **[LocalToIndex](LocalToIndex.md)**                     |Method to get index from **LocalSpace** position|
-| **[WorldToIndex](WorldToIndex.md)**                     |Method to get index from **WolrdSpace** position|
-| **[IndexToLocal](IndexToLocal.md)**                     |Get **LocalSpace** position from Index|
-| **[IndexToWorld](IndexToWorld.md)**                     |Get **WolrdSpace** position from Index|
-| **[GetNeighbor](GetNeighbor.md)**                       |Method to get another cell from one cell|
-| **[GetNeighbors](GetNeighbors.md)**                     |Method to get all neighbor cells surrounding one cell|
-| **[GetRing](GetRing.md)**                               |Method to get all cells in a ring around one cell|
-| **[CombineMesh.md](CombineMesh.md)**                    |Combines the meshes of child objects into a single mesh for optimization.|
-| **[GetPath.md](GetPath.md)**                            |Finds a path between two cells in the grid|
+| **[CellToLocal](CellToLocal.md)**                 |Method to get **LocalSpace** position from Cell|
+| **[CellToWorld](CellToWorld.md)**                 |Method to get **WolrdSpace** position from Cell|
+| **[LocalToCell](LocalToCell.md)**                 |Method to get Cell from **LocalSpace** position|
+| **[WorldToCell](WorldToCell.md)**                 |Method to get Cell from **WolrdSpace** position|
+| **[LocalToIndex](LocalToIndex.md)**               |Method to get index from **LocalSpace** position|
+| **[WorldToIndex](WorldToIndex.md)**               |Method to get index from **WolrdSpace** position|
+| **[IndexToLocal](IndexToLocal.md)**               |Get **LocalSpace** position from Index|
+| **[IndexToWorld](IndexToWorld.md)**               |Get **WolrdSpace** position from Index|
+| **[GetNeighbor](GetNeighbor.md)**                 |Method to get another cell from one cell|
+| **[GetNeighbors](GetNeighbors.md)**               |Method to get all neighbor cells surrounding one cell|
+| **[GetRing](GetRing.md)**                         |Method to get all cells in a ring around one cell|
+| **[CombineMesh](CombineMesh.md)**                 |Combines the meshes of child objects into a single mesh for optimization.|
+| **[GetPath.md](GetPath)**                         |Finds a path between two cells in the grid|

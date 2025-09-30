@@ -30,8 +30,12 @@ namespace NgoUyenNguyen.PathFinding
     /// <param name="neighborNode">The neighboring node for which the distance from the current node is being determined.</param>
     /// <returns>The calculated distance or cost between the current node and the neighboring node.</returns>
     public delegate int GetDistanceToNeighbor<T>(T currentNode, T neighborNode);
-    
-    
+
+
+    /// <summary>
+    /// Provides pathfinding functionality using customizable parameters for determining neighbors, distances, and heuristics.
+    /// </summary>
+    /// <typeparam name="T">The type of the node used in the pathfinding algorithm. Must implement the IMonoPath interface.</typeparam>
     public class PathFinding<T> where T : class, IMonoPath
     {
         private readonly GetNextNode<T> getNext;

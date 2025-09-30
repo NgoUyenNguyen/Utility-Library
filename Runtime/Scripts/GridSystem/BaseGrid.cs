@@ -336,7 +336,7 @@ namespace NgoUyenNguyen.GridSystem
             };
         }
 
-        public void RecalculateCellsIndex(CellLayout newLayout)
+        private void RecalculateCellsIndex(CellLayout newLayout)
         {
             if (layout == newLayout) return;
             foreach (var cell in _cellMap)
@@ -900,7 +900,7 @@ namespace NgoUyenNguyen.GridSystem
         }
 
         /// <summary>
-        /// Method to get a ring of <c>Cell</c> with from a center and radius
+        /// Method to get all cells in a ring around one cell
         /// </summary>
         /// <param name="cell">Center <c>Cell</c> of the ring </param>
         /// <param name="radius">Radius of the ring</param>
@@ -917,7 +917,7 @@ namespace NgoUyenNguyen.GridSystem
         }
 
         /// <summary>
-        /// Method to get a ring of <c>Cell</c> with from a center and radius
+        /// Method to get all cells in a ring around one index
         /// </summary>
         /// <param name="center">Center index of the ring</param>
         /// <param name="radius">Radius of the ring</param>
@@ -1089,6 +1089,16 @@ namespace NgoUyenNguyen.GridSystem
 
         #region Other API
 
+        /// <summary>
+        /// Combines the meshes of child objects into a single mesh for optimization.
+        /// </summary>
+        /// <remarks>
+        /// This method assumes that child objects do not have submesh.
+        /// If child objects have submesh, this method will not work properly.
+        /// </remarks>
+        /// <param name="material">Optional material to apply to the combined mesh.
+        /// If not provided, the material of the first child mesh will be used.
+        /// </param>
         public void CombineMesh(Material material = null)
         {
             var meshFilterArray = GetComponentsInChildren<MeshFilter>();
@@ -1123,9 +1133,31 @@ namespace NgoUyenNguyen.GridSystem
             meshRenderer.sharedMaterial = material;
         }
 
-        public bool GetPath(Cell from, Cell to, out List<Cell> path)
+        /// <summary>
+        /// Finds a path between two cells in the grid.
+        /// </summary>
+        /// <param name="from">The starting cell of the path.</param>
+        /// <param name="to">The destination cell of the path.</param>
+        /// <param name="filter">The filter to define which neighbors to consider.</param>
+        /// <param name="path">The output list containing the cells that form the path, if found.</param>
+        /// <typeparam name="T">The type of the cells, which must inherit from <c>Cell</c>.</typeparam>
+        /// <returns>True if a valid path is found, otherwise false.</returns>
+        public bool GetPath<T>(Cell from, Cell to, NeighborFilter filter, out List<T> path) where T : Cell
         {
             throw new System.NotImplementedException();
+        }
+
+        /// <summary>
+        /// Finds a path between two cells.
+        /// </summary>
+        /// <param name="from">The starting cell of the path.</param>
+        /// <param name="to">The target cell of the path.</param>
+        /// <param name="path">The output list containing the cells in the path, if found.</param>
+        /// <typeparam name="T">The type of the cells, which must inherit from <c>Cell</c>.</typeparam>
+        /// <returns>Returns <c>true</c> if a valid path is found; otherwise, <c>false</c>.</returns>
+        public bool GetPath<T>(Cell from, Cell to, out List<T> path) where T : Cell
+        {
+            return GetPath(from, to, NeighborFilter.None, out path);
         }
 
         #endregion

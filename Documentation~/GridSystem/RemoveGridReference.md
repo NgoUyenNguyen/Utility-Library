@@ -8,4 +8,5 @@
 ### Returns
 
 ## Description
-Method to remove reference to [Grid](GridSystem.md##GRID-INCLUDES)
+Method to remove reference to [Grid](GridSystem.md##GRID-INCLUDES). 
+You should call this method on OnDestroy() of the [Cell](GridSystem.md##CELL-INCLUDES).

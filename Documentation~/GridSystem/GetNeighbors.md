@@ -2,16 +2,31 @@
 ---
 ## Declaration
 ```csharp
-public HashSet<Cell> GetNeighbors(Cell cell)
+public HashSet<T> GetNeighbors(T cell)
 ```
 
 ### Parameters
-|Parameter|Description|
-|---|---|
-|**cell**|Origin [Cell](GridSystem.md##CELL-INCLUDES)|
+| Parameter  | Description                                 |
+|------------|---------------------------------------------|
+| **cell**   | Origin [Cell](GridSystem.md##CELL-INCLUDES) |        
 
 ### Returns
-Maximum 8 neighbor [Cells](GridSystem.md##CELL-INCLUDES) and ignore null neighbors
+All neighbors surrounding original cell.
+
+## Declaration
+```csharp
+public HashSet<T> GetNeighbors(T cell, NeighborFilter filter)
+```
+
+### Parameters
+| Parameter  | Description                                   |
+|------------|-----------------------------------------------|
+| **cell**   | Origin [Cell](GridSystem.md##CELL-INCLUDES)   |
+| **filter** | filter to define which neighbors you want to get |
+
+### Returns
+Neighbors that match the filter.
 
 ## Description
-Method to get all neighbors surrounding one [Cell](GridSystem.md##CELL-INCLUDES)
+Method to get all neighbors surrounding one [Cell](GridSystem.md##CELL-INCLUDES)<br/>
+NOTICE: filter only works with Square Grid. Otherwise, it always returns all neighbors

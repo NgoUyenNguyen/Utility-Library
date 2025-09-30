@@ -9,7 +9,7 @@ public HashSet<T> GetRing<T>(T cell, int radius)
 | Parameter  | Description                                                                                                           |
 |------------|-----------------------------------------------------------------------------------------------------------------------|
 | **cell**   | Origin [Cell](GridSystem.md##CELL-INCLUDES)                                                                           |
-| **radius** | Radius of the ring to get                                                                                             |
+| **radius** | Radius of the ring                                                                                             |
 
 ### Returns
 Ring of [Cells](GridSystem.md##CELL-INCLUDES) of type T.
@@ -23,7 +23,7 @@ public HashSet<T> GetRing<T>(Vector2Int center, int radius)
 | Parameter  | Description               |
 |------------|---------------------------|
 | **center** | Center index position     |
-| **radius** | Radius of the ring to get |
+| **radius** | Radius of the ring |
 
 ### Returns
 Ring of [Cells](GridSystem.md##CELL-INCLUDES) of type T.

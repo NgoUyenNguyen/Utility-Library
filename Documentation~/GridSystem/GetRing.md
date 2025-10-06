@@ -2,7 +2,7 @@
 ---
 ## Declaration
 ```csharp
-public HashSet<T> GetRing<T>(T cell, int radius)
+public HashSet<T> GetRing<T>(T cell, int radius) where T : Cell
 ```
 
 ### Parameters
@@ -16,7 +16,7 @@ Ring of [Cells](GridSystem.md##CELL-INCLUDES) of type T.
 
 ## Declaration
 ```csharp
-public HashSet<T> GetRing<T>(Vector2Int center, int radius)
+public HashSet<T> GetRing<T>(Vector2Int center, int radius) where T : Cell
 ```
 
 ### Parameters

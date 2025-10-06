@@ -2,7 +2,7 @@
 ---
 ## Declaration
 ```csharp
-public HashSet<T> GetNeighbors(T cell)
+public HashSet<T> GetNeighbors(T cell) where T : Cell
 ```
 
 ### Parameters
@@ -15,7 +15,7 @@ All neighbors surrounding original cell.
 
 ## Declaration
 ```csharp
-public HashSet<T> GetNeighbors(T cell, NeighborFilter filter)
+public HashSet<T> GetNeighbors(T cell, NeighborFilter filter) where T : Cell
 ```
 
 ### Parameters

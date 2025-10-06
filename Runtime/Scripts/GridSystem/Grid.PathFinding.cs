@@ -109,6 +109,7 @@ namespace NgoUyenNguyen.GridSystem
                 return gps;
             }
         }
+        public int RunningPathfindingCount => GPS.RunningPathfindingCount;
         
         private void PathfindingManager_OnGiveBackResultEvent(int2 from, int2 to, NeighborFilter filter, bool hasPath, List<int2> result)
         {

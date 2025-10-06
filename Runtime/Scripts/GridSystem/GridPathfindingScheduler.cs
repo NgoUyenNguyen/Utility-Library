@@ -50,16 +50,22 @@ namespace NgoUyenNguyen.GridSystem
         private int2 MapSize { get; set; }
         private NativeArray<PathNode> pathNodeMap;
         public NativeList<PathRequest> PathRequests;
-        private NativeList<JobHandle> pendingJobs;
+        private NativeList<JobHandle> runningJobs;
         private NativeList<(PathRequest, NativeList<PathNode> path, NativeArray<bool> hasPath)> pendingResults;
         public event Action<int2, int2, NeighborFilter, bool, List<int2>> GiveBackResultEvent;
 
+        
+        
+        
+        public int RunningPathfindingCount => runningJobs.Length;
+        
+        
         
         private void Awake()
         {
             pathNodeMap = new NativeArray<PathNode>(0, Allocator.Persistent);
             PathRequests = new NativeList<PathRequest>(Allocator.Persistent);
-            pendingJobs = new NativeList<JobHandle>(Allocator.Persistent);
+            runningJobs = new NativeList<JobHandle>(Allocator.Persistent);
             pendingResults =
                 new NativeList<(PathRequest, NativeList<PathNode> path, NativeArray<bool> hasPath)>(
                     Allocator.Persistent);
@@ -73,11 +79,11 @@ namespace NgoUyenNguyen.GridSystem
 
         private void ReturnFinishedJobs()
         {
-            for (int i = pendingJobs.Length - 1; i >= 0; i--)
+            for (int i = runningJobs.Length - 1; i >= 0; i--)
             {
-                if (pendingJobs[i].IsCompleted)
+                if (runningJobs[i].IsCompleted)
                 {
-                    pendingJobs[i].Complete();
+                    runningJobs[i].Complete();
                     var (request, path, hasPath) = pendingResults[i];
                     var fromIndex = request.From;
                     var toIndex = request.To;
@@ -93,7 +99,7 @@ namespace NgoUyenNguyen.GridSystem
 
                     path.Dispose();
                     hasPath.Dispose();
-                    pendingJobs.RemoveAt(i);
+                    runningJobs.RemoveAt(i);
                     pendingResults.RemoveAt(i);
                 }
             }
@@ -101,7 +107,7 @@ namespace NgoUyenNguyen.GridSystem
 
         public void Grid_OnUpdatePathfindingDataEvent(Cell[] cellMap, Vector2Int mapSize, CellLayout layout)
         {
-            JobHandle.CompleteAll(pendingJobs.AsArray());
+            // JobHandle.CompleteAll(runningJobs.AsArray());
             Layout = layout;
             MapSize = new int2(mapSize.x, mapSize.y);
             pathNodeMap.Dispose();
@@ -156,7 +162,7 @@ namespace NgoUyenNguyen.GridSystem
                     }.Schedule(),
                     _ => throw new NotImplementedException()
                 };
-                pendingJobs.Add(jobHandle);
+                runningJobs.Add(jobHandle);
                 pendingResults.Add((PathRequests[i], path, hasPath));
 
                 openSet.Dispose(jobHandle);
@@ -169,8 +175,8 @@ namespace NgoUyenNguyen.GridSystem
 
         private void OnDestroy()
         {
-            JobHandle.CompleteAll(pendingJobs.AsArray());
-            pendingJobs.Dispose();
+            JobHandle.CompleteAll(runningJobs.AsArray());
+            runningJobs.Dispose();
             foreach (var (_, path, hasPath) in pendingResults)
             {
                 path.Dispose();

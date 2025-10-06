@@ -15,5 +15,5 @@ This snapshot will be automatically built on the first time [RequestPath](Reques
 the pathfinding data will not be updated automatically. 
 This method will update the pathfinding data to match the current state of the grid.  
 
-**Notice: Pathfinding operations which are running when this method is called will still use the old data. 
+**Notice: Pathfinding operations which are running when this method is called will still use the old data and will return incorrect results. 
 So it is recommended to check [RunningPathfindingCount](RunningPathfindingCount.md) before calling this method.**

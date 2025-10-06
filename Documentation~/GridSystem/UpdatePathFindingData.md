@@ -11,7 +11,7 @@ public void UpdatePathFindingData()
 
 ## Description
 Because of performance reasons, the pathfinding system uses a separate data structure as a snapshot of the grid. 
-This snapshot will be built on the first time [RequestPath](RequestPath.md) is called. However, if the grid is modified, 
+This snapshot will be automatically built on the first time [RequestPath](RequestPath.md) is called. However, if the grid is modified, 
 the pathfinding data will not be updated automatically. 
 This method will update the pathfinding data to match the current state of the grid.  
 

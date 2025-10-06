@@ -74,4 +74,4 @@ foreach (Cell cell in Grid)
 | **[GetRing](GetRing.md)**                               | Method to get all cells in a ring around one cell                                                       |
 | **[CombineMesh](CombineMesh.md)**                       | Method to combines the meshes of child objects into a single mesh for optimization                      |
 | **[RequestPath](RequestPath.md)**                       | Method to request a path from a cell to another cell                                                    |
-| **[UpdatePathFindingData](UpdatePathFindingData.md)**   | Update the pathfinding data of the grid                                                                 |
+| **[UpdatePathFindingData](UpdatePathFindingData.md)**   | Method to update the pathfinding data of the grid                                                       |

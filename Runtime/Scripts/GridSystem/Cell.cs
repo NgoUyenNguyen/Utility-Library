@@ -9,7 +9,7 @@ namespace NgoUyenNguyen.GridSystem
         /// </summary>
         [field: SerializeField, HideInInspector] public Vector2Int index { get; set; }
         [field: SerializeField, HideInInspector] public BaseGrid grid { get; set; }
-        [field: SerializeField] public bool Walkable { get; set; }
+        [field: SerializeField] public virtual bool Walkable { get; set; } = true;
 
 
         

@@ -139,11 +139,6 @@ namespace NgoUyenNguyen.GridSystem
 
             var fromIndex = from.index;
             var toIndex = to.index;
-            if (layout == CellLayout.Hexagon)
-            {
-                fromIndex = AxialToIndex(fromIndex);
-                toIndex = AxialToIndex(toIndex);
-            }
             
             var key = new HandleKey(fromIndex, toIndex, filter);
             if (activeRequests.TryGetValue(key, out var existing))

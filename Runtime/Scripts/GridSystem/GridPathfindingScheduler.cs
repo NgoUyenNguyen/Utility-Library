@@ -305,8 +305,10 @@ namespace NgoUyenNguyen.GridSystem
 
         public void Execute()
         {
-            var startNode = GridMap[Request.From.x + Request.From.y * MapSize.x];
-            var goalNode = GridMap[Request.To.x + Request.To.y * MapSize.x];
+            var startIndex = AxialToIndex(Request.From);
+            var startNode = GridMap[startIndex.x + startIndex.y * MapSize.x];
+            var goalIndex = AxialToIndex(Request.To);
+            var goalNode = GridMap[goalIndex.x + goalIndex.y * MapSize.x];
             if (!startNode.Walkable || !goalNode.Walkable)
             {
                 HasPath[0] = false;
@@ -335,7 +337,7 @@ namespace NgoUyenNguyen.GridSystem
                         // Skip current node itself
                         if (x == y) continue;
 
-                        var neighborIndex = currentNode.GridIndex + new int2(x, y);
+                        var neighborIndex = AxialToIndex(currentNode.GridIndex + new int2(x, y));
                         if (neighborIndex.x < 0 ||
                             neighborIndex.x >= MapSize.x ||
                             neighborIndex.y < 0 ||
@@ -367,7 +369,11 @@ namespace NgoUyenNguyen.GridSystem
 
         private int GetDistance(PathNode a, PathNode b)
         {
-            return 1;
+            var axialA = a.GridIndex;
+            var axialB = b.GridIndex;
+            return (math.abs(axialA.x - axialB.x) + 
+                    math.abs(axialA.x + axialA.y - axialB.x - axialB.y) +  
+                    math.abs(axialA.y - axialB.y)) / 2;
         }
 
         private void RetracePath(PathNode startNode, PathNode goalNode)
@@ -376,11 +382,19 @@ namespace NgoUyenNguyen.GridSystem
             while (!currentNode.Equals(startNode))
             {
                 Path.Add(currentNode);
-                currentNode = GridMap[currentNode.ParentIndex.x + currentNode.ParentIndex.y * MapSize.x];
+                var parentIndex = AxialToIndex(currentNode.ParentIndex);
+                currentNode = GridMap[parentIndex.x + parentIndex.y * MapSize.x];
             }
 
             Path.Add(startNode);
             Path.Reverse();
+        }
+
+        private int2 AxialToIndex(int2 axial)
+        {
+            var parity = axial.y & 1;
+            var col = axial.x + (axial.y - parity) / 2;
+            return new int2(col, axial.y);
         }
     }
 }

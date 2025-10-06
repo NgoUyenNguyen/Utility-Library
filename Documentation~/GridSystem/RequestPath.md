@@ -13,7 +13,7 @@ public PathHandle RequestPath(T from, T to, NeighborFilter filter = NeighborFilt
 | **filter** | The filter to use when searching for neighbors<br/>By default it is **NeighborFilter.None**|
 
 ### Returns
-The [PathHandle.md](PathHandle.md) equivalent to the request. 
+The [PathHandle](PathHandle.md) equivalent to the request. 
 
 ## Description
 Because pathfinding algorithms can be expensive, so instead of directly calculating and returning a path on the main thread, which can cause performance issues and potentially freeze the application, 

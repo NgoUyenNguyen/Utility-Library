@@ -5,7 +5,7 @@ namespace NgoUyenNguyen.PathFinding
         public int HeapIndex { get; set; }
         public int GCost { get; set; }
         public int HCost { get; set; }
-        public int FCost => GCost + HCost;
+        private int FCost => GCost + HCost;
         public PathNode<T> Parent { get; set; }
         public T Data { get; }
         

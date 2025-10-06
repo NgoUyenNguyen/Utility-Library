@@ -91,7 +91,7 @@ namespace NgoUyenNguyen
             switch (items.Count)
             {
                 case 0:
-                    return default;
+                    return null;
                 case 1:
                 {
                     var item = items[0];

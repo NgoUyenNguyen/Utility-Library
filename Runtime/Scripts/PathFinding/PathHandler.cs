@@ -95,7 +95,7 @@ namespace NgoUyenNguyen.PathFinding
                 foreach (var neighbor in getNextNode(current.Data))
                 {
                     // Ignore unwalkable neighbors
-                    if (!neighbor.Walkable) continue;
+                    if (neighbor is not { Walkable: true }) continue;
                     
                     // Create a new node for the neighbor if it doesn't exist yet'
                     if (!allNodes.TryGetValue(neighbor, out var neighborNode))

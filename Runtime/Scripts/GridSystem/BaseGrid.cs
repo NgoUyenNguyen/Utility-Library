@@ -57,7 +57,7 @@ namespace NgoUyenNguyen.GridSystem
     /// <remarks>The <see cref="BaseGrid"/> class provides functionality for creating, managing, and
     /// interacting with a grid of cells. Likely a collection, 
     /// <see cref="BaseGrid"/> can access cells through index like a 2D array and iterated by foreach loop</remarks>
-    public abstract partial class BaseGrid : MonoBehaviour
+    public abstract class BaseGrid : MonoBehaviour
     {
         #region Fields
 
@@ -191,6 +191,14 @@ namespace NgoUyenNguyen.GridSystem
                 switch (_layout)
                 {
                     case CellLayout.Square:
+                        if (x < 0 ||
+                            x >= size.x ||
+                            y < 0 ||
+                            y >= size.y)
+                        {
+                            throw new IndexOutOfRangeException();
+                        }
+                        
                         return _cellMap[size.x * y + x];
                     case CellLayout.Hexagon:
                         var index = AxialToIndex(new Vector2Int(x, y));
@@ -540,7 +548,7 @@ namespace NgoUyenNguyen.GridSystem
             {
                 var ring = GetRing<Cell>(IndexToAxial(index), radius);
                 if (ring.Count == 0) continue;
-                
+
                 float minDist = float.MaxValue;
                 Cell nearestCell = null;
                 foreach (var cell in ring)
@@ -552,8 +560,10 @@ namespace NgoUyenNguyen.GridSystem
                         nearestCell = cell;
                     }
                 }
+
                 if (nearestCell != null) return nearestCell;
             }
+
             return null;
         }
 
@@ -570,7 +580,7 @@ namespace NgoUyenNguyen.GridSystem
             {
                 var ring = GetRing<Cell>(index, radius);
                 if (ring.Count == 0) continue;
-                
+
                 float minDist = float.MaxValue;
                 Cell nearestCell = null;
                 foreach (var cell in ring)
@@ -582,8 +592,10 @@ namespace NgoUyenNguyen.GridSystem
                         nearestCell = cell;
                     }
                 }
+
                 if (nearestCell != null) return nearestCell;
             }
+
             return null;
         }
 
@@ -798,14 +810,14 @@ namespace NgoUyenNguyen.GridSystem
             return new Vector2Int((int)q, (int)r);
         }
 
-        private Vector2Int IndexToAxial(Vector2Int index)
+        public Vector2Int IndexToAxial(Vector2Int index)
         {
             var parity = index.y & 1;
             var q = index.x - (index.y - parity) / 2;
             return new Vector2Int(q, index.y);
         }
 
-        private Vector2Int AxialToIndex(Vector2Int axial)
+        public Vector2Int AxialToIndex(Vector2Int axial)
         {
             var parity = axial.y & 1;
             var col = axial.x + (axial.y - parity) / 2;
@@ -931,7 +943,7 @@ namespace NgoUyenNguyen.GridSystem
                 _ => null
             };
         }
-        
+
         #region Square
 
         private HashSet<T> Square_GetRing<T>(Vector2Int center, int radius) where T : Cell
@@ -942,7 +954,7 @@ namespace NgoUyenNguyen.GridSystem
                 for (int y = -radius; y <= radius; y++)
                 {
                     if (Mathf.Abs(x) != radius && Mathf.Abs(y) != radius) continue;
-                
+
                     var neighborIndex = center + new Vector2Int(x, y);
                     var neighbor = default(T);
                     if (neighborIndex.x >= 0 &&
@@ -959,10 +971,10 @@ namespace NgoUyenNguyen.GridSystem
                     }
                 }
             }
-        
+
             return ring;
         }
-        
+
         private HashSet<T> Square_GetAllNeighbors<T>(T cell) where T : Cell
         {
             HashSet<T> neighbors = new();
@@ -993,7 +1005,7 @@ namespace NgoUyenNguyen.GridSystem
             {
                 for (int y = -1; y <= 1; y++)
                 {
-                    if ((x == 0 && y == 0) || ((x != 0 && y == 0) || (x == 0 && y != 0)))
+                    if ((x == 0 && y == 0) || (x != 0 && y == 0) || (x == 0 && y != 0))
                         continue; // Skip cell itself and inline neighbors
 
                     Cell neighbor = GetNeighbor(cell, new Vector2Int(x, y));
@@ -1062,7 +1074,7 @@ namespace NgoUyenNguyen.GridSystem
                 for (int y = -radius; y <= radius; y++)
                 {
                     if (Mathf.Abs(x + y) > radius ||
-                        (Mathf.Abs(x) != radius && Mathf.Abs(y) != radius && Mathf.Abs(x + y) != radius)) 
+                        (Mathf.Abs(x) != radius && Mathf.Abs(y) != radius && Mathf.Abs(x + y) != radius))
                         continue;
                     var neighborIndex = AxialToIndex(center + new Vector2Int(x, y));
                     var neighbor = default(T);
@@ -1073,16 +1085,17 @@ namespace NgoUyenNguyen.GridSystem
                     {
                         neighbor = _cellMap[neighborIndex.x + neighborIndex.y * _size.x] as T;
                     }
-                    
+
                     if (neighbor != null)
                     {
                         ring.Add(neighbor);
                     }
                 }
             }
+
             return ring;
         }
-        
+
         #endregion
 
         #endregion
@@ -1103,12 +1116,12 @@ namespace NgoUyenNguyen.GridSystem
         {
             var meshFilterArray = GetComponentsInChildren<MeshFilter>();
             if (meshFilterArray[0].GetComponent<MeshRenderer>().sharedMaterial == null) return;
-            
+
             var combineInstances = new CombineInstance[meshFilterArray.Length];
             for (int i = 0; i < meshFilterArray.Length; i++)
             {
                 combineInstances[i].mesh = meshFilterArray[i].sharedMesh;
-                combineInstances[i].transform = 
+                combineInstances[i].transform =
                     transform.worldToLocalMatrix * meshFilterArray[i].transform.localToWorldMatrix;
                 meshFilterArray[i].GetComponent<MeshRenderer>().enabled = false; // Disable cell's meshRenderer
             }
@@ -1128,7 +1141,7 @@ namespace NgoUyenNguyen.GridSystem
                 meshRenderer = gameObject.AddComponent<MeshRenderer>();
             }
 
-            if (material == null) 
+            if (material == null)
                 material = meshFilterArray[0].GetComponent<MeshRenderer>().sharedMaterial;
             meshRenderer.sharedMaterial = material;
         }
@@ -1145,19 +1158,6 @@ namespace NgoUyenNguyen.GridSystem
         public bool GetPath<T>(Cell from, Cell to, NeighborFilter filter, out List<T> path) where T : Cell
         {
             throw new System.NotImplementedException();
-        }
-
-        /// <summary>
-        /// Finds a path between two cells.
-        /// </summary>
-        /// <param name="from">The starting cell of the path.</param>
-        /// <param name="to">The target cell of the path.</param>
-        /// <param name="path">The output list containing the cells in the path, if found.</param>
-        /// <typeparam name="T">The type of the cells, which must inherit from <c>Cell</c>.</typeparam>
-        /// <returns>Returns <c>true</c> if a valid path is found; otherwise, <c>false</c>.</returns>
-        public bool GetPath<T>(Cell from, Cell to, out List<T> path) where T : Cell
-        {
-            return GetPath(from, to, NeighborFilter.None, out path);
         }
 
         #endregion

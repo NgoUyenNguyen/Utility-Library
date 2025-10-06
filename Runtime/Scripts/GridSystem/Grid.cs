@@ -11,7 +11,7 @@ namespace NgoUyenNguyen.GridSystem
     /// <remarks>The <see cref="Grid"/> class provides functionality for creating, managing, and
     /// interacting with a grid of cells. Likely a collection, 
     /// <see cref="Grid"/> can access cells through index like a 2D array and iterated by foreach loop</remarks>
-    public abstract class Grid<T> : BaseGrid, IEnumerable<T> where T : Cell
+    public abstract partial class Grid<T> : BaseGrid, IEnumerable<T> where T : Cell
     {
         /// <summary>
         /// Access <c>Cell</c> in <c>Grid</c> through (<paramref name="x"/>, <paramref name="y"/>) coordinate

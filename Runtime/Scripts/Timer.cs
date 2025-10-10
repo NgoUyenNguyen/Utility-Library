@@ -24,12 +24,6 @@ namespace NgoUyenNguyen
         public bool IsRunning { get; set; }
 
         /// <summary>
-        /// Gets the progress of the timer as a value between 0 and 1,
-        /// where 0 represents no progress and 1 represents full completion.
-        /// </summary>
-        public float Progress => Time / InitialTime;
-
-        /// <summary>
         /// Defines an action that is invoked when the timer starts.
         /// </summary>
         public readonly Action OnTimerStart = () => { };
@@ -41,7 +35,7 @@ namespace NgoUyenNguyen
 
         /// <summary>
         /// Represents an abstract base timer providing core functionalities such as starting, stopping,
-        /// pausing, resuming, tracking progress, and managing time. This class serves as the foundation
+        /// pausing, resuming, and managing time. This class serves as the foundation
         /// for various types of timers.
         /// </summary>
         protected Timer(float value)
@@ -108,6 +102,12 @@ namespace NgoUyenNguyen
         /// Indicates whether the timer has completed, returning true if the timer's time has reached zero or below.
         /// </summary>
         public bool IsFinished => Time <= 0;
+        
+        /// <summary>
+        /// Gets the progress of the timer as a value between 0 and 1,
+        /// where 0 represents no progress and 1 represents full completion.
+        /// </summary>
+        public float Progress => 1 - Time / InitialTime;
         
         public CountdownTimer(float value) : base(value)
         {

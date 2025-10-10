@@ -1,9 +1,8 @@
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-namespace NgoUyenNguyen
+namespace NgoUyenNguyen.ScriptableObjects
 {
     [CreateAssetMenu(fileName ="LevelReference", menuName = "Scriptable Objects/Level Reference")]
     public class LevelReference : ScriptableObject

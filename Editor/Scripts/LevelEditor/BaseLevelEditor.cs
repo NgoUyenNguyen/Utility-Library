@@ -1,3 +1,4 @@
+using NgoUyenNguyen.ScriptableObjects;
 using UnityEditor;
 using UnityEngine;
 

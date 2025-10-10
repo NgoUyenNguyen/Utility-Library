@@ -14,10 +14,10 @@ namespace NgoUyenNguyen.Editor
 
         private bool isLoadingLevel;
         private static Vector2 levelScrollPos;
-        public event Action removeLevelPerformed;
-        public event Action loadLevelPerformed;
-        public event Action saveLevelPerformed;
-        public event Action addLevelPerformed;
+        public event Action RemoveLevelPerformed;
+        public event Action LoadLevelPerformed;
+        public event Action SaveLevelPerformed;
+        public event Action AddLevelPerformed;
 
 
 
@@ -139,7 +139,7 @@ namespace NgoUyenNguyen.Editor
                 Debug.LogWarning("Level do not exist in Assets!");
             }
 
-            removeLevelPerformed?.Invoke();
+            RemoveLevelPerformed?.Invoke();
         }
 
         private void AddLevel()
@@ -163,7 +163,7 @@ namespace NgoUyenNguyen.Editor
                 return;
             }
 
-            addLevelPerformed?.Invoke();
+            AddLevelPerformed?.Invoke();
         }
 
         private void SaveLevel(GameObject level)
@@ -203,7 +203,7 @@ namespace NgoUyenNguyen.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            saveLevelPerformed?.Invoke();
+            SaveLevelPerformed?.Invoke();
         }
 
         private void LoadLevel(GameObject level)
@@ -219,7 +219,7 @@ namespace NgoUyenNguyen.Editor
             currentLevel = (PrefabUtility.InstantiatePrefab(level) as GameObject).GetComponent<BaseLevel>();
             currentLevel.name = level.name;
 
-            loadLevelPerformed?.Invoke();
+            LoadLevelPerformed?.Invoke();
         }
 
 

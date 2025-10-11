@@ -55,14 +55,7 @@ namespace NgoUyenNguyen
                 return additiveScenes.Any(additiveScene => additiveScene != null && additiveScene.Name == sceneName);
             }
         }
-
-        /// <summary>
-        /// The singleton instance of the SceneLoader class.
-        /// </summary>
-        /// <remarks>
-        /// This property ensures there is only one active instance of the SceneLoader at a time.
-        /// If another instance is created, it will be automatically destroyed.
-        /// </remarks>
+        
         internal static SceneLoader Instance { get; set; }
 
         /// <summary>
@@ -111,7 +104,7 @@ namespace NgoUyenNguyen
 
         [SerializeField] private SceneGroup[] sceneGroups;
         private int currentSceneGroupIndex;
-        private Dictionary<string, AsyncOperationHandle<SceneInstance>> scenesLoadedByAddressables = new();
+        private readonly Dictionary<string, AsyncOperationHandle<SceneInstance>> scenesLoadedByAddressables = new();
         private bool smoothProgressUpdating;
 
         /// <summary>
@@ -143,18 +136,24 @@ namespace NgoUyenNguyen
         /// </remarks>
         public static float SmoothProgress { get; private set; }
 
-        public float DelayLoading
+        private static float staticDelayLoading;
+
+        /// <summary>
+        /// Specifies a delay duration applied during the scene loading process.
+        /// </summary>
+        public static float DelayLoading
         {
-            get => delayLoading;
+            get => staticDelayLoading;
             set
             {
                 if (value < 0) value = 0;
-                delayLoading = value;
+                staticDelayLoading = value;
             }
         }
 
         private void Awake()
         {
+            staticDelayLoading = delayLoading;
             CheckSceneGroups();
         }
 
@@ -162,7 +161,7 @@ namespace NgoUyenNguyen
         {
             if (!smoothProgressUpdating) return;
             SmoothProgress =
-                delayLoading <= 0 ? Progress : Mathf.Lerp(SmoothProgress, Progress, Time.deltaTime / delayLoading);
+                staticDelayLoading <= 0 ? Progress : Mathf.Lerp(SmoothProgress, Progress, Time.deltaTime / staticDelayLoading);
             if (Progress - SmoothProgress <= 0.05f) SmoothProgress = Progress;
         }
         
@@ -187,6 +186,12 @@ namespace NgoUyenNguyen
             }
         }
 
+        /// <summary>
+        /// Loads a scene group by its index and manages the transition, optionally reusing the existing scene.
+        /// </summary>
+        /// <param name="groupIndex">The index of the scene group to load.</param>
+        /// <param name="reuseExistingScene">Indicates whether to reuse the existing scene if it is active. Defaults to true.</param>
+        /// <returns>A task that represents the asynchronous operation of loading the scene group.</returns>
         public static async Task Load(int groupIndex, bool reuseExistingScene = true)
         {
             await Instance.LoadSceneGroup(groupIndex, reuseExistingScene);

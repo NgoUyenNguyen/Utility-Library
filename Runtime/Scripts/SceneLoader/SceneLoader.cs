@@ -35,9 +35,11 @@ namespace NgoUyenNguyen
     /// <param name="index">The index of the scene group that has been unloaded.</param>
     public delegate void OnSceneGroupUnloaded(int index);
 
+
     /// <summary>
     /// A utility class for managing the loading and unloading of Unity scenes in groups.
     /// </summary>
+    [DefaultExecutionOrder(-100)]
     public class SceneLoader : MonoBehaviour
     {
         [Serializable]
@@ -61,7 +63,7 @@ namespace NgoUyenNguyen
         /// This property ensures there is only one active instance of the SceneLoader at a time.
         /// If another instance is created, it will be automatically destroyed.
         /// </remarks>
-        public static SceneLoader Instance { get; private set; }
+        internal static SceneLoader Instance { get; set; }
 
         /// <summary>
         /// Event triggered each time a scene is successfully loaded.
@@ -71,7 +73,7 @@ namespace NgoUyenNguyen
         /// It is executed after the scene has been added to the scene hierarchy.
         /// </remarks>
         /// <param name="sceneName">The name of the scene that has been loaded.</param>
-        public event OnSceneLoaded OnSceneLoaded;
+        public static event OnSceneLoaded OnSceneLoaded;
 
         /// <summary>
         /// Event triggered each time a scene is successfully unloaded.
@@ -81,7 +83,7 @@ namespace NgoUyenNguyen
         /// It is executed after the scene has been removed from the scene hierarchy.
         /// </remarks>
         /// <param name="sceneName">The name of the scene that has been unloaded.</param>
-        public event OnSceneUnloaded OnSceneUnloaded;
+        public static event OnSceneUnloaded OnSceneUnloaded;
 
         /// <summary>
         /// Event triggered when a group of scenes is successfully loaded.
@@ -92,7 +94,7 @@ namespace NgoUyenNguyen
         /// and added to the scene hierarchy.
         /// </remarks>
         /// <param name="groupIndex">The index of the scene group that has been loaded.</param>
-        public event OnSceneGroupLoaded OnSceneGroupLoaded;
+        public static event OnSceneGroupLoaded OnSceneGroupLoaded;
 
         /// <summary>
         /// Event triggered when a group of scenes is successfully unloaded.
@@ -102,14 +104,13 @@ namespace NgoUyenNguyen
         /// It is invoked after all scenes in the specified group have been removed from the scene hierarchy.
         /// </remarks>
         /// <param name="sceneGroupIndex">The index of the scene group that has been unloaded.</param>
-        public event OnSceneGroupUnloaded OnSceneGroupUnloaded;
+        public static event OnSceneGroupUnloaded OnSceneGroupUnloaded;
 
         [Tooltip("Delay loading scene group")] [SerializeField, Range(0, 10)]
         private float delayLoading;
 
         [SerializeField] private SceneGroup[] sceneGroups;
         private int currentSceneGroupIndex;
-        private Scene boostrapScene;
         private Dictionary<string, AsyncOperationHandle<SceneInstance>> scenesLoadedByAddressables = new();
         private bool smoothProgressUpdating;
 
@@ -121,7 +122,7 @@ namespace NgoUyenNguyen
         /// after the loading process is complete. It can be used to determine if the
         /// application is in the process of loading scenes or scene groups.
         /// </remarks>
-        public bool IsLoading { get; private set; }
+        public static bool IsLoading { get; private set; }
 
         /// <summary>
         /// Represents the progress of the current scene loading operation as a value between 0 and 1.
@@ -130,7 +131,7 @@ namespace NgoUyenNguyen
         /// This property is updated during the loading process and reflects the weighted progress
         /// of all asynchronous loading operations involved in the scene group being loaded.
         /// </remarks>
-        public float Progress { get; private set; }
+        public static float Progress { get; private set; }
 
         /// <summary>
         /// Represents the smoothed loading progress for a scene group.
@@ -140,7 +141,7 @@ namespace NgoUyenNguyen
         /// loading progress (`Progress`) over time. It is especially useful for creating visually appealing
         /// loading animations or progress bars. The smoothing behavior is governed by the `delayLoading` property.
         /// </remarks>
-        public float SmoothProgress { get; private set; }
+        public static float SmoothProgress { get; private set; }
 
         public float DelayLoading
         {
@@ -152,20 +153,8 @@ namespace NgoUyenNguyen
             }
         }
 
-
         private void Awake()
         {
-            if (Instance == null)
-            {
-                Instance = this;
-            }
-            else
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            boostrapScene = gameObject.scene;
             CheckSceneGroups();
         }
 
@@ -176,6 +165,8 @@ namespace NgoUyenNguyen
                 delayLoading <= 0 ? Progress : Mathf.Lerp(SmoothProgress, Progress, Time.deltaTime / delayLoading);
             if (Progress - SmoothProgress <= 0.05f) SmoothProgress = Progress;
         }
+        
+        
 
         private void CheckSceneGroups()
         {
@@ -196,17 +187,12 @@ namespace NgoUyenNguyen
             }
         }
 
-        /// <summary>
-        /// Loads a group of scenes specified by the given group index.
-        /// Handles unloading of existing scenes and loading of a new active scene along with its additive scenes.
-        /// </summary>
-        /// <param name="groupIndex">The index of the scene group to load. Must be within the range of available scene groups.</param>
-        /// <param name="reuseExistingScene">
-        /// If true, any scene that is already loaded and matches the required scenes in the target group will not be reloaded.
-        /// If false, all scenes in the group will be loaded, replacing any matching existing scenes.
-        /// </param>
-        /// <returns>A Task representing the asynchronous operation of loading the scene group.</returns>
-        public async Task LoadSceneGroup(int groupIndex, bool reuseExistingScene = true)
+        public static async Task Load(int groupIndex, bool reuseExistingScene = true)
+        {
+            await Instance.LoadSceneGroup(groupIndex, reuseExistingScene);
+        }
+        
+        private async Task LoadSceneGroup(int groupIndex, bool reuseExistingScene)
         {
             if (groupIndex < 0 || groupIndex >= sceneGroups.Length)
             {
@@ -218,15 +204,15 @@ namespace NgoUyenNguyen
 
             var oldSceneGroupIndex = currentSceneGroupIndex;
             currentSceneGroupIndex = groupIndex;
-            var newSceneGroup = sceneGroups[currentSceneGroupIndex];
 
             var sceneToUnload = new List<string>();
             var sceneToRemain = new List<string>();
-            FilterScenes(reuseExistingScene, newSceneGroup, sceneToUnload, sceneToRemain);
+            FilterScenes(reuseExistingScene, currentSceneGroupIndex, oldSceneGroupIndex, sceneToUnload, sceneToRemain);
 
             await UnloadSceneGroup(sceneToUnload);
             OnSceneGroupUnloaded?.Invoke(oldSceneGroupIndex);
 
+            var newSceneGroup = sceneGroups[currentSceneGroupIndex];
             var opHandles = new AsyncOperationHandleGroup(1 + newSceneGroup.additiveScenes.Count - sceneToRemain.Count);
             var ops = new AsyncOperationGroup(1 + newSceneGroup.additiveScenes.Count - sceneToRemain.Count);
             if (!sceneToRemain.Contains(newSceneGroup.activeScene.Name))
@@ -253,25 +239,28 @@ namespace NgoUyenNguyen
             OnSceneGroupLoaded?.Invoke(currentSceneGroupIndex);
         }
 
-        private void FilterScenes(bool reuseExistingScene, SceneGroup newSceneGroup, List<string> sceneToUnload,
+        private void FilterScenes(bool reuseExistingScene,
+            int newSceneGroupIndex,
+            int oldSceneGroupIndex,
+            List<string> sceneToUnload,
             List<string> sceneToRemain)
         {
             for (var i = 0; i < SceneManager.sceneCount; i++)
             {
                 var sceneName = SceneManager.GetSceneAt(i).name;
-                if (sceneName == boostrapScene.name) continue;
                 if (reuseExistingScene)
                 {
-                    if (!newSceneGroup.HasScene(sceneName))
+                    if (!sceneGroups[newSceneGroupIndex].HasScene(sceneName) &&
+                        sceneGroups[oldSceneGroupIndex].HasScene(sceneName))
                     {
                         sceneToUnload.Add(sceneName);
                     }
-                    else
+                    else if (sceneGroups[oldSceneGroupIndex].HasScene(sceneName))
                     {
                         sceneToRemain.Add(sceneName);
                     }
                 }
-                else
+                else if (sceneGroups[oldSceneGroupIndex].HasScene(sceneName))
                 {
                     sceneToUnload.Add(sceneName);
                 }
@@ -320,7 +309,7 @@ namespace NgoUyenNguyen
             {
                 UnloadScene(scene, ops, opHandles);
             }
-
+            
             while (!ops.IsDone || !opHandles.IsDone)
             {
                 await Task.Delay(100);
@@ -350,7 +339,7 @@ namespace NgoUyenNguyen
         public readonly List<AsyncOperation> Operations;
 
         public float Progress => Operations.Count == 0 ? 1 : Operations.Average(o => o.progress);
-        public bool IsDone => Operations.All(o => o.isDone);
+        public bool IsDone => Operations.Count == 0 || Operations.All(o => o.isDone);
 
         public AsyncOperationGroup(int initialCapacity)
         {

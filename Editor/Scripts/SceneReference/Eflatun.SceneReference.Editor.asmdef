@@ -1,0 +1,32 @@
+{
+    "name": "Eflatun.SceneReference.Editor",
+    "rootNamespace": "Eflatun.SceneReference.Editor",
+    "references": [
+        "GUID:49818357e697641afb75d2f8acaf1861",
+        "GUID:9e24947de15b9834991c9d8411ea37cf",
+        "GUID:69448af7b92c7f342b298e06a37122aa",
+        "GUID:594d64310e9273f43b67b878242973a7"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.addressables",
+            "expression": "",
+            "define": "ESR_ADDRESSABLES"
+        },
+        {
+            "name": "com.unity.addressables",
+            "expression": "[1.0.0,2.0.0)",
+            "define": "ESR_ADDRESSABLES_1_X_X"
+        }
+    ],
+    "noEngineReferences": false
+}

@@ -44,3 +44,15 @@ All notable changes to this project will be documented in this file.
 - N/A
 
 ---
+
+## [2.0.0] - 2025-10-22
+### Added
+- Marching cubes algorithm using GPU to generate mesh.
+
+### Changed
+- Documentation
+
+### Fixed
+- N/A
+
+---

@@ -11,7 +11,9 @@ Add this package to your Unity project via Package Manager.
 - State Machine
 - Grid System
 - Base Level Editor window
+- Serialize Attributes for Interface and Abstract class
 - Generic Pathfinding
+- Marching Cubes (GPU)
 - Shaders
 - Other extensions
 

@@ -1,0 +1,175 @@
+#define EDGE_EMPTY -1
+#define EDGE_PENDING -2
+
+#pragma kernel Polygonise
+#include "Packages/com.ngouyennguyen.utilitylibrary/Runtime/Scripts/MarchingCubes/Compute/Includes/LookupTables.hlsl"
+
+struct Triangle
+{
+    int v0, v1, v2;
+};
+
+// Input
+int resolution; // Determine how many voxels per volume
+float isoLevel; // Iso-surface level to determine which corner is inside or outside the mesh
+Texture3D densityMap; // xyz - point position, w - density value
+
+// Output
+RWStructuredBuffer<float3> resultVertices; // vertices buffer to return to CPU
+AppendStructuredBuffer<Triangle> resultTriangles; // triangles buffer to return to CPU
+
+// Global buffers
+RWStructuredBuffer<int> edgeVertexIndices; // edge -> vertex index
+RWStructuredBuffer<int> vertexCounter; // chỉ chứa 1 phần tử
+
+
+
+
+// Function to interpolate vertex position along an edge
+float3 InterpolateVerts(float4 v1, float4 v2)
+{
+    float t = (isoLevel - v1.w) / (v2.w - v1.w);
+    return lerp(v1.xyz, v2.xyz, t);
+}
+
+// Function to get index of point from coordinate position
+// int IndexFromCoords(int x, int y, int z)
+// {
+//     return x + y * resolution + z * resolution * resolution;
+// }
+
+// Function to get configuration of the cube based on corner densities
+int GetConfiguration(float4 cubeCorners[8])
+{
+    // Calculate configuration to lookup tables
+    int configuration = 0;
+    for (int i = 0; i < 8; i++)
+    {
+        configuration |= (cubeCorners[i].w < isoLevel ? 1 : 0) << i;
+    }
+    return configuration;
+}
+
+// Function to get global index of an edge
+int GetGlobalEdgeIndex(uint3 cellIndex, int edge)
+{
+    uint edgeNumEachDir = (resolution - 1) * resolution * resolution;
+
+    uint x = cellIndex.x;
+    uint y = cellIndex.y;
+    uint z = cellIndex.z;
+
+    switch (edge)
+    {
+    // Edges in the X direction
+    case 1:
+        return x + (resolution - 1) * y + resolution * (resolution - 1) * z + resolution * (resolution - 1);
+    case 3:
+        return x + (resolution - 1) * y + resolution * (resolution - 1) * z;
+    case 5:
+        return x + (resolution - 1) * y + resolution * (resolution - 1) * z + (resolution - 1) * (resolution + 1);
+    case 7:
+        return x + (resolution - 1) * y + resolution * (resolution - 1) * z + (resolution - 1);
+
+    // Edges in the Y direction
+    case 8:
+        return edgeNumEachDir + x + resolution * y + resolution * (resolution - 1) * z;
+    case 9:
+        return edgeNumEachDir + x + resolution * y + resolution * (resolution - 1) * z + resolution * (resolution - 1);
+    case 10:
+        return edgeNumEachDir + x + resolution * y + resolution * (resolution - 1) * z + resolution * resolution - (resolution - 1);
+    case 11:
+        return edgeNumEachDir + x + resolution * y + resolution * (resolution - 1) * z + 1;
+
+    // Edges in the Z direction
+    case 0:
+        return 2 * edgeNumEachDir + x + resolution * y + resolution * resolution * z;
+    case 2:
+        return 2 * edgeNumEachDir + x + resolution * y + resolution * resolution * z + 1;
+    case 4:
+        return 2 * edgeNumEachDir + x + resolution * y + resolution * resolution * z + resolution;
+    case 6:
+        return 2 * edgeNumEachDir + x + resolution * y + resolution * resolution * z + resolution + 1;
+
+    default: return -1;
+    }
+}
+
+// Function to get or create a vertex index for a given edge
+int GetOrCreateVertexIndex(uint globalEdgeIndex, float3 position)
+{
+    int oldIndex;
+    InterlockedCompareExchange(edgeVertexIndices[globalEdgeIndex], EDGE_EMPTY, EDGE_PENDING, oldIndex);
+    if (oldIndex == EDGE_EMPTY)
+    {
+        int nextIndex;
+        InterlockedAdd(vertexCounter[0], 1, nextIndex);
+        resultVertices[nextIndex] = position;
+        
+        InterlockedCompareStore(edgeVertexIndices[globalEdgeIndex], EDGE_PENDING, nextIndex);
+        return nextIndex;
+    }
+    if (oldIndex == EDGE_PENDING)
+    {
+        int waitedIndex;
+        [allow_uav_condition]
+        do
+        {
+            InterlockedCompareExchange(edgeVertexIndices[globalEdgeIndex], EDGE_PENDING, EDGE_PENDING, waitedIndex);
+        } while (waitedIndex == EDGE_PENDING);
+        return waitedIndex;
+    }
+    return oldIndex;
+}
+
+
+[numthreads(8,8,8)]
+void Polygonise(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= (uint)resolution - 1 ||
+        id.y >= (uint)resolution - 1 ||
+        id.z >= (uint)resolution - 1)
+        return;
+
+    // 8 corners of the current cube
+    float4 cubeCorners[8] = {
+        densityMap.Load(int4(id, 0)),
+        densityMap.Load(int4(int3(id.x, id.y, id.z + 1), 0)),
+        densityMap.Load(int4(int3(id.x + 1, id.y, id.z + 1), 0)),
+        densityMap.Load(int4(int3(id.x + 1, id.y, id.z), 0)),
+        densityMap.Load(int4(int3(id.x, id.y + 1, id.z), 0)),
+        densityMap.Load(int4(int3(id.x, id.y + 1, id.z + 1), 0)),
+        densityMap.Load(int4(int3(id.x + 1, id.y + 1, id.z + 1), 0)),
+        densityMap.Load(int4(int3(id.x + 1, id.y + 1, id.z), 0)),
+    };
+
+    // Calculate configuration to lookup tables
+    int configuration = GetConfiguration(cubeCorners);
+
+    int cutEdges = edge_table[configuration];
+    int vertsInCube[12];
+    for (int e = 0; e < 12; e++)
+    {
+        if ((cutEdges & 1 << e) == 0) continue;
+
+        int v1 = edge_connect_table[e][0];
+        int v2 = edge_connect_table[e][1];
+        float3 vertPos = InterpolateVerts(cubeCorners[v1], cubeCorners[v2]);
+
+        int globalEdgeIndex = GetGlobalEdgeIndex(id, e);
+        int vertIndex = GetOrCreateVertexIndex(globalEdgeIndex, vertPos);
+
+        vertsInCube[e] = vertIndex;
+    }
+
+    // Create triangles
+    for (int i = 0; tri_table[configuration][i] != -1; i += 3)
+    {
+        int e0 = tri_table[configuration][i + 2];
+        int e1 = tri_table[configuration][i + 1];
+        int e2 = tri_table[configuration][i + 0];
+
+        Triangle newTriangle = { vertsInCube[e0], vertsInCube[e1], vertsInCube[e2] };
+        resultTriangles.Append(newTriangle);
+    }
+}

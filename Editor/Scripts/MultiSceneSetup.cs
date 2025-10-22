@@ -3,7 +3,6 @@ using System.IO;
 using UnityEngine;
 using UnityEditor.SceneManagement;
 using UnityEditor;
-using System.Collections;
 using System.Linq;
 
 public class MultiSceneSetup : ScriptableObject

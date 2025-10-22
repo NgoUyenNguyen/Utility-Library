@@ -1,0 +1,41 @@
+#pragma kernel Sphere
+#pragma kernel Box
+
+RWTexture3D<float4> Result;
+
+float3 center;
+float3 volumeCenter;
+float3 volumeSize;
+int resolution;
+
+float radius;
+float3 halfSize;
+
+float3 GetPosition (uint3 id)
+{
+    float3 local = float3(id) / (resolution - 1) - 0.5;
+    return volumeCenter + local * volumeSize;
+}
+
+[numthreads(8,8,8)]
+void Sphere (uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= (uint)resolution || id.y >= (uint)resolution || id.z >= (uint)resolution) return;
+    
+    float3 pos = GetPosition(id);
+    float isoValue = length(pos - center) - radius;
+    
+    Result[id] = float4(pos,isoValue);
+}
+
+[numthreads(8,8,8)]
+void Box (uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= (uint)resolution || id.y >= (uint)resolution || id.z >= (uint)resolution) return;
+    
+    float3 pos = GetPosition(id);
+    float3 q = abs(pos - center) - halfSize;
+    float isoValue = length(max(q,0)) + min(max(q.x,max(q.y,q.z)),0);
+    
+    Result[id] = float4(pos,isoValue);
+}

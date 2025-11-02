@@ -7,25 +7,25 @@ namespace NgoUyenNguyen.Editor
 {
     public static class SceneLoaderCreater
     {
-        [MenuItem("Assets/Create/Scene Loader", false, 1)]
+        [MenuItem("Assets/Create/Scene Group Loader", false, 1)]
         public static void CreatePrefab()
         {
-            string folderPath = "Assets/Resources";
+            const string folderPath = "Assets/Resources";
             if (!Directory.Exists(folderPath))
                 Directory.CreateDirectory(folderPath);
 
-            string prefabPath = $"{folderPath}/SceneLoader.prefab";
+            var prefabPath = $"{folderPath}/SceneGroupLoader.prefab";
             if (File.Exists(prefabPath))
             {
                 EditorGUIUtility.PingObject(AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath));
                 return;
             }
 
-            GameObject temp = new GameObject("SceneLoader");
+            var temp = new GameObject("SceneGroupLoader");
 
-            temp.AddComponent<SceneLoader>();
+            temp.AddComponent<SceneGroupLoader>();
 
-            GameObject prefab = PrefabUtility.SaveAsPrefabAsset(temp, prefabPath, out bool success);
+            var prefab = PrefabUtility.SaveAsPrefabAsset(temp, prefabPath, out bool success);
 
             Object.DestroyImmediate(temp);
 

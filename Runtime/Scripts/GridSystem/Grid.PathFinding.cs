@@ -29,12 +29,12 @@ namespace NgoUyenNguyen.GridSystem
         /// An event triggered upon the completion of the pathfinding operation associated with the current handle.
         /// Subscribing to this event allows retrieval of the resulting pathfinding data when the operation is finalized.
         /// </summary>
-        public event Action<Result<T>> OnComplete;
-        internal void Complete(Result<T> result)
+        public event Action<Result<T>> Complete;
+        internal void OnComplete(Result<T> result)
         {
             Result = result;
             IsComplete = true;
-            OnComplete?.Invoke(result);
+            Complete?.Invoke(result);
         }
     }
 
@@ -120,7 +120,7 @@ namespace NgoUyenNguyen.GridSystem
                 path.Add(this[index.x, index.y]);
             }
             
-            activeRequests[key].Complete(new Result<T>(hasPath, path));
+            activeRequests[key].OnComplete(new Result<T>(hasPath, path));
             activeRequests.Remove(key);
         }
 

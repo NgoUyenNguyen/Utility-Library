@@ -56,3 +56,18 @@ All notable changes to this project will be documented in this file.
 - N/A
 
 ---
+
+## [2.1.0] - 2025-11-01
+### Added
+- RequireInterface and MustAssignAttribute
+- InterfaceReference wrapper class
+- Scene Initializer
+
+### Changed
+- SceneLoader to SceneGroupLoader
+- Documentation
+
+### Fixed
+- N/A
+
+---

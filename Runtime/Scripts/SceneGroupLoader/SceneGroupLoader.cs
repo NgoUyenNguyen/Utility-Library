@@ -40,7 +40,7 @@ namespace NgoUyenNguyen
     /// A utility class for managing the loading and unloading of Unity scenes in groups.
     /// </summary>
     [DefaultExecutionOrder(-100)]
-    public class SceneLoader : MonoBehaviour
+    public class SceneGroupLoader : MonoBehaviour
     {
         [Serializable]
         public struct SceneGroup
@@ -56,7 +56,7 @@ namespace NgoUyenNguyen
             }
         }
         
-        internal static SceneLoader Instance { get; set; }
+        internal static SceneGroupLoader Instance { get; set; }
 
         /// <summary>
         /// Event triggered each time a scene is successfully loaded.
@@ -192,7 +192,7 @@ namespace NgoUyenNguyen
         /// <param name="groupIndex">The index of the scene group to load.</param>
         /// <param name="reuseExistingScene">Indicates whether to reuse the existing scene if it is active. Defaults to true.</param>
         /// <returns>A task that represents the asynchronous operation of loading the scene group.</returns>
-        public static async Task Load(int groupIndex, bool reuseExistingScene = true)
+        public static async Task LoadGroup(int groupIndex, bool reuseExistingScene = true)
         {
             await Instance.LoadSceneGroup(groupIndex, reuseExistingScene);
         }

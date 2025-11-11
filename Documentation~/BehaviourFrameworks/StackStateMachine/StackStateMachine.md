@@ -17,7 +17,7 @@ The top-most state on the stack is considered active and is the only one updated
 ### Properties
 |Property|Description|
 |---|---|
-|**Machine**| Reference to the owning stack-based state machine|
+|**[Machine](State/Machine.md)**| Reference to the owning stack-based state machine|
 
 ### Protected Methods
 |Method|Description|

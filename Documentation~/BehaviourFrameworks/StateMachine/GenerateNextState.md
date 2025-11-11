@@ -1,4 +1,4 @@
-# [BaseState](StateMachine.md##BASESTATE-INCLUDES).GenerateNextState
+# [State](StateMachine.md##BASESTATE-INCLUDES).GetTransition
 ---
 ## Declaration
 ```csharp

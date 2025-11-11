@@ -15,6 +15,8 @@ Add this package to your Unity project via Package Manager.
 - Generic Pathfinding
 - Marching Cubes (GPU)
 - Shaders
+- Service Locator
+- Behaviour Frameworks
 - Other extensions
 
 ## Author

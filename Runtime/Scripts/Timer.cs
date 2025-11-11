@@ -26,12 +26,12 @@ namespace NgoUyenNguyen
         /// <summary>
         /// Defines an action that is invoked when the timer starts.
         /// </summary>
-        public readonly Action OnTimerStart = () => { };
+        public event Action OnTimerStart = () => { };
 
         /// <summary>
         /// Defines an action that is invoked when the timer stops.
         /// </summary>
-        public readonly Action OnTimerStop = () => { };
+        public event Action OnTimerStop = () => { };
 
         /// <summary>
         /// Represents an abstract base timer providing core functionalities such as starting, stopping,

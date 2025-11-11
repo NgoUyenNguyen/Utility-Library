@@ -1,7 +1,7 @@
 ﻿# Extension Attributes
 ---
 
-## Abstract and Interface Serialize Attributes
+## 1. Abstract and Interface Serialize Attributes
 
 By default, Unity's serialization system support serializing classes and structs to display in the inspector and store
 in disks

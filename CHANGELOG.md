@@ -71,3 +71,27 @@ All notable changes to this project will be documented in this file.
 - N/A
 
 ---
+## [3.0.0] - 2025-11-02
+### Added
+- ServiceLocator
+
+### Changed
+- GridSystem.Pathfinding API
+- Documentation
+
+### Fixed
+- N/A
+
+---
+---
+## [3.1.0] - 2025-11-02
+### Added
+- Hierarchy State Machine
+
+### Changed
+- Documentation
+
+### Fixed
+- N/A
+
+---

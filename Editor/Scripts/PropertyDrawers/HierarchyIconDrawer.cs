@@ -26,18 +26,12 @@ namespace NgoUyenNguyen.Editor
         {
             if (EditorUtility.InstanceIDToObject(instanceID) is not GameObject gameObject) return;
 
-            foreach (var component in gameObject.GetComponents<Component>())
-            {
-                if (component == null) continue;
+            if (!HasMissingFieldInHierarchy(gameObject)) return;
 
-                if (!HasMissingFieldInHierarchy(gameObject)) return;
-
-                var iconRect = new Rect(selectionRect.xMax - 20, selectionRect.y, 18, 18);
-                var tooltipMessage =
-                    $"Game Object '{gameObject.name}' or its child/children contain empty or unassigned field(s).";
-                GUI.Label(iconRect, new GUIContent(RequiredIcon, tooltipMessage));
-                return;
-            }
+            var iconRect = new Rect(selectionRect.xMax - 20, selectionRect.y, 18, 18);
+            var tooltipMessage =
+                $"Game Object '{gameObject.name}' or its child/children contain empty or unassigned field(s).";
+            GUI.Label(iconRect, new GUIContent(RequiredIcon, tooltipMessage));
         }
 
         private static bool HasMissingFieldInHierarchy(GameObject go)
@@ -93,6 +87,14 @@ namespace NgoUyenNguyen.Editor
             if (fieldValue is int and 0) return true;
             if (fieldValue is float and 0) return true;
             if (fieldValue is uint and 0) return true;
+            if (fieldValue is Vector3 && fieldValue.Equals(Vector3.zero)) return true;
+            if (fieldValue is Vector3Int && fieldValue.Equals(Vector3Int.zero)) return true;
+            if (fieldValue is Vector2 && fieldValue.Equals(Vector2.zero)) return true;
+            if (fieldValue is Vector2Int && fieldValue.Equals(Vector2Int.zero)) return true;
+            if (fieldValue is Vector4 && fieldValue.Equals(Vector4.zero)) return true;
+            if (fieldValue is Quaternion && fieldValue.Equals(Quaternion.identity)) return true;
+            if (fieldValue is bool && fieldValue.Equals(false)) return true;
+            if (fieldValue is Enum && fieldValue.Equals(0)) return true;
             if (fieldValue is string stringValue && string.IsNullOrEmpty(stringValue)) return true;
             if (fieldValue is System.Collections.IEnumerable enumerable)
             {

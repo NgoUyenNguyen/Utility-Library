@@ -4,7 +4,7 @@
 **[Usage](Usage.md)**
 
 ---
-## BASESTATE INCLUDES:
+## STATE INCLUDES:
 
 ### Properties
 |Property|Description|
@@ -12,12 +12,12 @@
 |**[stateKey](StateKey.md)**| A key equivalent to each State for StateManager managing|
 
 ### Abstract Methods
-|Method|Description|
-|---|---|
-|**[EnterState](EnterState.md)**| Methods called once when a State is entered|
-|**[UpdateState](UpdateState.md)**|Method called every frame while in the State|
-|**[ExitState](ExitState.md)**|Methods called once when a State is exited|
-|**[GenerateNextState](GenerateNextState.md)**|Method to generate the next state based on the current state logic.|
+| Method                                    |Description|
+|-------------------------------------------|---|
+| **[OnEnter](EnterState.md)**              | Methods called once when a State is entered|
+| **[OnUpdate](UpdateState.md)**            |Method called every frame while in the State|
+| **[OnExit](ExitState.md)**                |Methods called once when a State is exited|
+| **[GetTransition](GenerateNextState.md)** |Method to generate the next state based on the current state logic.|
   
 ---
 ## STATEMANAGER INCLUDES:

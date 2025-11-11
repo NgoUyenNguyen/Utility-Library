@@ -75,7 +75,7 @@ namespace NgoUyenNguyen.Behaviour.SM
             // Assert that the current state is set before starting the state machine
             Assert.IsNotNull(_currentState, $"Current state of {this.name} must be set before starting the state machine.");
             // Initialize the state machine with the states defined in derived classes
-            currentState.OnEnter();
+            currentState.Enter();
             // Call the OnStart method to allow derived classes to perform any additional setup
             OnStart();
         }
@@ -96,14 +96,14 @@ namespace NgoUyenNguyen.Behaviour.SM
             else
             {
                 // Next state assigned internally
-                nextState = GetState(currentState.GetTransition());
+                nextState = GetState(currentState.GetNextState());
             }
 
             // Check if needing to transition to a new state or using update mathod of the current state
             if (!isTransitioning && nextState == currentState)
             {
                 // If the next state is the same as the current state, meaning no transition is needed
-                currentState.OnUpdate();
+                currentState.Update();
             }
             else if (!isTransitioning)
             {
@@ -132,10 +132,10 @@ namespace NgoUyenNguyen.Behaviour.SM
             isTransitioning = true;
 
             EState currentStateKey = currentState.stateKey;
-            currentState.OnExit();
+            currentState.Exit();
 
             currentState = nextState;
-            currentState.OnEnter();
+            currentState.Enter();
 
             OnStateChanged?.Invoke(currentStateKey, nextState.stateKey);
 

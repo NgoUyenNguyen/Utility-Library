@@ -58,13 +58,13 @@ namespace NgoUyenNguyen.Behaviour.HSM
         /// enabling state updates and transitions to occur based on the provided delta time.
         /// </summary>
         /// <param name="deltaTime">The time elapsed since the last update, used for time-based processing.</param>
-        public void Tick(float deltaTime)
+        public void Tick()
         {
             if (!started) Start();
-            Sequencer.Tick(deltaTime);
+            Sequencer.Tick();
         }
         
-        internal void InternalTick(float deltaTime) => Root.Update(deltaTime);
+        internal void InternalTick() => Root.Update();
         
         internal void ChangeState(State from, State to)
         {

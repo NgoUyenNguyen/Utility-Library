@@ -10,7 +10,7 @@ namespace NgoUyenNguyen.Behaviour.SM
     /// entering, updating, and exiting a state, as well as handling Unity-specific events such as triggers and collisions.
     /// Derived classes must implement the abstract methods to define the behavior for a specific state.</remarks>
     /// <typeparam name="EState">The enumeration type used to uniquely identify each state in the state machine.</typeparam>
-    public abstract class State<EState> where EState : Enum
+    public abstract class State<EState> : BaseState where EState : Enum
     {
         public State(EState key)
         {
@@ -24,26 +24,18 @@ namespace NgoUyenNguyen.Behaviour.SM
         /// </summary>
         public EState stateKey { get; }
 
-
-
-
-
-        /// <summary>
-        /// Methods called once when <c>State</c> is entered
-        /// </summary>
-        public abstract void OnEnter();
-        /// <summary>
-        /// Method called every frame while in the <c>State</c>
-        /// </summary>
-        public abstract void OnUpdate();
-        /// <summary>
-        /// Methods called once when <c>State</c> is exited
-        /// </summary>
-        public abstract void OnExit();
         /// <summary>
         /// Method to get the next <c>stateKey</c> based on the current state logic
         /// </summary>
         /// <returns><c>stateKey</c> to access next <c>State</c></returns>
-        public abstract EState GetTransition();
+        protected virtual EState GetTransition()
+        {
+            return stateKey;
+        }
+        
+        internal void Enter() => OnEnter();
+        internal void Update() => OnUpdate();
+        internal void Exit() => OnExit();
+        internal EState GetNextState() => GetTransition();
     }
 }

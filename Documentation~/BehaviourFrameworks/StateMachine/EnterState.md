@@ -1,8 +1,9 @@
 # [State](StateMachine.md##BASESTATE-INCLUDES).OnEnter
+
 ---
 ## Declaration
 ```csharp
-public abstract void EnterState();
+protected virtual void OnEnter();
 ```
 ### Parameters
 ### Return

@@ -5,9 +5,11 @@ namespace NgoUyenNguyen.Behaviour.HSM
 {
     /// <summary>
     /// Represents an abstract base class for implementing hierarchical states in a state machine.
-    /// Maintains a relationship with parent and child states and supports activities that define behavior within the state.
+    /// This class manages relationships between parent and child states, supports activities that
+    /// define state-specific behavior, and integrates with a state machine to enable hierarchical
+    /// state management.
     /// </summary>
-    public abstract class State
+    public abstract class State : BaseState
     {
         /// <summary>
         /// Represents the state machine associated with a hierarchical state management system.
@@ -93,30 +95,6 @@ namespace NgoUyenNguyen.Behaviour.HSM
         /// </summary>
         /// <returns>The target state to transition to, or null if no transition is required.</returns>
         protected virtual State GetTransition() => null;
-
-        /// <summary>
-        /// Invoked when the state is entered. Override this method to define custom behavior that occurs
-        /// when transitioning into this state.
-        /// </summary>
-        protected virtual void OnEnter()
-        {
-        }
-
-        /// <summary>
-        /// Invoked when the state is exited. Override this method to define custom behavior that occurs
-        /// when transitioning into this state.
-        /// </summary>
-        protected virtual void OnExit()
-        {
-        }
-
-        /// <summary>
-        /// Updates the current state logic. This method is called during the state's update cycle.
-        /// </summary>
-        /// <param name="deltaTime">The time elapsed since the last update call, typically used for time-dependent calculations.</param>
-        protected virtual void OnUpdate(float deltaTime)
-        {
-        }
         
         internal void Enter(bool enterInitialState = true)
         {
@@ -136,7 +114,7 @@ namespace NgoUyenNguyen.Behaviour.HSM
             OnExit();
         }
 
-        internal void Update(float deltaTime)
+        internal void Update()
         {
             var t = GetTransition();
             if (t != null)
@@ -145,8 +123,8 @@ namespace NgoUyenNguyen.Behaviour.HSM
                 return;
             }
 
-            activeChild?.Update(deltaTime);
-            OnUpdate(deltaTime);
+            activeChild?.Update();
+            OnUpdate();
         }
 
         /// <summary>

@@ -83,8 +83,7 @@ All notable changes to this project will be documented in this file.
 - N/A
 
 ---
----
-## [3.1.0] - 2025-11-02
+## [3.1.0] - 2025-11-11
 ### Added
 - Hierarchy State Machine
 
@@ -93,5 +92,16 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - N/A
+
+---
+## [3.2.0] - 2025-11-11
+### Added
+- Stack State Machine
+
+### Changed
+- Documentation
+
+### Fixed
+- Classic State Machine API
 
 ---

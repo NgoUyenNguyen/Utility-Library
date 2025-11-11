@@ -11,7 +11,7 @@
 |---|---|
 |**[stateKey](StateKey.md)**| A key equivalent to each State for StateManager managing|
 
-### Abstract Methods
+### Protected Methods
 | Method                                    |Description|
 |-------------------------------------------|---|
 | **[OnEnter](EnterState.md)**              | Methods called once when a State is entered|

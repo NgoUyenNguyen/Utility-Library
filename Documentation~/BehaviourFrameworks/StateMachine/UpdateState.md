@@ -1,8 +1,9 @@
 # [State](StateMachine.md##BASESTATE-INCLUDES).OnUpdate
+
 ---
 ## Declaration
 ```csharp
-public abstract void UpdateState();
+protected virtual void OnUpdate();
 ```
 
 ### Parameters

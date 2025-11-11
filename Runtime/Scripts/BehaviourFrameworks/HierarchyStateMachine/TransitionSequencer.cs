@@ -75,7 +75,7 @@ namespace NgoUyenNguyen.Behaviour.HSM
             BeginTransition(p.from, p.to);
         }
 
-        public void Tick(float deltaTime)
+        public void Tick()
         {
             if (sequencer != null)
             {
@@ -93,7 +93,7 @@ namespace NgoUyenNguyen.Behaviour.HSM
 
                 return; // while transitioning, we don't run normal updates
             }
-            machine.InternalTick(deltaTime);
+            machine.InternalTick();
         }
         
         private static List<PhaseStep> GatherPhaseSteps(List<State> chain, bool deactivate)

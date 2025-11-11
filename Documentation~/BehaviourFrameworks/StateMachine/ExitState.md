@@ -2,7 +2,7 @@
 ---
 ## Declaration
 ```csharp
-public abstract void ExitState();
+protected abstract void OnExit();
 ```
 
 ### Parameters

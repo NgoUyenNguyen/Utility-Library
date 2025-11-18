@@ -22,14 +22,7 @@ namespace NgoUyenNguyen.Behaviour.HSM
         public readonly State Parent;
 
         private State activeChild;
-        private readonly List<IActivity> activities = new();
-
-        /// <summary>
-        /// Represents a read-only collection of activities associated with the state.
-        /// Activities define behavior or operations that are performed during the state's lifecycle,
-        /// such as activation or deactivation processes.
-        /// </summary>
-        public IReadOnlyList<IActivity> Activities => activities;
+        
 
         /// <summary>
         /// Represents the currently active child state within the hierarchical state management system for the associated parent state.
@@ -48,18 +41,6 @@ namespace NgoUyenNguyen.Behaviour.HSM
                 var s = this;
                 while (s.activeChild != null) s = s.activeChild;
                 return s;
-            }
-        }
-
-        /// <summary>
-        /// Adds one or more activities to the current state.
-        /// </summary>
-        /// <param name="activity">An array of activities to add. Activities must implement the <see cref="IActivity"/> interface. Null entries in the array are ignored.</param>
-        public void AddActivity(params IActivity[] activity)
-        {
-            foreach (var a in activity)
-            {
-                if (a != null) activities.Add(a);
             }
         }
 
@@ -119,7 +100,7 @@ namespace NgoUyenNguyen.Behaviour.HSM
             var t = GetTransition();
             if (t != null)
             {
-                Machine.Sequencer.RequestTransition(this, t);
+                Machine.Manager.RequestTransition(this, t);
                 return;
             }
 

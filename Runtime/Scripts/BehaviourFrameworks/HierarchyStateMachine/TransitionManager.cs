@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace NgoUyenNguyen.Behaviour.HSM
 {
-    internal class TransitionSequencer
+    internal class TransitionManager
     {
         private readonly StateMachine machine;
 
@@ -16,7 +16,7 @@ namespace NgoUyenNguyen.Behaviour.HSM
         private readonly bool useSequencer; // set false to use parallel
 
 
-        public TransitionSequencer(StateMachine machine, bool useSequencer)
+        public TransitionManager(StateMachine machine, bool useSequencer)
         {
             this.machine = machine;
             this.useSequencer = useSequencer;

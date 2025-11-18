@@ -1,8 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
-using UnityEngine;
 
-namespace NgoUyenNguyen.Behaviour.HSM
+namespace NgoUyenNguyen.Behaviour
 {
     /// <summary>
     /// Represents the different states or modes of an activity in the lifecycle of a behavior or process.

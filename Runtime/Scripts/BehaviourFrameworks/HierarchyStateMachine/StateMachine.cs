@@ -15,7 +15,7 @@ namespace NgoUyenNguyen.Behaviour.HSM
         /// </summary>
         public readonly State Root;
 
-        internal readonly TransitionSequencer Sequencer;
+        internal readonly TransitionManager Manager;
         private bool started;
 
         /// <summary>
@@ -23,7 +23,7 @@ namespace NgoUyenNguyen.Behaviour.HSM
         /// This property grants access to a <see cref="System.Threading.CancellationTokenSource"/> instance
         /// used internally by the state machine to manage cancellation of transitions or operations.
         /// </summary>
-        public CancellationTokenSource CancellationTokenSource => Sequencer.Cts;
+        public CancellationTokenSource CancellationTokenSource => Manager.Cts;
 
         /// <summary>
         /// Represents a hierarchical state machine (HSM) that manages state-based behavior and transitions.
@@ -35,7 +35,7 @@ namespace NgoUyenNguyen.Behaviour.HSM
         {
             Root = root;
             Wire(root, new HashSet<State>());
-            Sequencer = new TransitionSequencer(this, useSequencer);
+            Manager = new TransitionManager(this, useSequencer);
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace NgoUyenNguyen.Behaviour.HSM
         public void Tick()
         {
             if (!started) Start();
-            Sequencer.Tick();
+            Manager.Tick();
         }
         
         internal void InternalTick() => Root.Update();

@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NgoUyenNguyen.Behaviour.HSM
+namespace NgoUyenNguyen.Behaviour
 {
     public interface ISequence
     {

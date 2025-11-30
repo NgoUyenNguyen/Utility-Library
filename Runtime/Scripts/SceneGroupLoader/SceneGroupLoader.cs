@@ -12,160 +12,46 @@ using UnityEngine.SceneManagement;
 namespace NgoUyenNguyen
 {
     /// <summary>
-    /// Represents a delegate that is invoked when a scene is loaded.
-    /// </summary>
-    /// <param name="sceneName">The name of the scene that has been loaded.</param>
-    public delegate void OnSceneLoaded(string sceneName);
-
-    /// <summary>
-    /// Represents a delegate that is invoked when a scene is unloaded.
-    /// </summary>
-    /// <param name="sceneName">The name of the scene that has been unloaded.</param>
-    public delegate void OnSceneUnloaded(string sceneName);
-
-    /// <summary>
-    /// Represents a delegate that is invoked when a scene group is loaded.
-    /// </summary>
-    /// <param name="index">The index of the scene group that has been loaded.</param>
-    public delegate void OnSceneGroupLoaded(int index);
-
-    /// <summary>
-    /// Represents a delegate that is invoked when a scene group is unloaded.
-    /// </summary>
-    /// <param name="index">The index of the scene group that has been unloaded.</param>
-    public delegate void OnSceneGroupUnloaded(int index);
-
-
-    /// <summary>
     /// A utility class for managing the loading and unloading of Unity scenes in groups.
     /// </summary>
     [DefaultExecutionOrder(-100)]
-    public class SceneGroupLoader : MonoBehaviour
+    public partial class SceneGroupLoader : MonoBehaviour
     {
-        [Serializable]
-        public struct SceneGroup
-        {
-            public string groupName;
-            public SceneReference activeScene;
-            public List<SceneReference> additiveScenes;
-
-            public bool HasScene(string sceneName)
-            {
-                if (activeScene != null && activeScene.Name == sceneName) return true;
-                return additiveScenes.Any(additiveScene => additiveScene != null && additiveScene.Name == sceneName);
-            }
-        }
-        
-        internal static SceneGroupLoader Instance { get; set; }
-
-        /// <summary>
-        /// Event triggered each time a scene is successfully loaded.
-        /// </summary>
-        /// <remarks>
-        /// This event provides the name of the scene that has been successfully loaded.
-        /// It is executed after the scene has been added to the scene hierarchy.
-        /// </remarks>
-        /// <param name="sceneName">The name of the scene that has been loaded.</param>
-        public static event OnSceneLoaded OnSceneLoaded;
-
-        /// <summary>
-        /// Event triggered each time a scene is successfully unloaded.
-        /// </summary>
-        /// <remarks>
-        /// This event provides the name of the scene that has been successfully unloaded.
-        /// It is executed after the scene has been removed from the scene hierarchy.
-        /// </remarks>
-        /// <param name="sceneName">The name of the scene that has been unloaded.</param>
-        public static event OnSceneUnloaded OnSceneUnloaded;
-
-        /// <summary>
-        /// Event triggered when a group of scenes is successfully loaded.
-        /// </summary>
-        /// <remarks>
-        /// This event provides the index of the scene group that has been loaded.
-        /// It is triggered after all scenes in the specified group have been loaded
-        /// and added to the scene hierarchy.
-        /// </remarks>
-        /// <param name="groupIndex">The index of the scene group that has been loaded.</param>
-        public static event OnSceneGroupLoaded OnSceneGroupLoaded;
-
-        /// <summary>
-        /// Event triggered when a group of scenes is successfully unloaded.
-        /// </summary>
-        /// <remarks>
-        /// This event provides the index of the scene group that has been unloaded.
-        /// It is invoked after all scenes in the specified group have been removed from the scene hierarchy.
-        /// </remarks>
-        /// <param name="sceneGroupIndex">The index of the scene group that has been unloaded.</param>
-        public static event OnSceneGroupUnloaded OnSceneGroupUnloaded;
-
-        [Tooltip("Delay loading scene group")] [SerializeField, Range(0, 10)]
+        [Tooltip("Delay loading scene group")]
+        [SerializeField, Range(0, 10)]
         private float delayLoading;
-
-        [SerializeField] private SceneGroup[] sceneGroups;
+        
+        [SerializeField] 
+        private SceneGroup[] sceneGroups;
         private int currentSceneGroupIndex;
-        private readonly Dictionary<string, AsyncOperationHandle<SceneInstance>> scenesLoadedByAddressables = new();
+        private readonly Dictionary<string, AsyncOperationHandle<SceneInstance>> scenesLoadedByAddressable = new();
         private bool smoothProgressUpdating;
+        private string tmpSceneName;
 
-        /// <summary>
-        /// Indicates whether a scene or scene group is currently being loaded.
-        /// </summary>
-        /// <remarks>
-        /// This property becomes true when scene loading begins and is set back to false
-        /// after the loading process is complete. It can be used to determine if the
-        /// application is in the process of loading scenes or scene groups.
-        /// </remarks>
-        public static bool IsLoading { get; private set; }
-
-        /// <summary>
-        /// Represents the progress of the current scene loading operation as a value between 0 and 1.
-        /// </summary>
-        /// <remarks>
-        /// This property is updated during the loading process and reflects the weighted progress
-        /// of all asynchronous loading operations involved in the scene group being loaded.
-        /// </remarks>
-        public static float Progress { get; private set; }
-
-        /// <summary>
-        /// Represents the smoothed loading progress for a scene group.
-        /// </summary>
-        /// <remarks>
-        /// SmoothProgress provides a linearly interpolated progress value, gradually syncing with the actual
-        /// loading progress (`Progress`) over time. It is especially useful for creating visually appealing
-        /// loading animations or progress bars. The smoothing behavior is governed by the `delayLoading` property.
-        /// </remarks>
-        public static float SmoothProgress { get; private set; }
-
-        private static float staticDelayLoading;
-
-        /// <summary>
-        /// Specifies a delay duration applied during the scene loading process.
-        /// </summary>
-        public static float DelayLoading
-        {
-            get => staticDelayLoading;
-            set
-            {
-                if (value < 0) value = 0;
-                staticDelayLoading = value;
-            }
-        }
+        private SceneGroup CurrentSceneGroupInstance => sceneGroups[currentSceneGroupIndex];
+        
 
         private void Awake()
         {
             staticDelayLoading = delayLoading;
+            currentSceneGroupIndex = -1;
             CheckSceneGroups();
         }
 
         private void Update()
         {
+            UpdateSmoothProgress();
+        }
+
+        private void UpdateSmoothProgress()
+        {
             if (!smoothProgressUpdating) return;
             SmoothProgress =
-                staticDelayLoading <= 0 ? Progress : Mathf.Lerp(SmoothProgress, Progress, Time.deltaTime / staticDelayLoading);
+                staticDelayLoading <= 0
+                    ? Progress
+                    : Mathf.Lerp(SmoothProgress, Progress, Time.deltaTime / staticDelayLoading);
             if (Progress - SmoothProgress <= 0.05f) SmoothProgress = Progress;
         }
-        
-        
 
         private void CheckSceneGroups()
         {
@@ -185,49 +71,53 @@ namespace NgoUyenNguyen
                 }
             }
         }
-
-        /// <summary>
-        /// Loads a scene group by its index and manages the transition, optionally reusing the existing scene.
-        /// </summary>
-        /// <param name="groupIndex">The index of the scene group to load.</param>
-        /// <param name="reuseExistingScene">Indicates whether to reuse the existing scene if it is active. Defaults to true.</param>
-        /// <returns>A task that represents the asynchronous operation of loading the scene group.</returns>
-        public static async Task LoadGroup(int groupIndex, bool reuseExistingScene = true)
-        {
-            await Instance.LoadSceneGroup(groupIndex, reuseExistingScene);
-        }
         
-        private async Task LoadSceneGroup(int groupIndex, bool reuseExistingScene)
+        private async Task LoadSceneGroupAsync(string groupName, bool reuseExistingScene)
+        {
+            for (var i = 0; i < sceneGroups.Length; i++)
+            {
+                if (sceneGroups[i].groupName != groupName) continue;
+                await LoadSceneGroupAsync(i, reuseExistingScene);
+                return;
+            }
+        }
+
+        private async Task LoadSceneGroupAsync(int groupIndex, bool reuseExistingScene)
         {
             if (groupIndex < 0 || groupIndex >= sceneGroups.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(groupIndex));
             }
-
             if (IsLoading) return;
+            
             PreLoading();
 
             var oldSceneGroupIndex = currentSceneGroupIndex;
             currentSceneGroupIndex = groupIndex;
-
             var sceneToUnload = new List<string>();
             var sceneToRemain = new List<string>();
-            FilterScenes(reuseExistingScene, currentSceneGroupIndex, oldSceneGroupIndex, sceneToUnload, sceneToRemain);
+            SeparateUnloadRemain(reuseExistingScene, oldSceneGroupIndex, sceneToUnload, sceneToRemain);
 
             await UnloadSceneGroup(sceneToUnload);
-            OnSceneGroupUnloaded?.Invoke(oldSceneGroupIndex);
+            InvokeSceneGroupUnloadedEvent(oldSceneGroupIndex);
 
-            var newSceneGroup = sceneGroups[currentSceneGroupIndex];
-            var opHandles = new AsyncOperationHandleGroup(1 + newSceneGroup.additiveScenes.Count - sceneToRemain.Count);
-            var ops = new AsyncOperationGroup(1 + newSceneGroup.additiveScenes.Count - sceneToRemain.Count);
-            if (!sceneToRemain.Contains(newSceneGroup.activeScene.Name))
-            {
-                LoadScene(newSceneGroup.activeScene, ops, opHandles);
-            }
+            await LoadSceneGroup(GetScenesToLoad(sceneToRemain));
+            await SetActiveScene();
+            InvokeSceneGroupLoadedEvent();
 
-            foreach (var scene in newSceneGroup.additiveScenes.Where(scene => !sceneToRemain.Contains(scene.Name)))
+            Debug.Log("Alo1");
+
+            PostLoading();
+        }
+
+        private async Task LoadSceneGroup(List<string> sceneToLoad)
+        {
+            var opHandles = new AsyncOperationHandleGroup(sceneToLoad.Count);
+            var ops = new AsyncOperationGroup(sceneToLoad.Count);
+            foreach (var sceneRef in CurrentSceneGroupInstance.AllScenes)
             {
-                LoadScene(scene, ops, opHandles);
+                if (sceneToLoad.Contains(sceneRef.Name)) 
+                    LoadScene(sceneRef, ops, opHandles);
             }
 
             if (ops.Operations.Count > 0 || opHandles.Operations.Count > 0)
@@ -240,22 +130,58 @@ namespace NgoUyenNguyen
                 }
             }
 
-            PostLoading(newSceneGroup);
-            OnSceneGroupLoaded?.Invoke(currentSceneGroupIndex);
+            await ActivateScenesAsync(opHandles, ops);
         }
 
-        private void FilterScenes(bool reuseExistingScene,
-            int newSceneGroupIndex,
+        private async Task UnloadTempSceneIfNecessary()
+        {
+            if (tmpSceneName == null || CurrentSceneGroupInstance.HasScene(tmpSceneName)) return;
+            var op = SceneManager.UnloadSceneAsync(tmpSceneName);
+            if (op == null) return;
+            while (true)
+            {
+                if (op.isDone) break;
+                await Task.Delay(100);
+            }
+            tmpSceneName = null;
+        }
+
+        private async Task ActivateScenesAsync(AsyncOperationHandleGroup opHandles, AsyncOperationGroup ops)
+        {
+            foreach (var op in ops.Operations)
+                op.allowSceneActivation = true;
+
+            var activatingOps = ops.Operations.ToList();
+            activatingOps.AddRange(opHandles.Operations.Select(h => h.Result.ActivateAsync()));
+            
+            while (true)
+            {
+                if (activatingOps.Any(op => !op.isDone)) await Task.Delay(100);
+                else break;
+            }
+        }
+
+        private List<string> GetScenesToLoad(List<string> sceneToRemain)
+        {
+            return (from sceneRef 
+                in CurrentSceneGroupInstance.AllScenes 
+                where !sceneToRemain.Contains(sceneRef.Name) && !SceneManager.GetSceneByName(sceneRef.Name).isLoaded 
+                select sceneRef.Name).ToList();
+        }
+
+        private void SeparateUnloadRemain(bool reuseExistingScene,
             int oldSceneGroupIndex,
             List<string> sceneToUnload,
             List<string> sceneToRemain)
         {
+            if (oldSceneGroupIndex == -1) return;
+            
             for (var i = 0; i < SceneManager.sceneCount; i++)
             {
                 var sceneName = SceneManager.GetSceneAt(i).name;
                 if (reuseExistingScene)
                 {
-                    if (!sceneGroups[newSceneGroupIndex].HasScene(sceneName) &&
+                    if (!CurrentSceneGroupInstance.HasScene(sceneName) &&
                         sceneGroups[oldSceneGroupIndex].HasScene(sceneName))
                     {
                         sceneToUnload.Add(sceneName);
@@ -275,27 +201,43 @@ namespace NgoUyenNguyen
         private void LoadScene(SceneReference sceneReference, AsyncOperationGroup ops,
             AsyncOperationHandleGroup opHandles)
         {
-            if (sceneReference.State == SceneReferenceState.Regular)
+            switch (sceneReference.State)
             {
-                var op = SceneManager.LoadSceneAsync(sceneReference.Name, LoadSceneMode.Additive);
-                ops.Operations.Add(op);
-                OnSceneLoaded?.Invoke(sceneReference.Name);
-            }
-            else if (sceneReference.State == SceneReferenceState.Addressable)
-            {
-                var opHandle = Addressables.LoadSceneAsync(sceneReference.Address, LoadSceneMode.Additive);
-                opHandles.Operations.Add(opHandle);
-                scenesLoadedByAddressables[sceneReference.Name] = opHandle;
-                OnSceneLoaded?.Invoke(sceneReference.Name);
+                case SceneReferenceState.Regular:
+                {
+                    var op = SceneManager.LoadSceneAsync(sceneReference.Name, LoadSceneMode.Additive);
+                    if (op != null)
+                    {
+                        op.allowSceneActivation = false;
+                        ops.Operations.Add(op);
+                    }
+
+                    InvokeSceneLoadedEvent(sceneReference);
+                    break;
+                }
+                case SceneReferenceState.Addressable:
+                {
+                    var opHandle = Addressables.LoadSceneAsync(sceneReference.Address, LoadSceneMode.Additive,
+                        activateOnLoad: false);
+                    opHandles.Operations.Add(opHandle);
+                    scenesLoadedByAddressable[sceneReference.Name] = opHandle;
+                    InvokeSceneLoadedEvent(sceneReference);
+                    break;
+                }
             }
         }
-
-        private void PostLoading(SceneGroup newSceneGroup)
+        
+        private void PostLoading()
         {
-            var activeScene = SceneManager.GetSceneByName(newSceneGroup.activeScene.Name);
-            SceneManager.SetActiveScene(activeScene);
             IsLoading = false;
             smoothProgressUpdating = false;
+        }
+
+        private async Task SetActiveScene()
+        {
+            var activeScene = SceneManager.GetSceneByName(CurrentSceneGroupInstance.activeScene.Name);
+            SceneManager.SetActiveScene(activeScene);
+            await UnloadTempSceneIfNecessary();
         }
 
         private void PreLoading()
@@ -304,29 +246,43 @@ namespace NgoUyenNguyen
             Progress = 0;
             SmoothProgress = 0;
         }
-
-
+        
         private async Task UnloadSceneGroup(List<string> scenesToUnload)
         {
+            await LoadTempSceneIfNecessary(scenesToUnload);
+            
             var ops = new AsyncOperationGroup(scenesToUnload.Count);
             var opHandles = new AsyncOperationHandleGroup(scenesToUnload.Count);
             foreach (var scene in scenesToUnload)
             {
                 UnloadScene(scene, ops, opHandles);
             }
-            
+
             while (!ops.IsDone || !opHandles.IsDone)
             {
                 await Task.Delay(100);
             }
         }
+        
+        private async Task LoadTempSceneIfNecessary(List<string> scenesToUnload)
+        {
+            if (scenesToUnload.Count != SceneManager.loadedSceneCount) return;
+            
+            var op = SceneManager.LoadSceneAsync(_tmpSceneBuildIndex, LoadSceneMode.Additive);
+            if (op == null) return;
+            while (!op.isDone) await Task.Delay(100);
+            
+            var tmpScene = SceneManager.GetSceneByBuildIndex(_tmpSceneBuildIndex);
+            SceneManager.SetActiveScene(tmpScene);
+            tmpSceneName = tmpScene.name;
+        }
 
         private void UnloadScene(string scene, AsyncOperationGroup ops, AsyncOperationHandleGroup opsHandles)
         {
-            if (scenesLoadedByAddressables.TryGetValue(scene, out var oph))
+            if (scenesLoadedByAddressable.TryGetValue(scene, out var oph))
             {
                 var opHandle = Addressables.UnloadSceneAsync(oph);
-                scenesLoadedByAddressables.Remove(scene);
+                scenesLoadedByAddressable.Remove(scene);
                 opsHandles.Operations.Add(opHandle);
             }
             else
@@ -335,33 +291,52 @@ namespace NgoUyenNguyen
                 ops.Operations.Add(op);
             }
 
-            OnSceneUnloaded?.Invoke(scene);
+            InvokeSceneUnloadedEvent(scene);
         }
-    }
 
-    public readonly struct AsyncOperationGroup
-    {
-        public readonly List<AsyncOperation> Operations;
-
-        public float Progress => Operations.Count == 0 ? 1 : Operations.Average(o => o.progress);
-        public bool IsDone => Operations.Count == 0 || Operations.All(o => o.isDone);
-
-        public AsyncOperationGroup(int initialCapacity)
+        private static void InvokeSceneUnloadedEvent(string scene)
         {
-            Operations = new List<AsyncOperation>(initialCapacity);
+            try
+            {
+                OnSceneUnloaded?.Invoke(scene);
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
         }
-    }
-
-    public readonly struct AsyncOperationHandleGroup
-    {
-        public readonly List<AsyncOperationHandle<SceneInstance>> Operations;
-
-        public float Progress => Operations.Count == 0 ? 1 : Operations.Average(o => o.PercentComplete);
-        public bool IsDone => Operations.Count == 0 || Operations.All(o => o.IsDone);
-
-        public AsyncOperationHandleGroup(int initialCapacity)
+        private static void InvokeSceneLoadedEvent(SceneReference sceneReference)
         {
-            Operations = new List<AsyncOperationHandle<SceneInstance>>(initialCapacity);
+            try
+            {
+                OnSceneLoaded?.Invoke(sceneReference.Name);
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
+        }
+        private static void InvokeSceneGroupUnloadedEvent(int oldSceneGroupIndex)
+        {
+            try
+            {
+                OnSceneGroupUnloaded?.Invoke(oldSceneGroupIndex);
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
+        }
+        private static void InvokeSceneGroupLoadedEvent()
+        {
+            try
+            {
+                OnSceneGroupLoaded?.Invoke(CurrentSceneGroupIndex);
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
         }
     }
 }

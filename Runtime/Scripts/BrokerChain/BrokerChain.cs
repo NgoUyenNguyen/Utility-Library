@@ -3,11 +3,6 @@ using UnityEngine;
 
 namespace NgoUyenNguyen
 {
-    public interface IBrokerChain<in TContext> where TContext : class, IBrokerContext
-    {
-        void Execute(TContext context);
-    }
-    
     public class BrokerChain<TContext> : IBrokerChain<TContext> where TContext : class, IBrokerContext
     {
         private readonly IBroker<TContext>[] brokers;

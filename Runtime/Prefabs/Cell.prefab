@@ -46,3 +46,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <index>k__BackingField: {x: 0, y: 0}
   <grid>k__BackingField: {fileID: 0}
+  <Walkable>k__BackingField: 1

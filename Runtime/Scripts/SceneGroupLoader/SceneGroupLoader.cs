@@ -104,9 +104,7 @@ namespace NgoUyenNguyen
             await LoadSceneGroup(GetScenesToLoad(sceneToRemain));
             await SetActiveScene();
             InvokeSceneGroupLoadedEvent();
-
-            Debug.Log("Alo1");
-
+            
             PostLoading();
         }
 

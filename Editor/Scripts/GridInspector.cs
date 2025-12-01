@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using NgoUyenNguyen.GridSystem;
+using NgoUyenNguyen.Grid;
 using UnityEditor;
 using UnityEngine;
 

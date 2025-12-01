@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 using UnityEditor;
 #endif
 
-namespace NgoUyenNguyen.ServiceLocator
+namespace NgoUyenNguyen
 {
     public class ServiceLocator : MonoBehaviour
     {

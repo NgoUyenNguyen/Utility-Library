@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace NgoUyenNguyen.ServiceLocator
+namespace NgoUyenNguyen
 {
     internal class GlobalServiceLocatorBootstrapper : ServiceLocatorBootstrapper
     {

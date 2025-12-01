@@ -1,7 +1,7 @@
 ﻿using NgoUyenNguyen;
 using UnityEngine;
 
-namespace NgoUyenNguyen.ServiceLocator
+namespace NgoUyenNguyen
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(ServiceLocator))]

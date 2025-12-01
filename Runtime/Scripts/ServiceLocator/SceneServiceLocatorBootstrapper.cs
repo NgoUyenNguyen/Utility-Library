@@ -1,4 +1,4 @@
-﻿namespace NgoUyenNguyen.ServiceLocator
+﻿namespace NgoUyenNguyen
 {
     internal class SceneServiceLocatorBootstrapper : ServiceLocatorBootstrapper
     {

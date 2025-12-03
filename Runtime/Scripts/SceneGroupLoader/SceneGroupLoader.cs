@@ -14,7 +14,7 @@ namespace NgoUyenNguyen
     /// <summary>
     /// A utility class for managing the loading and unloading of Unity scenes in groups.
     /// </summary>
-    [DefaultExecutionOrder(-100)]
+    [DefaultExecutionOrder(-1000)]
     public partial class SceneGroupLoader : MonoBehaviour
     {
         [Tooltip("Delay loading scene group")]

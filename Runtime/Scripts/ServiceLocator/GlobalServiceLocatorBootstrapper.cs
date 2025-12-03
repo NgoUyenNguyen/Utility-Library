@@ -2,6 +2,7 @@
 
 namespace NgoUyenNguyen
 {
+    [DefaultExecutionOrder(-1000)]
     internal class GlobalServiceLocatorBootstrapper : ServiceLocatorBootstrapper
     {
         [SerializeField] private bool dontDestroyOnLoad = true;

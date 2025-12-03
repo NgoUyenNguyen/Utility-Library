@@ -68,6 +68,10 @@ namespace NgoUyenNguyen
             get
             {
                 if (global != null) return global;
+                
+#if UNITY_EDITOR
+                if (!Application.isPlaying) return null;
+#endif
 
                 if (FindFirstObjectByType<GlobalServiceLocatorBootstrapper>() is { } found)
                 {
@@ -286,7 +290,7 @@ namespace NgoUyenNguyen
             {
                 global = null;
             }
-            else if (sceneContainers.ContainsValue(this))
+            else if (sceneContainers != null && sceneContainers.ContainsValue(this))
             {
                 sceneContainers.Remove(gameObject.scene);
             }

@@ -27,7 +27,7 @@ namespace NgoUyenNguyen
     /// </remarks>
     public static class EventBus<T> where T : IEvent
     {
-        private static readonly HashSet<IEventBinding<T>> Bindings = new();
+        private static readonly List<IEventBinding<T>> Bindings = new();
 
         /// <summary>
         /// Subscribes the specified event binding to the event bus,
@@ -52,6 +52,7 @@ namespace NgoUyenNguyen
         /// <param name="event">The event instance to be published, containing data associated with the event.</param>
         public static void Publish(T @event)
         {
+            Bindings.Sort((a, b) => a.ExecuteOrder.CompareTo(b.ExecuteOrder));
             foreach (var binding in Bindings)
             {
                 binding.OnEvent(@event);

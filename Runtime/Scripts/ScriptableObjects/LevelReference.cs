@@ -13,6 +13,8 @@ namespace NgoUyenNguyen.ScriptableObjects
         {
             get => references[index];
         }
+        
+        public int Count => references.Count;
 
         public AssetReference GetReferenceFromGUID(string guid)
         {

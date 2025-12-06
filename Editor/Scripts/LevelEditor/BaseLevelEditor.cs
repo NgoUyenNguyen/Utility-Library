@@ -11,7 +11,7 @@ namespace NgoUyenNguyen.Editor
         protected int currentLevelIndex;
         protected LevelReference levelReferences;
         
-        protected abstract GameObject LevelTemplate {  get; }
+        protected abstract GameObject LevelTemplate {  get; set; }
 
 
 

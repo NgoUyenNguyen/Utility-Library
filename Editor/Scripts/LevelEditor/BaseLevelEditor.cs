@@ -32,12 +32,12 @@ namespace NgoUyenNguyen.Editor
 
             // Object fields
             GUILayout.Space(20);
-            levelReferences = EditorGUILayout.ObjectField("Level Reference", levelReferences, typeof(LevelReference), false) as LevelReference;
-            GUILayout.Space(20);
             EditorGUI.BeginDisabledGroup(true);
             currentLevel = EditorGUILayout.ObjectField("Current Level: ", currentLevel, typeof(BaseLevel), true) as BaseLevel;
             EditorGUI.EndDisabledGroup();
             currentLevelIndex = EditorGUILayout.IntField("Level Index", currentLevelIndex);
+            GUILayout.Space(20);
+            levelReferences = EditorGUILayout.ObjectField("Level Reference", levelReferences, typeof(LevelReference), false) as LevelReference;
             
             
             OnDrawGUI();

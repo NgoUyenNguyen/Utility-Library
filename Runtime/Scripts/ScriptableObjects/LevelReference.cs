@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -115,7 +116,7 @@ namespace NgoUyenNguyen.ScriptableObjects
 
         public void Dispose()
         {
-            foreach (var reference in references)
+            foreach (var reference in references.Where(reference => reference != null && reference.IsValid()))
             {
                 reference.ReleaseAsset();
             }

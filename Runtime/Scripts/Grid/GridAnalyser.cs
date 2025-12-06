@@ -7,7 +7,7 @@ namespace NgoUyenNguyen.Grid
     {
         private readonly Grid<TCell> grid;
 
-        public Vector3 UpDirection
+        public Vector3 GridUp
         {
             get
             {
@@ -20,7 +20,7 @@ namespace NgoUyenNguyen.Grid
             }
         }
 
-        public Vector3 ForwardDirection
+        public Vector3 GridForward
         {
             get
             {
@@ -33,15 +33,15 @@ namespace NgoUyenNguyen.Grid
             }
         }
 
-        public Vector3 RightDirection => grid.transform.right;
+        public Vector3 GridRight => grid.transform.right;
 
-        public Vector3 DownDirection => -UpDirection;
+        public Vector3 GridDown => -GridUp;
 
-        public Vector3 LeftDirection => -RightDirection;
+        public Vector3 GridLeft => -GridRight;
 
-        public Vector3 BackwardDirection => -ForwardDirection;
+        public Vector3 GridBackward => -GridForward;
 
-        public Vector2 LogicalSize
+        public Vector2 GridSize
         {
             get
             {
@@ -54,7 +54,7 @@ namespace NgoUyenNguyen.Grid
             }
         }
 
-        public Vector3 LogicalCenter
+        public Vector3 GridCenter
         {
             get
             {
@@ -67,17 +67,17 @@ namespace NgoUyenNguyen.Grid
                                 grid.transform.position,
                             GridAlignment.BottomLeft =>
                                 grid.transform.position +
-                                (RightDirection * grid.size.x / 2 + ForwardDirection * grid.size.y / 2) * grid.cellSize,
+                                (GridRight * grid.size.x / 2 + GridForward * grid.size.y / 2) * grid.cellSize,
                             GridAlignment.BottomRight =>
                                 grid.transform.position +
-                                (LeftDirection * grid.size.x / 2 + ForwardDirection * grid.size.y / 2) * grid.cellSize,
+                                (GridLeft * grid.size.x / 2 + GridForward * grid.size.y / 2) * grid.cellSize,
                             GridAlignment.TopLeft =>
                                 grid.transform.position +
-                                (RightDirection * grid.size.x / 2 + BackwardDirection * grid.size.y / 2) *
+                                (GridRight * grid.size.x / 2 + GridBackward * grid.size.y / 2) *
                                 grid.cellSize,
                             GridAlignment.TopRight =>
                                 grid.transform.position +
-                                (LeftDirection * grid.size.x / 2 + BackwardDirection * grid.size.y / 2) * grid.cellSize,
+                                (GridLeft * grid.size.x / 2 + GridBackward * grid.size.y / 2) * grid.cellSize,
                             _ => throw new InvalidOperationException("Invalid Alignment!")
                         };
                     case CellLayout.Hexagon:
@@ -87,17 +87,17 @@ namespace NgoUyenNguyen.Grid
                                 grid.transform.position,
                             GridAlignment.BottomLeft =>
                                 grid.transform.position +
-                                (RightDirection * ((grid.size.x * 2 + 1) * Mathf.Sqrt(3) / 4) + ForwardDirection * grid.size.y / 2) * grid.cellSize / 2,
+                                (GridRight * ((grid.size.x * 2 + 1) * Mathf.Sqrt(3) / 4) + GridForward * grid.size.y / 2) * grid.cellSize / 2,
                             GridAlignment.BottomRight =>
                                 grid.transform.position +
-                                (LeftDirection * grid.size.x / 2 + ForwardDirection * grid.size.y / 2) * grid.cellSize,
+                                (GridLeft * grid.size.x / 2 + GridForward * grid.size.y / 2) * grid.cellSize,
                             GridAlignment.TopLeft =>
                                 grid.transform.position +
-                                (RightDirection * grid.size.x / 2 + BackwardDirection * grid.size.y / 2) *
+                                (GridRight * grid.size.x / 2 + GridBackward * grid.size.y / 2) *
                                 grid.cellSize,
                             GridAlignment.TopRight =>
                                 grid.transform.position +
-                                (LeftDirection * grid.size.x / 2 + BackwardDirection * grid.size.y / 2) * grid.cellSize,
+                                (GridLeft * grid.size.x / 2 + GridBackward * grid.size.y / 2) * grid.cellSize,
                             _ => throw new InvalidOperationException("Invalid Alignment!")
                         };
                     default:

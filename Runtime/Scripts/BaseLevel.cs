@@ -4,8 +4,8 @@ namespace NgoUyenNguyen
 {
     public abstract class BaseLevel : MonoBehaviour
     {
-        private int _index;
+        [SerializeField, HideInInspector] private int index;
 
-        public int index { get => _index; set => _index = value; }
+        public int Index { get => index; set => index = value; }
     }
 }

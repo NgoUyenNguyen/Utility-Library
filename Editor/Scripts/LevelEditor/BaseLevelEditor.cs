@@ -8,17 +8,19 @@ namespace NgoUyenNguyen.Editor
     {
         private static Vector2 scrollPos;
         protected BaseLevel currentLevel;
-        protected LevelReference levelReference;
-        protected abstract GameObject levelTemplate {  get; }
+        protected int currentLevelIndex;
+        protected LevelReference levelReferences;
+        
+        protected abstract GameObject LevelTemplate {  get; }
 
 
 
 
-        //[MenuItem("Window/Level Editor")]
-        //public static void ShowWindow()
-        //{
-        //    GetWindow<BaseLevelEditor>("Level Editor");
-        //}
+        // [MenuItem("Window/Level Editor")]
+        // public static void ShowWindow()
+        // {
+        //     GetWindow<BaseLevelEditor>("Level Editor");
+        // }
 
 
 
@@ -29,11 +31,16 @@ namespace NgoUyenNguyen.Editor
             scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
 
             // Object fields
-            GUILayout.Space(10);
-            currentLevel = EditorGUILayout.ObjectField($"Current Level: {currentLevel?.index}", currentLevel, typeof(BaseLevel), true) as BaseLevel;
-            GUILayout.Space(10);
-            levelReference = EditorGUILayout.ObjectField("Level Reference", levelReference, typeof(LevelReference), false) as LevelReference;
             GUILayout.Space(20);
+            levelReferences = EditorGUILayout.ObjectField("Level Reference", levelReferences, typeof(LevelReference), false) as LevelReference;
+            GUILayout.Space(20);
+            EditorGUI.BeginDisabledGroup(true);
+            currentLevel = EditorGUILayout.ObjectField($"Current Level: {currentLevel.name}", currentLevel, typeof(BaseLevel), true) as BaseLevel;
+            EditorGUI.EndDisabledGroup();
+            GUILayout.Space(20);
+            currentLevelIndex = EditorGUILayout.IntField("Level Index", currentLevelIndex);
+            
+            
             OnDrawGUI();
 
 

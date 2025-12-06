@@ -10,7 +10,7 @@ using Object = UnityEngine.Object;
 namespace NgoUyenNguyen.ScriptableObjects
 {
     [CreateAssetMenu(fileName ="LevelReference", menuName = "Scriptable Objects/Level Reference")]
-    public class LevelReference : ScriptableObject, IDisposable
+    public class LevelReference : ScriptableObject, IDisposable, IEnumerable<AssetReference>
     {
         public List<AssetReference> references;
 
@@ -20,6 +20,10 @@ namespace NgoUyenNguyen.ScriptableObjects
         }
         
         public int Count => references.Count;
+        
+        public IEnumerator<AssetReference> GetEnumerator() => references.GetEnumerator();
+        
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
         public AssetReference GetReferenceFromGUID(string guid)
         {

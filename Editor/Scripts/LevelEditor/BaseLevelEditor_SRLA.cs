@@ -9,9 +9,6 @@ namespace NgoUyenNguyen.Editor
 {
     public partial class BaseLevelEditor
     {
-        private const string LEVEL_FOLDER_PATH = "Assets/Levels";
-        private const string LEVEL_ADDRESSABLES_GROUP = "Levels";
-
         private bool isLoadingLevel;
         private static Vector2 levelScrollPos;
         public event Action RemoveLevelPerformed;
@@ -19,6 +16,8 @@ namespace NgoUyenNguyen.Editor
         public event Action SaveLevelPerformed;
         public event Action AddLevelPerformed;
 
+        protected virtual string LevelFolderPath { get; set; } = "Assets/Levels";
+        protected virtual string LevelAddressableGroup { get; set; } = "Levels";
 
 
 
@@ -35,29 +34,33 @@ namespace NgoUyenNguyen.Editor
             EditorGUILayout.EndHorizontal();
 
 
-            if (isLoadingLevel && levelReference != null)
+            if (!isLoadingLevel || levelReferences == null) return;
+            
+            levelScrollPos = EditorGUILayout.BeginScrollView(levelScrollPos);
+            GUILayout.Space(10);
+
+            foreach (var levelReference in levelReferences)
             {
-                levelScrollPos = EditorGUILayout.BeginScrollView(levelScrollPos);
-                GUILayout.Space(10);
-
-                foreach (var levelReference in levelReference.references)
+                if (levelReference == null || levelReference.editorAsset == null)
                 {
-                    if (levelReference == null || levelReference.editorAsset == null)
-                    {
-                        Debug.LogWarning("LevelReference or its editorAsset is null!");
-                        continue;
-                    }
-
-                    BaseLevel level = (levelReference.editorAsset as GameObject).GetComponent<BaseLevel>();
-                    if (GUILayout.Button($"Level {level.index}"))
-                    {
-                        LoadLevel(levelReference.editorAsset as GameObject);
-                    }
+                    Debug.LogWarning("LevelReference or its Asset is null!");
+                    continue;
                 }
 
-                GUILayout.Space(10);
-                EditorGUILayout.EndScrollView();
+                var level = (levelReference.editorAsset as GameObject)?.GetComponent<BaseLevel>();
+                if (level == null)
+                {
+                    Debug.LogWarning($"Component {nameof(BaseLevel)} not found on {levelReference.editorAsset.name}");
+                    continue;
+                }
+                if (GUILayout.Button($"Level {level.name}"))
+                {
+                    LoadLevel(levelReference.editorAsset as GameObject);
+                }
             }
+
+            GUILayout.Space(10);
+            EditorGUILayout.EndScrollView();
         }
 
         
@@ -85,36 +88,24 @@ namespace NgoUyenNguyen.Editor
 
         private void RemoveLevelButton()
         {
-            if (currentLevel != null)
+            if (currentLevel == null) return;
+            if (GUILayout.Button("Remove Level", GUILayout.Height(40)))
             {
-                if (GUILayout.Button("Remove Level", GUILayout.Height(40)))
-                {
-                    RemoveLevel(currentLevel);
-                }
+                RemoveLevel(currentLevel);
             }
         }
 
         private void SaveLevelButton()
         {
-            if (currentLevel != null)
+            if (currentLevel == null) return;
+            if (GUILayout.Button("Save Level", GUILayout.Height(40)))
             {
-                if (GUILayout.Button("Save Level", GUILayout.Height(40)))
-                {
-                    SaveLevel(currentLevel.gameObject);
-                }
+                SaveLevel(currentLevel.gameObject);
             }
         }
 
 
-
-
-
-
-
-
-
-
-        private void RemoveLevel(BaseLevel level)
+        protected virtual void RemoveLevel(BaseLevel level)
         {
             // If Level not exist in Assets
             if (!System.IO.File.Exists(GetLevelPath(level)))
@@ -125,14 +116,14 @@ namespace NgoUyenNguyen.Editor
             // If Level exist in Assets
             else if (System.IO.File.Exists(GetLevelPath(level)))
             {
-                string levelGUID = AssetDatabase.AssetPathToGUID(GetLevelPath(level));
-                levelReference.references.Remove(levelReference.GetReferenceFromGUID(levelGUID));
+                var levelGUID = AssetDatabase.AssetPathToGUID(GetLevelPath(level));
+                levelReferences.references.Remove(levelReferences.GetReferenceFromGUID(levelGUID));
                 AssetDatabase.DeleteAsset(GetLevelPath(level));
 
                 DestroyImmediate(currentLevel.gameObject);
                 currentLevel = null;
 
-                EditorUtility.SetDirty(levelReference);
+                EditorUtility.SetDirty(levelReferences);
             }
             else
             {
@@ -142,7 +133,7 @@ namespace NgoUyenNguyen.Editor
             RemoveLevelPerformed?.Invoke();
         }
 
-        private void AddLevel()
+        protected virtual void AddLevel()
         {
             // If exist, destroy current level on scene
             if (currentLevel != null)
@@ -152,25 +143,26 @@ namespace NgoUyenNguyen.Editor
             }
 
             // spawn new one
-            if (levelTemplate != null && levelTemplate.TryGetComponent<BaseLevel>(out BaseLevel level))
+            if (LevelTemplate != null && LevelTemplate.TryGetComponent<BaseLevel>(out _))
             {
-                currentLevel = (PrefabUtility.InstantiatePrefab(levelTemplate) as GameObject).GetComponent<BaseLevel>();
+                currentLevel = (PrefabUtility.InstantiatePrefab(LevelTemplate) as GameObject)?.GetComponent<BaseLevel>();
                 currentLevel.name = "New Level";
             }
             else
             {
-                Debug.LogError($"{nameof(levelTemplate)} is null or not contains {nameof(BaseLevel)}");
+                Debug.LogError($"{nameof(LevelTemplate)} is null or not contains {nameof(BaseLevel)}");
                 return;
             }
 
             AddLevelPerformed?.Invoke();
         }
 
-        private void SaveLevel(GameObject level)
+        protected virtual void SaveLevel(GameObject level)
         {
             // Make sure LevelFolder exist
-            System.IO.Directory.CreateDirectory(LEVEL_FOLDER_PATH);
-            string levelPath = GetLevelPath(currentLevel);
+            System.IO.Directory.CreateDirectory(LevelFolderPath);
+            currentLevel.Index = currentLevelIndex;
+            var levelPath = GetLevelPath(currentLevel);
 
             // if level already exist, show dialog
             if (System.IO.File.Exists(levelPath))
@@ -182,22 +174,22 @@ namespace NgoUyenNguyen.Editor
             }
 
             // Change level name on scene
-            currentLevel.name = $"Level {currentLevel.index}";
+            currentLevel.name = $"Level {currentLevel.Index}";
             EditorUtility.SetDirty(currentLevel);
 
             // Save level as prefab
             PrefabUtility.SaveAsPrefabAssetAndConnect(level, levelPath, InteractionMode.UserAction);
 
-            // Add to Addressables
+            // Add to Addressable
             var settings = AddressableAssetSettingsDefaultObject.GetSettings(true);
-            string levelGUID = AssetDatabase.AssetPathToGUID(levelPath);
-            var entry = settings.CreateOrMoveEntry(levelGUID, GetAddressablesGroup(LEVEL_ADDRESSABLES_GROUP));
+            var levelGUID = AssetDatabase.AssetPathToGUID(levelPath);
+            var entry = settings.CreateOrMoveEntry(levelGUID, GetAddressableGroup(LevelAddressableGroup));
             entry.address = levelPath;
 
             // Save to LevelReference
-            if (!System.IO.File.Exists(levelPath) || levelReference.GetReferenceFromGUID(levelGUID) == null)
+            if (!System.IO.File.Exists(levelPath) || levelReferences.GetReferenceFromGUID(levelGUID) == null)
             {
-                levelReference.references.Add(new AssetReference(levelGUID));
+                levelReferences.references.Add(new AssetReference(levelGUID));
             }
 
             AssetDatabase.SaveAssets();
@@ -206,7 +198,7 @@ namespace NgoUyenNguyen.Editor
             SaveLevelPerformed?.Invoke();
         }
 
-        private void LoadLevel(GameObject level)
+        protected virtual void LoadLevel(GameObject level)
         {
             // If exist, destroy current level on scene
             if (currentLevel != null)
@@ -216,8 +208,14 @@ namespace NgoUyenNguyen.Editor
             }
 
             // Spawn level
-            currentLevel = (PrefabUtility.InstantiatePrefab(level) as GameObject).GetComponent<BaseLevel>();
-            currentLevel.name = level.name;
+            currentLevel = (PrefabUtility.InstantiatePrefab(level) as GameObject)?.GetComponent<BaseLevel>();
+            if (currentLevel == null)
+            {
+                Debug.LogError($"Failed to load level {level.name} because it does not contain {nameof(BaseLevel)} component");
+                return;
+            }
+
+            currentLevelIndex = currentLevel.Index;
 
             LoadLevelPerformed?.Invoke();
         }
@@ -228,36 +226,30 @@ namespace NgoUyenNguyen.Editor
         private string GetLevelPath(BaseLevel level)
         {
             // Create level path
-            string levelName = $"Level {level.index}.prefab";
-            string levelPath = System.IO.Path.Combine(LEVEL_FOLDER_PATH, levelName);
+            var levelName = $"Level {level.Index}.prefab";
+            var levelPath = System.IO.Path.Combine(LevelFolderPath, levelName);
             return levelPath;
         }
 
-        private AddressableAssetGroup GetAddressablesGroup(string groupName)
+        private AddressableAssetGroup GetAddressableGroup(string groupName)
         {
-            var settings = AddressableAssetSettingsDefaultObject.Settings;
-            if (settings == null)
-            {
-                Debug.LogError("AddressableAssetSettings not found. Did you set up Addressables?");
-                return null;
-            }
+            var settings = AddressableAssetSettingsDefaultObject.GetSettings(true);
 
             var group = settings.FindGroup(groupName);
-            if (group == null)
-            {
-                // Create new group
-                group = settings.CreateGroup(
-                    groupName,
-                    false,   // readOnly
-                    false,   // isStaticContent
-                    true,    // postEvent (notify modification)
-                    null,    // templates (AddressableAssetGroupTemplate[])
-                    typeof(UnityEditor.AddressableAssets.Settings.GroupSchemas.BundledAssetGroupSchema),
-                    typeof(UnityEditor.AddressableAssets.Settings.GroupSchemas.ContentUpdateGroupSchema)
-                );
+            if (group != null) return group;
+            
+            // Create new group
+            group = settings.CreateGroup(
+                groupName,
+                false,   // readOnly
+                false,   // isStaticContent
+                true,    // postEvent (notify modification)
+                null,    // templates (AddressableAssetGroupTemplate[])
+                typeof(UnityEditor.AddressableAssets.Settings.GroupSchemas.BundledAssetGroupSchema),
+                typeof(UnityEditor.AddressableAssets.Settings.GroupSchemas.ContentUpdateGroupSchema)
+            );
 
-                Debug.Log($"Created new Addressables group: {groupName}");
-            }
+            Debug.Log($"Created new Addressable group: {groupName}");
 
             return group;
         }

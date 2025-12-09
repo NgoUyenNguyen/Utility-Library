@@ -2,8 +2,10 @@ using System;
 using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using UnityEngine.SceneManagement;
 
 namespace NgoUyenNguyen.Editor
 {
@@ -119,8 +121,7 @@ namespace NgoUyenNguyen.Editor
             // If Level not exist in Assets
             if (!System.IO.File.Exists(GetLevelPath(level)))
             {
-                DestroyImmediate(currentLevel.gameObject);
-                currentLevel = null;
+                UnloadLevel();
             }
             // If Level exist in Assets
             else if (System.IO.File.Exists(GetLevelPath(level)))
@@ -129,10 +130,10 @@ namespace NgoUyenNguyen.Editor
                 levelReferences.references.Remove(levelReferences.GetReferenceFromGUID(levelGUID));
                 AssetDatabase.DeleteAsset(GetLevelPath(level));
 
-                DestroyImmediate(currentLevel.gameObject);
-                currentLevel = null;
+                UnloadLevel();
 
                 EditorUtility.SetDirty(levelReferences);
+                AssetDatabase.SaveAssets();
             }
             else
             {
@@ -233,6 +234,9 @@ namespace NgoUyenNguyen.Editor
         {
             DestroyImmediate(currentLevel.gameObject);
             currentLevel = null;
+            var scene = SceneManager.GetActiveScene();
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
         }
 
 

@@ -30,6 +30,7 @@ namespace NgoUyenNguyen.Editor
             SaveLevelButton();
             RemoveLevelButton();
             LoadLevelButton();
+            UnloadLevelButton();
             AddLevelButton();
             EditorGUILayout.EndHorizontal();
 
@@ -104,6 +105,14 @@ namespace NgoUyenNguyen.Editor
             }
         }
 
+        private void UnloadLevelButton()
+        {
+            if (currentLevel == null) return;
+            if (GUILayout.Button("Unload Level", GUILayout.Height(40)))
+            {
+                UnloadLevel();
+            }
+        }
 
         protected virtual void RemoveLevel(BaseLevel level)
         {
@@ -218,6 +227,12 @@ namespace NgoUyenNguyen.Editor
             currentLevelIndex = currentLevel.Index;
 
             LoadLevelPerformed?.Invoke();
+        }
+
+        protected virtual void UnloadLevel()
+        {
+            DestroyImmediate(currentLevel.gameObject);
+            currentLevel = null;
         }
 
 

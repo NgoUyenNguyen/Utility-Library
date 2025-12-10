@@ -56,7 +56,7 @@ namespace NgoUyenNguyen.Editor
                     Debug.LogWarning($"Component {nameof(BaseLevel)} not found on {levelReference.editorAsset.name}");
                     continue;
                 }
-                if (GUILayout.Button($"Level {level.name}"))
+                if (GUILayout.Button($"{level.name}"))
                 {
                     LoadLevel(levelReference.editorAsset as GameObject);
                 }
@@ -200,6 +200,7 @@ namespace NgoUyenNguyen.Editor
             if (!System.IO.File.Exists(levelPath) || levelReferences.GetReferenceFromGUID(levelGUID) == null)
             {
                 levelReferences.references.Add(new AssetReference(levelGUID));
+                EditorUtility.SetDirty(levelReferences);
             }
 
             AssetDatabase.SaveAssets();

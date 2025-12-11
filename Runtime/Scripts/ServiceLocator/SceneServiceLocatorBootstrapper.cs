@@ -3,7 +3,7 @@
 namespace NgoUyenNguyen
 {
     [DefaultExecutionOrder(-999)]
-    internal class SceneServiceLocatorBootstrapper : ServiceLocatorBootstrapper
+    public class SceneServiceLocatorBootstrapper : ServiceLocatorBootstrapper
     {
         protected override void Bootstrap()
         {

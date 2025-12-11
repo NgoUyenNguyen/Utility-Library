@@ -3,16 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 namespace NgoUyenNguyen
 {
     public class ServiceLocator : MonoBehaviour
     {
-        private const string GlobalServiceLocatorName = "ServiceLocator [Global]";
-        private const string SceneServiceLocatorName = "ServiceLocator [Scene]";
+        public const string GlobalServiceLocatorName = "ServiceLocator [Global]";
+        public const string SceneServiceLocatorName = "ServiceLocator [Scene]";
 
         private static ServiceLocator global;
         private static Dictionary<Scene, ServiceLocator> sceneContainers;
@@ -303,19 +300,5 @@ namespace NgoUyenNguyen
             sceneContainers = new();
             tmpSceneGameObjects = new();
         }
-        
-        #if UNITY_EDITOR
-        [MenuItem("GameObject/ServiceLocator/Add Global Scope")]
-        private static void AddGlobal()
-        {
-            var go = new GameObject(GlobalServiceLocatorName, typeof(GlobalServiceLocatorBootstrapper));
-        }
-
-        [MenuItem("GameObject/ServiceLocator/Add Scene Scope")]
-        private static void AddScene()
-        {
-            var go = new GameObject(SceneServiceLocatorName, typeof(SceneServiceLocatorBootstrapper));
-        }
-        #endif
     }
 }

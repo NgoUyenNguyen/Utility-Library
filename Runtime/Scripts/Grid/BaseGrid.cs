@@ -3,10 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
-
 namespace NgoUyenNguyen.Grid
 {
     /// <summary>
@@ -18,11 +14,7 @@ namespace NgoUyenNguyen.Grid
     public abstract class BaseGrid : MonoBehaviour
     {
         #region Fields
-
-#if UNITY_EDITOR
-        [HideInInspector] public bool prefabInitialized;
-#endif
-
+        [SerializeField, HideInInspector] private bool prefabInitialized;
 
         [SerializeField, HideInInspector] 
         private Cell[] _cellMap = Array.Empty<Cell>();
@@ -55,7 +47,11 @@ namespace NgoUyenNguyen.Grid
         public Cell cellPrefab
         {
             get => _cellPrefab;
-            private set => _cellPrefab = value;
+            set
+            {
+                if (value == null) return;
+                _cellPrefab = value;
+            }
         }
 
         /// <summary>
@@ -131,7 +127,16 @@ namespace NgoUyenNguyen.Grid
         /// Represents the collection of <c>Cells</c> in the <c>Grid</c>
         /// </summary>
         /// <remarks>This array holds all references to <c>Cells</c> in <c>Grid</c>.</remarks>
-        public Cell[] cellMap => _cellMap;
+        public Cell[] cellMap
+        {
+            get => _cellMap;
+            set
+            {
+                if (value == null) return;
+                _cellMap = value;
+                CalculateCellsPosition();
+            }
+        }
         #endregion
 
         #region Indexer
@@ -170,7 +175,7 @@ namespace NgoUyenNguyen.Grid
 
                         return _cellMap[index.x + index.y * size.x];
                     default:
-                        return null;
+                        throw new NotImplementedException();
                 }
             }
         }
@@ -211,7 +216,7 @@ namespace NgoUyenNguyen.Grid
                 cellPrefab = cell.GetComponent<Cell>();
             }
 
-            CellSpawn(cellPrefab);
+            CellSpawn();
         }
 
         /// <summary>
@@ -241,7 +246,7 @@ namespace NgoUyenNguyen.Grid
                 cellPrefab = cell.GetComponent<Cell>();
             }
 
-            CellSpawn(cellPrefab, map);
+            CellSpawn(map);
         }
 
         /// <summary>
@@ -265,7 +270,7 @@ namespace NgoUyenNguyen.Grid
             }
         }
 
-        private void CellSpawn(Cell cell, bool[,] map = null)
+        private void CellSpawn(bool[,] map = null)
         {
             for (int x = 0; x < size.x; x++)
             {
@@ -274,8 +279,8 @@ namespace NgoUyenNguyen.Grid
                     if (map != null && !map[x, y]) continue;
                     _cellMap[x + y * size.x] = Instantiate(cellPrefab.gameObject, transform).GetComponent<Cell>();
                     _cellMap[x + y * size.x].grid = this;
-                    AsignCellIndex(this[x, y], new Vector2Int(x, y));
-                    _cellMap[x + y * size.x].transform.localPosition = CellToLocal(this[x, y]);
+                    AssignCellIndex(_cellMap[x + y * size.x], new Vector2Int(x, y));
+                    _cellMap[x + y * size.x].transform.localPosition = CellToLocal(_cellMap[x + y * size.x]);
                 }
             }
         }
@@ -292,7 +297,12 @@ namespace NgoUyenNguyen.Grid
             }
         }
 
-        private void AsignCellIndex(Cell cell, Vector2Int index)
+        /// <summary>
+        /// Assigns an index to a cell based on the grid's layout.
+        /// </summary>
+        /// <param name="cell">The cell to assign an index to.</param>
+        /// <param name="index">The 2D index of the cell in the grid.</param>
+        public void AssignCellIndex(Cell cell, Vector2Int index)
         {
             cell.index = _layout switch
             {
@@ -316,134 +326,6 @@ namespace NgoUyenNguyen.Grid
                 };
             }
         }
-
-
-#if UNITY_EDITOR
-        /// <summary>
-        /// <c>ONLY USE IN EDITOR</c><br/>
-        /// Method to create <c>Grid</c> which remaining its connecting to original <c>Cell</c> prefab
-        /// </summary>
-        /// <param name="width">Width of grid</param>
-        /// <param name="height">Height of grid</param>
-        /// <param name="cellPrefab">Cell Prefab to be spawned</param>
-        /// <param name="map">Map to set each cell spawned in detail.<br/> 
-        /// <c>True = spawn in this index</c> <br/>
-        /// <c>False = not spawn in this index</c>
-        /// </param>
-        public void PrefabCreate(int width, int height, GameObject cellPrefab)
-        {
-            PrefabCreate(new Vector2Int(width, height), cellPrefab);
-        }
-
-        /// <summary>
-        /// <c>ONLY USE IN EDITOR</c><br/>
-        /// Method to create <c>Grid</c> which remaining its connecting to original <c>Cell</c> prefab
-        /// </summary>
-        /// <param name="size">Size of grid</param>
-        /// <param name="cellPrefab">Cell Prefab to be spawned</param>
-        /// <param name="map">Map to set each cell spawned in detail.<br/> 
-        /// <c>True = spawn in this index</c> <br/>
-        /// <c>False = not spawn in this index</c>
-        /// </param>
-        public void PrefabCreate(Vector2Int size, GameObject cellPrefab)
-        {
-            if (Application.isPlaying)
-            {
-                throw new InvalidOperationException("Can Not Create Prefab In Runtime!");
-            }
-            else if (!cellPrefab.TryGetComponent<Cell>(out _))
-            {
-                throw new ArgumentException("Prefab does not have Cell component!", nameof(cellPrefab));
-            }
-            else
-            {
-                DestroyOldCellPrefabs();
-
-                // Set Size
-                this._size = size;
-                _cellMap = new Cell[size.x * size.y];
-
-                CellPrefabSpawn(cellPrefab);
-            }
-        }
-
-        /// <summary>
-        /// <c>ONLY USE IN EDITOR</c><br/>
-        /// Method to create <c>Grid</c> which remaining its connecting to original <c>Cell</c> prefab
-        /// </summary>
-        /// <param name="map">Map to set each cell spawned in detail.<br/> 
-        /// <c>True = spawn in this index</c> <br/>
-        /// <c>False = not spawn in this index</c></param>
-        /// <param name="cellPrefab">Cell Prefab to be spawned</param>
-        public void PrefabCreate(bool[,] map, GameObject cellPrefab)
-        {
-            if (Application.isPlaying)
-            {
-                throw new InvalidOperationException("Can Not Create Prefab In Runtime!");
-            }
-
-            if (!cellPrefab.TryGetComponent<Cell>(out _))
-            {
-                throw new ArgumentException("Prefab does not have Cell component!", nameof(cellPrefab));
-            }
-
-            DestroyOldCellPrefabs();
-
-            // Set Size
-            _size = new Vector2Int(map.GetLength(0), map.GetLength(1));
-            _cellMap = new Cell[size.x * size.y];
-
-            CellPrefabSpawn(cellPrefab, map);
-        }
-
-        private void DestroyOldCellPrefabs()
-        {
-            for (int i = _cellMap.Length - 1; i >= 0; i--)
-            {
-                if (_cellMap[i] != null)
-                {
-                    DestroyImmediate(_cellMap[i].gameObject);
-                }
-            }
-        }
-
-        private void CellPrefabSpawn(GameObject cellPrefab, bool[,] map = null)
-        {
-            this.cellPrefab = cellPrefab.GetComponent<Cell>();
-
-            for (int x = 0; x < size.x; x++)
-            {
-                for (int y = 0; y < size.y; y++)
-                {
-                    if (map != null && !map[x, y]) continue;
-                    _cellMap[x + y * size.x] = (PrefabUtility.InstantiatePrefab(cellPrefab, transform) as GameObject)
-                        .GetComponent<Cell>();
-                    _cellMap[x + y * size.x].grid = this;
-                    AsignCellIndex(_cellMap[x + y * size.x], new Vector2Int(x, y));
-                    _cellMap[x + y * size.x].transform.localPosition = CellToLocal(_cellMap[x + y * size.x]);
-                }
-            }
-        }
-
-        public Cell SpawnCellPrefab(Cell cellPrefab, Vector2Int index)
-        {
-            if (cellPrefab == null) return null;
-            if (_cellMap[index.x + index.y * size.x] != null)
-                DestroyImmediate(_cellMap[index.x + index.y * size.x].gameObject);
-
-            Cell cell = (PrefabUtility.InstantiatePrefab(cellPrefab.gameObject, transform) as GameObject)
-                .GetComponent<Cell>();
-            cell.index = _layout switch
-            {
-                CellLayout.Hexagon => IndexToAxial(index),
-                _ => index
-            };
-            cell.grid = this;
-            _cellMap[index.x + index.y * size.x] = cell;
-
-            return cell;
-        }
-#endif
 
         #endregion
 
@@ -1108,15 +990,6 @@ namespace NgoUyenNguyen.Grid
         {
             if (!gameObject.activeInHierarchy) return;
             DrawFrame();
-#if UNITY_EDITOR
-            foreach (var cell in _cellMap)
-            {
-                if (cell == null) continue;
-                Handles.Label(cell.transform.position,
-                    $"{cell.index.x}, {cell.index.y}",
-                    EditorStyles.boldLabel);
-            }
-#endif
         }
 
 

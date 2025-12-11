@@ -17,6 +17,5 @@
   "autoReferenced": true,
   "defineConstraints": [],
   "versionDefines": [],
-  "noEngineReferences": false,
-  "generateDocumentation": true
+  "noEngineReferences": false
 }

@@ -5,7 +5,7 @@ namespace NgoUyenNguyen
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(ServiceLocator))]
-    internal abstract class ServiceLocatorBootstrapper : MonoBehaviour
+    public abstract class ServiceLocatorBootstrapper : MonoBehaviour
     {
         private ServiceLocator container;
         internal ServiceLocator Container => container.OrNull() ?? (container = GetComponent<ServiceLocator>());

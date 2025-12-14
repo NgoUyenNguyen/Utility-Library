@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace NgoUyenNguyen
 {
-    public class ServiceLocator : MonoBehaviour
+    public partial class ServiceLocator : MonoBehaviour
     {
         public const string GlobalServiceLocatorName = "ServiceLocator [Global]";
         public const string SceneServiceLocatorName = "ServiceLocator [Scene]";
@@ -65,10 +64,6 @@ namespace NgoUyenNguyen
             get
             {
                 if (global != null) return global;
-                
-#if UNITY_EDITOR
-                if (!Application.isPlaying) return null;
-#endif
 
                 if (FindFirstObjectByType<GlobalServiceLocatorBootstrapper>() is { } found)
                 {
@@ -109,7 +104,8 @@ namespace NgoUyenNguyen
         {
             var scene = mb.gameObject.scene;
 
-            if (sceneContainers.TryGetValue(scene, out var container) && container != mb)
+            if (sceneContainers.TryGetValue(scene, out var container) 
+                && container != mb)
             {
                 return container;
             }
@@ -117,13 +113,12 @@ namespace NgoUyenNguyen
             tmpSceneGameObjects.Clear();
             scene.GetRootGameObjects(tmpSceneGameObjects);
 
-            foreach (var go in tmpSceneGameObjects.Where(go => go.GetComponent<ServiceLocatorBootstrapper>() != null))
+            foreach (var go in tmpSceneGameObjects)
             {
-                if (go.TryGetComponent(out ServiceLocatorBootstrapper bootstrapper) && bootstrapper.Container != mb)
-                {
-                    bootstrapper.BootstrapOnDemand();
-                    return bootstrapper.Container;
-                }
+                if (!go.TryGetComponent(out SceneServiceLocatorBootstrapper bootstrapper) ||
+                    bootstrapper.Container == mb) continue;
+                bootstrapper.BootstrapOnDemand();
+                return bootstrapper.Container;
             }
 
             return Global;
@@ -174,8 +169,9 @@ namespace NgoUyenNguyen
             {
                 return container.Get<T>();
             }
-            throw new KeyNotFoundException(
-                $"ServiceLocator.Get: Service of type {typeof(T).FullName} not registered");
+
+            Debug.LogError($"ServiceLocator.Get: Service of type {typeof(T).FullName} not registered");
+            return default;
         }
 
         /// <summary>
@@ -191,12 +187,7 @@ namespace NgoUyenNguyen
         public bool TryGet<T>(out T service)
         {
             if (services.TryGet(out service)) return true;
-            if (TryGetNextInHierarchy(out var container))
-            {
-                return container.TryGet(out service);
-            }
-
-            return false;
+            return TryGetNextInHierarchy(out var container) && container.TryGet(out service);
         }
 
         /// <summary>
@@ -210,12 +201,7 @@ namespace NgoUyenNguyen
         public bool Has<T>()
         {
             if (services.Has<T>()) return true;
-            if (TryGetNextInHierarchy(out var container))
-            {
-                return container.Has<T>();
-            }
-
-            return false;
+            return TryGetNextInHierarchy(out var container) && container.Has<T>();
         }
 
         /// <summary>
@@ -229,12 +215,7 @@ namespace NgoUyenNguyen
         public bool Has(Type serviceType)
         {
             if (services.Has(serviceType)) return true;
-            if (TryGetNextInHierarchy(out var container))
-            {
-                return container.Has(serviceType);
-            }
-
-            return false;
+            return TryGetNextInHierarchy(out var container) && container.Has(serviceType);
         }
 
         /// <summary>
@@ -283,6 +264,7 @@ namespace NgoUyenNguyen
 
         private void OnDestroy()
         {
+            DetachEventBus();
             if (this == global)
             {
                 global = null;
@@ -297,8 +279,8 @@ namespace NgoUyenNguyen
         private static void ResetStatics()
         {
             global = null;
-            sceneContainers = new();
-            tmpSceneGameObjects = new();
+            sceneContainers = new Dictionary<Scene, ServiceLocator>();
+            tmpSceneGameObjects = new List<GameObject>();
         }
     }
 }

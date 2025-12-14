@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 
 namespace NgoUyenNguyen
 {
+    [DefaultExecutionOrder(-1000)]
     public partial class ServiceLocator : MonoBehaviour
     {
         public const string GlobalServiceLocatorName = "ServiceLocator [Global]";

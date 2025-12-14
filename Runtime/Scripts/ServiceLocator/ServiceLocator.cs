@@ -46,7 +46,7 @@ namespace NgoUyenNguyen
 
             if (sceneContainers.ContainsKey(scene))
             {
-                Debug.LogError(
+                Debug.LogWarning(
                     "ServiceLocator.ConfigureAsScene: Another ServiceLocator is already configured for this scene",
                     this);
                 return;
@@ -171,7 +171,7 @@ namespace NgoUyenNguyen
                 return container.Get<T>();
             }
 
-            Debug.LogError($"ServiceLocator.Get: Service of type {typeof(T).FullName} not registered");
+            Debug.LogWarning($"ServiceLocator.Get: Service of type {typeof(T).FullName} not registered");
             return default;
         }
 

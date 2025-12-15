@@ -23,7 +23,7 @@ namespace NgoUyenNguyen
             }
         }
 
-        private void Awake()
+        private void Start()
         {
             AttachEventBus();
         }

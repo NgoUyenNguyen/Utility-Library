@@ -5,46 +5,22 @@ using UnityEngine.SceneManagement;
 
 namespace NgoUyenNguyen
 {
-    [DefaultExecutionOrder(-1000)]
+    [DefaultExecutionOrder(-900)]
     public partial class ServiceLocator : MonoBehaviour
     {
         public const string GlobalServiceLocatorName = "ServiceLocator [Global]";
         public const string SceneServiceLocatorName = "ServiceLocator [Scene]";
+        public const string GameObjectServiceLocatorName = "ServiceLocator [GameObject]";
 
-        private static ServiceLocator global;
-        private static Dictionary<Scene, ServiceLocator> sceneContainers;
-        private static List<GameObject> tmpSceneGameObjects;
+        internal static Dictionary<Scene, ServiceLocator> SceneContainers;
 
         private readonly ServiceManager services = new();
-
-
-        internal void ConfigureAsGlobal(bool dontDestroyOnLoad)
-        {
-            if (global == this)
-            {
-                Debug.LogWarning(
-                    "ServiceLocator.ConfigureAsGlobal: Already configured as global", this);
-            }
-            else if (global != null)
-            {
-                Debug.LogWarning(
-                    "ServiceLocator.ConfigureAsGlobal: Another ServiceLocator is already configured as global", global);
-            }
-            else
-            {
-                global = this;
-                if (dontDestroyOnLoad)
-                {
-                    DontDestroyOnLoad(gameObject);
-                }
-            }
-        }
 
         internal void ConfigureForScene()
         {
             var scene = gameObject.scene;
 
-            if (sceneContainers.ContainsKey(scene))
+            if (SceneContainers.ContainsKey(scene))
             {
                 Debug.LogWarning(
                     "ServiceLocator.ConfigureAsScene: Another ServiceLocator is already configured for this scene",
@@ -52,7 +28,7 @@ namespace NgoUyenNguyen
                 return;
             }
 
-            sceneContainers.Add(scene, this);
+            SceneContainers.Add(scene, this);
         }
 
         /// <summary>
@@ -60,23 +36,7 @@ namespace NgoUyenNguyen
         /// are not specific to any particular scene or object. The global instance is automatically created
         /// on first access and can be configured to persist across scene changes via DontDestroyOnLoad.
         /// </summary>
-        public static ServiceLocator Global
-        {
-            get
-            {
-                if (global != null) return global;
-
-                if (FindFirstObjectByType<GlobalServiceLocatorBootstrapper>() is { } found)
-                {
-                    found.BootstrapOnDemand();
-                    return global;
-                }
-
-                var container = new GameObject(GlobalServiceLocatorName, typeof(ServiceLocator));
-                container.AddComponent<GlobalServiceLocatorBootstrapper>().BootstrapOnDemand();
-                return global;
-            }
-        }
+        public static ServiceLocator Global { get; internal set; }
 
         /// <summary>
         /// Retrieves the closest <see cref="ServiceLocator"/> instance associated with the specified <see cref="MonoBehaviour"/>.
@@ -105,21 +65,10 @@ namespace NgoUyenNguyen
         {
             var scene = mb.gameObject.scene;
 
-            if (sceneContainers.TryGetValue(scene, out var container) 
+            if (SceneContainers.TryGetValue(scene, out var container) 
                 && container != mb)
             {
                 return container;
-            }
-
-            tmpSceneGameObjects.Clear();
-            scene.GetRootGameObjects(tmpSceneGameObjects);
-
-            foreach (var go in tmpSceneGameObjects)
-            {
-                if (!go.TryGetComponent(out SceneServiceLocatorBootstrapper bootstrapper) ||
-                    bootstrapper.Container == mb) continue;
-                bootstrapper.BootstrapOnDemand();
-                return bootstrapper.Container;
             }
 
             return Global;
@@ -253,7 +202,7 @@ namespace NgoUyenNguyen
 
         private bool TryGetNextInHierarchy(out ServiceLocator container)
         {
-            if (this == global)
+            if (this == Global)
             {
                 container = null;
                 return false;
@@ -266,22 +215,14 @@ namespace NgoUyenNguyen
         private void OnDestroy()
         {
             DetachEventBus();
-            if (this == global)
+            if (this == Global)
             {
-                global = null;
+                Global = null;
             }
-            else if (sceneContainers != null && sceneContainers.ContainsValue(this))
+            else if (SceneContainers != null && SceneContainers.ContainsValue(this))
             {
-                sceneContainers.Remove(gameObject.scene);
+                SceneContainers.Remove(gameObject.scene);
             }
-        }
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetStatics()
-        {
-            global = null;
-            sceneContainers = new Dictionary<Scene, ServiceLocator>();
-            tmpSceneGameObjects = new List<GameObject>();
         }
     }
 }

@@ -42,6 +42,7 @@ namespace NgoUyenNguyen.Editor
             levelScrollPos = EditorGUILayout.BeginScrollView(levelScrollPos);
             GUILayout.Space(10);
 
+            if (levelReferences == null || levelReferences.references == null) return;
             foreach (var levelReference in levelReferences)
             {
                 if (levelReference == null || levelReference.editorAsset == null)

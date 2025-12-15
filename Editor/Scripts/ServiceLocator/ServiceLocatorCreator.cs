@@ -6,10 +6,10 @@ namespace NgoUyenNguyen.Editor
 {
     public static class ServiceLocatorCreator
     {
-        [MenuItem("GameObject/Service Locator/Global Scope")]
+        [MenuItem("GameObject/Service Locator/GameObject Scope")]
         private static void AddGlobal()
         {
-            var go = new GameObject(ServiceLocator.GlobalServiceLocatorName, typeof(GlobalServiceLocatorBootstrapper));
+            var go = new GameObject(ServiceLocator.GameObjectServiceLocatorName, typeof(ServiceLocator));
             EditorSceneManager.MarkSceneDirty(go.scene);
         }
 

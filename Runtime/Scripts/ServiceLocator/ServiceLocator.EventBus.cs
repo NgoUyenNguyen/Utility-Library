@@ -23,16 +23,16 @@ namespace NgoUyenNguyen
             }
         }
 
-        private void Start()
+        private void Awake()
         {
             AttachEventBus();
         }
 
         private void AttachEventBus()
         {
-            if (this == global) return;
+            if (this == Global) return;
             
-            var parent = sceneContainers.ContainsValue(this) ? global?.EventBus : FindParentBus();
+            var parent = SceneContainers.ContainsValue(this) ? Global?.EventBus : FindParentBus();
             if (parent == null) return;
             EventBus.AttachTo(parent);
             foreach (var child in EventBus.Parent.Children.ToArray())

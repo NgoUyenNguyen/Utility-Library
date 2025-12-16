@@ -105,7 +105,6 @@ All notable changes to this project will be documented in this file.
 - Classic State Machine API
 
 ---
----
 ## [3.3.0] - 2025-12-14
 ### Added
 - Hiararchy EventBus to ServiceLocator
@@ -115,5 +114,15 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - Base Level Editor window
+
+---
+## [3.3.1] - 2025-12-16
+### Added
+- N/A
+### Changed
+- EventBus API
+
+### Fixed
+- EventBus issue with unsubscribing listeners
 
 ---

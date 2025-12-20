@@ -6,11 +6,11 @@ using UnityEngine.Rendering.RenderGraphModule.Util;
 
 namespace NgoUyenNguyen
 {
-    public class DitherEffectRenderFeature : ScriptableRendererFeature
+    public class FullScreenEffectRenderFeature : ScriptableRendererFeature
     {
-        class DitherEffectPass : ScriptableRenderPass
+        class FullScreenEffectPass : ScriptableRenderPass
         {
-            private const string PassName = "DitherEffectPass";
+            private const string PassName = "FullScreenEffectPass";
             private Material blitMaterial;
 
             public void Setup(Material material)
@@ -49,15 +49,16 @@ namespace NgoUyenNguyen
         public RenderPassEvent renderPassEvent = RenderPassEvent.AfterRenderingPostProcessing;
         public Material material;
 
-        DitherEffectPass m_ScriptablePass;
+        FullScreenEffectPass m_ScriptablePass;
 
         /// <inheritdoc/>
         public override void Create()
         {
-            m_ScriptablePass = new DitherEffectPass();
-
-            // Configures where the render pass should be injected.
-            m_ScriptablePass.renderPassEvent = renderPassEvent;
+            m_ScriptablePass = new FullScreenEffectPass
+            {
+                // Configures where the render pass should be injected.
+                renderPassEvent = renderPassEvent
+            };
         }
 
         // Here you can inject one or multiple render passes in the renderer.

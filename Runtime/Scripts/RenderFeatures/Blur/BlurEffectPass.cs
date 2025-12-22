@@ -11,11 +11,11 @@ namespace NgoUyenNguyen
 
         private class PassData
         {
-            public TextureHandle source;
-            public TextureHandle destination;
-            public Material material;
-            public int gridSize;
-            public float spread;
+            public TextureHandle Source;
+            public TextureHandle Destination;
+            public Material Material;
+            public int GridSize;
+            public float Spread;
         }
 
         public void Setup(Material material)
@@ -26,59 +26,71 @@ namespace NgoUyenNguyen
 
         public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
         {
-            var effectVolumeComponent = VolumeManager.instance.stack.GetComponent<BlurEffectVolumeComponent>();
+            var effectVolumeComponent = VolumeManager.instance.stack.GetComponent<Blur>();
             if (effectVolumeComponent == null || !effectVolumeComponent.IsActive() || material == null) return;
 
             var resourceData = frameData.Get<UniversalResourceData>();
+            
+            if (resourceData.isActiveTargetBackBuffer)
+            {
+                Debug.LogError("BlurEffectPass requires an intermediate texture.");
+                return;
+            }
+            
             var cameraData = frameData.Get<UniversalCameraData>();
 
             var descriptor = cameraData.cameraTargetDescriptor;
             descriptor.depthBufferBits = 0;
+            descriptor.msaaSamples = 1;
 
-            var blurTexture = UniversalRenderer.CreateRenderGraphTexture(
+            // Tạo 2 texture tạm
+            var tmpTexture = UniversalRenderer.CreateRenderGraphTexture(
                 renderGraph, 
                 descriptor, 
-                "_BlurTex", 
+                "_BlurTexH", 
                 false);
 
             var gridSize = Mathf.CeilToInt(effectVolumeComponent.Strength.value * 6);
             gridSize = gridSize % 2 == 0 ? gridSize + 1 : gridSize;
+            gridSize = Mathf.Clamp(gridSize, 1, 21);
 
-            using (var builder = renderGraph.AddRasterRenderPass<PassData>("Blur Pass 1", out var passData))
+            // Pass 1: Horizontal blur (source -> blurTextureH)
+            using (var builder = renderGraph.AddRasterRenderPass<PassData>("Blur Pass Horizontal", out var passData))
             {
-                passData.source = resourceData.activeColorTexture;
-                passData.destination = blurTexture;
-                passData.material = material;
-                passData.gridSize = gridSize;
-                passData.spread = effectVolumeComponent.Strength.value;
+                passData.Source = resourceData.activeColorTexture;
+                passData.Destination = tmpTexture;
+                passData.Material = material;
+                passData.GridSize = gridSize;
+                passData.Spread = effectVolumeComponent.Strength.value;
 
-                builder.UseTexture(passData.source);
-                builder.SetRenderAttachment(passData.destination, 0);
+                builder.UseTexture(passData.Source);
+                builder.SetRenderAttachment(passData.Destination, 0);
 
                 builder.SetRenderFunc((PassData data, RasterGraphContext context) =>
                 {
-                    data.material.SetInteger("_GridSize", data.gridSize);
-                    data.material.SetFloat("_Spread", data.spread);
-                    Blitter.BlitTexture(context.cmd, data.source, Vector2.one, data.material, 0);
+                    data.Material.SetInteger("_GridSize", data.GridSize);
+                    data.Material.SetFloat("_Spread", data.Spread);
+                    Blitter.BlitTexture(context.cmd, data.Source, Vector2.one, data.Material, 0);
                 });
             }
 
-            using (var builder = renderGraph.AddRasterRenderPass<PassData>("Blur Pass 2", out var passData))
+            // Pass 2: Vertical blur (blurTextureH -> blurTextureV)
+            using (var builder = renderGraph.AddRasterRenderPass<PassData>("Blur Pass Vertical", out var passData))
             {
-                passData.source = blurTexture;
-                passData.destination = resourceData.activeColorTexture;
-                passData.material = material;
-                passData.gridSize = gridSize;
-                passData.spread = effectVolumeComponent.Strength.value;
+                passData.Source = tmpTexture;
+                passData.Destination = resourceData.cameraColor;
+                passData.Material = material;
+                passData.GridSize = gridSize;
+                passData.Spread = effectVolumeComponent.Strength.value;
 
-                builder.UseTexture(passData.source);
-                builder.SetRenderAttachment(passData.destination, 0);
+                builder.UseTexture(passData.Source);
+                builder.SetRenderAttachment(passData.Destination, 0);
 
                 builder.SetRenderFunc((PassData data, RasterGraphContext context) =>
                 {
-                    data.material.SetInteger("_GridSize", data.gridSize);
-                    data.material.SetFloat("_Spread", data.spread);
-                    Blitter.BlitTexture(context.cmd, data.source, Vector2.one, data.material, 1);
+                    data.Material.SetInteger("_GridSize", data.GridSize);
+                    data.Material.SetFloat("_Spread", data.Spread);
+                    Blitter.BlitTexture(context.cmd, data.Source, Vector2.one, data.Material, 1);
                 });
             }
         }

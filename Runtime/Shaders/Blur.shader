@@ -2,109 +2,95 @@ Shader "PostProcessing/Blur"
 {
     Properties
     {
-        _MainTex ("Texture", 2D) = "white" {}
-        _Spread ("Standard Deviation (Spread)", Float) = 0
-        _GridSize ("Grid Size", Integer) = 1
+		_Spread("Standard Deviation (Spread)", Float) = 0
+		_GridSize("Grid Size", Integer) = 1
     }
     SubShader
     {
         Tags
-        {
-            "RenderType"="Opaque"
-            "RenderPipeline"="UniversalPipeline"
-        }
-        
-        HLSLINCLUDE
-        #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+		{
+			"RenderType" = "Opaque"
+			"RenderPipeline" = "UniversalPipeline"
+		}
 
-        sampler2D _MainTex;
+		HLSLINCLUDE
 
-        CBUFFER_START(UnityPerMaterial)
-            float4 _MainTex_TexelSize;
-            float _Spread;
-            uint _GridSize;
-        CBUFFER_END
+		#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+		#include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
+		
 
-        float Gaussian(float x)
-        {
-            float sigmaSqu = _Spread * _Spread;
-            return (1 / sqrt(TWO_PI * sigmaSqu)) * exp(-(x * x / (2 * sigmaSqu)));
-        }
+		CBUFFER_START(UnityPerMaterial)
+			uint _GridSize;
+			float _Spread;
+		CBUFFER_END
 
-        struct Attributes
-        {
-            float4 positionOS : POSITION;
-            float2 uv : TEXCOORD0;
-        };
+		float gaussian(int x)
+		{
+			float sigma = max(_Spread, 0.0001);
+            float sigmaSqu = sigma * sigma;
+            return exp(-(x * x) / (2 * sigmaSqu));
+		}
 
-        struct Varyings
-        {
-            float4 positionHCS : SV_POSITION;
-            float2 uv : TEXCOORD0;
-        };
-
-        Varyings Vert(Attributes IN)
-        {
-            Varyings OUT;
-            OUT.positionHCS = TransformObjectToHClip(IN.positionOS.xyz);
-            OUT.uv = IN.uv;
-            return OUT;
-        }
-        ENDHLSL
+		ENDHLSL
 
         Pass
         {
-            Name "HorizontalBlur"
+			Name "Horizontal"
+
             HLSLPROGRAM
             #pragma vertex Vert
-            #pragma fragment FragHorizontal
+            #pragma fragment frag_horizontal
 
-            float4 FragHorizontal(Varyings IN) : SV_Target
-            {
-                float3 col = float3(0, 0, 0);
-                float gridSum = 0;
+            float4 frag_horizontal (Varyings i) : SV_Target
+			{
+				float3 col = float3(0.0f, 0.0f, 0.0f);
+				float gridSum = 0.0f;
 
-                int upper = (_GridSize - 1) / 2;
-                int lower = -upper;
-                for (int i = lower; i <= upper; i++)
-                {
-                    float gauss = Gaussian(i);
-                    gridSum += gauss;
-                    float2 uv = IN.uv + float2(i * _MainTex_TexelSize.x, 0);
-                    col += tex2D(_MainTex, uv).rgb * gauss;
-                }
+				int upper = ((_GridSize - 1) / 2);
+				int lower = -upper;
 
-                col /= gridSum;
-                return float4(col, 1);
-            }
+				for (int x = lower; x <= upper; ++x)
+				{
+					float gauss = gaussian(x);
+					gridSum += gauss;
+					float2 uv = i.texcoord + float2(_BlitTexture_TexelSize.x * x, 0.0f);
+					col += gauss * SAMPLE_TEXTURE2D(_BlitTexture, sampler_LinearClamp, uv).xyz;
+				}
+
+				col /= gridSum;
+
+				return float4(col, 1.0f);
+			}
             ENDHLSL
         }
-        
-        Pass
+
+		Pass
         {
-            Name "VerticalBlur"
+			Name "Vertical"
+
             HLSLPROGRAM
             #pragma vertex Vert
-            #pragma fragment FragVertical
+            #pragma fragment frag_vertical
 
-            float4 FragVertical(Varyings IN) : SV_Target
-            {
-                float3 col = float3(0, 0, 0);
-                float gridSum = 0;
+            float4 frag_vertical (Varyings i) : SV_Target
+			{
+				float3 col = float3(0.0f, 0.0f, 0.0f);
+				float gridSum = 0.0f;
 
-                int upper = (_GridSize - 1) / 2;
-                int lower = -upper;
-                for (int i = lower; i <= upper; i++)
-                {
-                    float gauss = Gaussian(i);
-                    gridSum += gauss;
-                    float2 uv = IN.uv + float2(0, i * _MainTex_TexelSize.x);
-                    col += tex2D(_MainTex, uv).rgb * gauss;
-                }
+				int upper = ((_GridSize - 1) / 2);
+				int lower = -upper;
 
-                col /= gridSum;
-                return float4(col, 1);
-            }
+				for (int y = lower; y <= upper; ++y)
+				{
+					float gauss = gaussian(y);
+					gridSum += gauss;
+					float2 uv = i.texcoord + float2(0.0f, _BlitTexture_TexelSize.y * y);
+					col += gauss * SAMPLE_TEXTURE2D(_BlitTexture, sampler_LinearClamp, uv).xyz;
+				}
+
+				col /= gridSum;
+				return float4(col, 1.0f);
+			}
             ENDHLSL
         }
     }

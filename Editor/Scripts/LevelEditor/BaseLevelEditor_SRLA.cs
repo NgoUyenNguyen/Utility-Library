@@ -18,8 +18,8 @@ namespace NgoUyenNguyen.Editor
         public event Action SaveLevelPerformed;
         public event Action AddLevelPerformed;
 
-        protected virtual string LevelFolderPath { get; set; } = "Assets/Levels";
-        protected virtual string LevelAddressableGroup { get; set; } = "Levels";
+        public string LevelFolderPath { get; set; } = "Assets/Levels";
+        public string LevelAddressableGroup { get; set; } = "Levels";
 
 
 
@@ -37,12 +37,11 @@ namespace NgoUyenNguyen.Editor
             EditorGUILayout.EndHorizontal();
 
 
-            if (!isLoadingLevel || levelReferences == null) return;
+            if (!isLoadingLevel || levelReferences == null || levelReferences.references == null) return;
             
             levelScrollPos = EditorGUILayout.BeginScrollView(levelScrollPos);
             GUILayout.Space(10);
 
-            if (levelReferences == null || levelReferences.references == null) return;
             foreach (var levelReference in levelReferences)
             {
                 if (levelReference == null || levelReference.editorAsset == null)

@@ -126,3 +126,13 @@ All notable changes to this project will be documented in this file.
 - EventBus issue with unsubscribing listeners
 
 ---
+## [3.4.0] - 2025-12-22
+### Added
+- SaveSystem
+### Changed
+- N/A
+
+### Fixed
+- N/A
+
+---

@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MessagePack;
@@ -29,15 +33,38 @@ namespace NgoUyenNguyen
         /// This is set to "Assets/Saves" by default and serves as the location for serialized data files
         /// when running the application within the Unity Editor.
         /// </summary>
-        public static string EditorSaveFolder = "Assets/Saves";
+        public static string EditorSaveFolder = "Assets/Editor/Saves";
 
         /// <summary>
-        /// Represents the in-memory data loaded from a save file.
-        /// This static member is updated during the load operation
-        /// and contains the most recently loaded instance of the data type being managed by the SaveManager.
-        /// The type of data is specified by the generic parameter <typeparamref name="T"/>.
+        /// A dictionary that stores the saved data instances grouped by their corresponding slot names.
+        /// This serves as the runtime in-memory representation of the saved data loaded from storage or added via the SaveManager.
         /// </summary>
-        public static T SavedData;
+        public static readonly Dictionary<string, T> SavedData = new();
+
+        /// <summary>
+        /// Represents the default saved data of type T, associated with the default save slot name.
+        /// This property serves as a convenient way to get or set the data stored in the default save slot.
+        /// If no data exists in the default slot, the getter will return the default value of T.
+        /// When setting this property, the corresponding data in the default save slot is updated.
+        /// </summary>
+        public static T DefaultSavedData
+        {
+            get => SavedData.GetValueOrDefault(DefaultSlotName);
+            set => SavedData[DefaultSlotName] = value;
+        }
+
+        /// <summary>
+        /// Checks if the default save file exists.
+        /// </summary>
+        /// <returns>A boolean indicating whether the default save file exists.</returns>
+        public static bool ExistSaveFile() => ExistSaveFile(DefaultSlotName);
+
+        /// <summary>
+        /// Checks if the save file exists.
+        /// </summary>
+        /// <returns>A boolean indicating whether the save file exists.</returns>
+        public static bool ExistSaveFile(string slotName) =>
+            File.Exists(GetSaveFilePath(slotName, SaveSerializerFactory.Create().FileExtension));
 
         /// <summary>
         /// Indicates whether the type <typeparamref name="T"/> is valid for use with the SaveManager.
@@ -45,23 +72,30 @@ namespace NgoUyenNguyen
         /// </summary>
         public static bool IsValidDataType =>
             Attribute.IsDefined(typeof(T), typeof(MessagePackObjectAttribute));
-        
-        static SaveManager()
-        {
-            if (!IsValidDataType)
-            {
-                throw new InvalidOperationException(
-                    $"Type {typeof(T)} is not serializable by {nameof(SaveManager<T>)}."
-                );
-            }
-        }
+
+        /// <summary>
+        /// Asynchronously saves the default data to the default slot.
+        /// </summary>
+        /// <param name="token">A cancellation token that can be used to cancel the operation.</param>
+        /// <returns>A Task representing the asynchronous save operation.</returns>
+        public static async Task SaveAsync(CancellationToken token = default) =>
+            await SaveAsync(DefaultSlotName, DefaultSavedData, token);
+
+        /// <summary>
+        /// Asynchronously saves the specified data to the specified slot.
+        /// </summary>
+        /// <param name="slotName">The name of the slot where the data will be saved.</param>
+        /// <param name="token">A cancellation token that can be used to cancel the operation.</param>
+        /// <returns>A Task representing the asynchronous save operation.</returns>
+        public static async Task SaveAsync(string slotName, CancellationToken token = default) =>
+            await SaveAsync(slotName, SavedData[slotName], token);
 
         /// <summary>
         /// Asynchronously saves the given data to the default slot.
         /// </summary>
         /// <param name="data">The data to be saved.</param>
         /// <param name="token">A cancellation token that can be used to cancel the operation.</param>
-        /// <returns>A UniTask representing the asynchronous save operation.</returns>
+        /// <returns>A Task representing the asynchronous save operation.</returns>
         public static async Task SaveAsync(T data, CancellationToken token = default) =>
             await SaveAsync(DefaultSlotName, data, token);
 
@@ -69,7 +103,7 @@ namespace NgoUyenNguyen
         /// Asynchronously loads the saved data from the default slot.
         /// </summary>
         /// <param name="token">A cancellation token that can be used to cancel the operation.</param>
-        /// <returns>A UniTask containing a boolean value indicating whether the load operation was successful.</returns>
+        /// <returns>A Task containing a boolean value indicating whether the load operation was successful.</returns>
         public static async Task<bool> LoadAsync(CancellationToken token = default) =>
             await LoadAsync(DefaultSlotName, token);
 
@@ -79,9 +113,10 @@ namespace NgoUyenNguyen
         /// <param name="slotName">The name of the save slot where the data will be stored.</param>
         /// <param name="data">The data to be saved.</param>
         /// <param name="token">A cancellation token that can be used to cancel the save operation.</param>
-        /// <returns>A UniTask representing the asynchronous save operation.</returns>
+        /// <returns>A Task representing the asynchronous save operation.</returns>
         public static async Task SaveAsync(string slotName, T data, CancellationToken token = default)
         {
+            EnsureValidType();
             slotName ??= DefaultSlotName;
             var serializer = SaveSerializerFactory.Create();
             var bytes = serializer.Serialize(data);
@@ -92,10 +127,24 @@ namespace NgoUyenNguyen
                 Directory.CreateDirectory(directory);
             }
 
+            var tempPath = path + ".tmp";
+            try
+            {
+                await File.WriteAllBytesAsync(tempPath, bytes, token);
+                if (File.Exists(path)) File.Delete(path);
 
-            await File.WriteAllBytesAsync(path, bytes, token);
+                File.Move(tempPath, path);
+            }
+            catch
+            {
+                if (File.Exists(tempPath))
+                    File.Delete(tempPath);
+                throw;
+            }
+
 #if UNITY_EDITOR
-            AssetDatabase.Refresh();
+            if (!path.StartsWith("Assets")) return;
+            AssetDatabase.ImportAsset(path);
 #endif
         }
 
@@ -104,19 +153,25 @@ namespace NgoUyenNguyen
         /// </summary>
         /// <param name="slotName">The name of the slot from which to load the data.</param>
         /// <param name="token">A cancellation token that can be used to cancel the operation.</param>
-        /// <returns>A UniTask containing a boolean value that indicates whether the data was successfully loaded.</returns>
+        /// <returns>A Task containing a boolean value that indicates whether the data was successfully loaded.</returns>
         public static async Task<bool> LoadAsync(string slotName, CancellationToken token = default)
         {
+            EnsureValidType();
             slotName ??= DefaultSlotName;
             var serializer = SaveSerializerFactory.Create();
             var path = GetSaveFilePath(slotName, serializer.FileExtension);
 
             if (!File.Exists(path)) return false;
-            
+
             try
             {
                 var bytes = await File.ReadAllBytesAsync(path, token);
-                SavedData = serializer.Deserialize<T>(bytes);
+                var data = serializer.Deserialize<T>(bytes);
+                lock (SavedData)
+                {
+                    SavedData[slotName] = data;
+                }
+
                 return true;
             }
             catch (OperationCanceledException)
@@ -128,7 +183,6 @@ namespace NgoUyenNguyen
                 Debug.LogError($"Failed to load save '{slotName}': {e}");
                 return false;
             }
-
         }
 
         /// <summary>
@@ -139,12 +193,28 @@ namespace NgoUyenNguyen
         /// <returns>The full file path for the specified save file.</returns>
         public static string GetSaveFilePath(string slotName, string extension)
         {
-            var typeString = Application.isEditor ? typeof(T).Name : typeof(T).FullName.GetHashCode().ToString("X");
+            slotName = string.Concat(slotName.Where(c => !Path.GetInvalidFileNameChars().Contains(c)));
+            var typeString = Application.isEditor ? typeof(T).Name : StableHash(typeof(T).FullName);
             var folder = Application.isEditor ? EditorSaveFolder : Application.persistentDataPath;
             return Path.Combine(
                 folder,
                 $"save_{typeString}_{slotName}{extension}"
             );
+        }
+
+        private static string StableHash(string input)
+        {
+            using var md5 = MD5.Create();
+            var bytes = md5.ComputeHash(Encoding.UTF8.GetBytes(input));
+            return BitConverter.ToString(bytes).Replace("-", "");
+        }
+
+        private static void EnsureValidType()
+        {
+            if (!IsValidDataType)
+                throw new InvalidOperationException(
+                    $"Type {typeof(T)} must be marked with [MessagePackObject]."
+                );
         }
     }
 }

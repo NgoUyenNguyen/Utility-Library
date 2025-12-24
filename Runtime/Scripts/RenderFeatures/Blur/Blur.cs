@@ -1,3 +1,4 @@
+#if URP
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -14,3 +15,4 @@ namespace NgoUyenNguyen
         public bool IsActive() => strength.value > 0f && active;
     }
 }
+#endif

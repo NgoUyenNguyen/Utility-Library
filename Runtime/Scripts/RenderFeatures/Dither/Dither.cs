@@ -1,3 +1,5 @@
+#if URP
+
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -18,3 +20,4 @@ namespace NgoUyenNguyen
         public bool IsActive() => intensity.value > 0f;
     }
 }
+#endif

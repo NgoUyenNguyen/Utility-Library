@@ -1,4 +1,4 @@
-﻿#if UNITY_PIPELINE_URP || UNITY_PIPELINE_HDRP
+﻿#if URP
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 

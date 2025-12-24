@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if URP
+using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Rendering.RenderGraphModule;
@@ -96,3 +97,4 @@ namespace NgoUyenNguyen
         }
     }
 }
+#endif

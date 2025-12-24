@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if UNITY_PIPELINE_URP || UNITY_PIPELINE_HDRP
+using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
 namespace NgoUyenNguyen
@@ -25,3 +26,4 @@ namespace NgoUyenNguyen
         }
     }
 }
+#endif

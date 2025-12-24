@@ -222,7 +222,11 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      FlexibleGrid_0: 7774812251887415439
+      FlexibleGrid_1: 7402885567007138934
+      FlexibleGrid_2: -3040357252549334183
+      FlexibleGrid_3: -166050169689656944
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

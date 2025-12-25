@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MessagePack;
@@ -21,57 +17,42 @@ namespace NgoUyenNguyen
     /// <typeparam name="T">The data type to be saved and loaded. It must be serializable and decorated with MessagePackObjectAttribute.</typeparam>
     public static class SaveManager<T>
     {
+        private static readonly ISaveSerializer serializer = SaveSerializerFactory.Create();
+        
         /// <summary>
-        /// The default slot name used for saving and loading operations within the SaveManager.
-        /// This value is set to "default" and acts as the primary identifier for the save slot
-        /// when no other specific slot name is provided.
+        /// Cache for storing saved data of type <typeparamref name="T"/>.
         /// </summary>
-        public static string DefaultSlotName = "default";
-
+        public static readonly SaveCache<T> Cache = new();
+        
         /// <summary>
-        /// The folder path used for saving data in the Unity Editor environment.
-        /// This is set to "Assets/Saves" by default and serves as the location for serialized data files
-        /// when running the application within the Unity Editor.
+        /// Resolver for determining the file paths for saving and loading data of type <typeparamref name="T"/>.
         /// </summary>
-        public static string EditorSaveFolder = "Assets/Editor/Saves";
-
+        public static readonly SavePathResolver<T> PathResolver = new();
+        
         /// <summary>
-        /// A dictionary that stores the saved data instances grouped by their corresponding slot names.
-        /// This serves as the runtime in-memory representation of the saved data loaded from storage or added via the SaveManager.
+        /// Indicates whether the type <typeparamref name="T"/> is valid for use with the SaveManager.
+        /// The type is considered valid if it is marked with the <see cref="MessagePackObjectAttribute"/>.
         /// </summary>
-        public static readonly Dictionary<string, T> SavedData = new();
+        public static readonly bool IsValidDataType = Attribute.IsDefined(typeof(T), typeof(MessagePackObjectAttribute));
+        
+        public static event Action<string> OnSaveCompleted = delegate { };
+        public static event Action<string> OnSaveFailed = delegate { };
+        public static event Action<string> OnLoadCompleted = delegate { };
+        public static event Action<string> OnLoadFailed = delegate { };
 
-        /// <summary>
-        /// Represents the default saved data of type T, associated with the default save slot name.
-        /// This property serves as a convenient way to get or set the data stored in the default save slot.
-        /// If no data exists in the default slot, the getter will return the default value of T.
-        /// When setting this property, the corresponding data in the default save slot is updated.
-        /// </summary>
-        public static T DefaultSavedData
-        {
-            get => SavedData.GetValueOrDefault(DefaultSlotName);
-            set => SavedData[DefaultSlotName] = value;
-        }
-
+        
         /// <summary>
         /// Checks if the default save file exists.
         /// </summary>
         /// <returns>A boolean indicating whether the default save file exists.</returns>
-        public static bool ExistSaveFile() => ExistSaveFile(DefaultSlotName);
+        public static bool ExistsSaveFile() => ExistsSaveFile(Cache.DefaultSlotName);
 
         /// <summary>
         /// Checks if the save file exists.
         /// </summary>
         /// <returns>A boolean indicating whether the save file exists.</returns>
-        public static bool ExistSaveFile(string slotName) =>
-            File.Exists(GetSaveFilePath(slotName, SaveSerializerFactory.Create().FileExtension));
-
-        /// <summary>
-        /// Indicates whether the type <typeparamref name="T"/> is valid for use with the SaveManager.
-        /// The type is considered valid if it is marked with the <see cref="MessagePackObjectAttribute"/>.
-        /// </summary>
-        public static bool IsValidDataType =>
-            Attribute.IsDefined(typeof(T), typeof(MessagePackObjectAttribute));
+        public static bool ExistsSaveFile(string slotName) =>
+            File.Exists(PathResolver.GetSaveFilePath(slotName, serializer.FileExtension));
 
         /// <summary>
         /// Asynchronously saves the default data to the default slot.
@@ -79,7 +60,7 @@ namespace NgoUyenNguyen
         /// <param name="token">A cancellation token that can be used to cancel the operation.</param>
         /// <returns>A Task representing the asynchronous save operation.</returns>
         public static async Task SaveAsync(CancellationToken token = default) =>
-            await SaveAsync(DefaultSlotName, DefaultSavedData, token);
+            await SaveAsync(Cache.DefaultSlotName, Cache.DefaultSavedData, token);
 
         /// <summary>
         /// Asynchronously saves the specified data to the specified slot.
@@ -87,8 +68,14 @@ namespace NgoUyenNguyen
         /// <param name="slotName">The name of the slot where the data will be saved.</param>
         /// <param name="token">A cancellation token that can be used to cancel the operation.</param>
         /// <returns>A Task representing the asynchronous save operation.</returns>
-        public static async Task SaveAsync(string slotName, CancellationToken token = default) =>
-            await SaveAsync(slotName, SavedData[slotName], token);
+        public static async Task SaveAsync(string slotName, CancellationToken token = default)
+        {
+            if (!Cache.TryGetAtSlot(slotName, out var data))
+                throw new InvalidOperationException($"No cached data at slot '{slotName}'");
+
+            await SaveAsync(slotName, data, token);
+        }
+
 
         /// <summary>
         /// Asynchronously saves the given data to the default slot.
@@ -97,7 +84,7 @@ namespace NgoUyenNguyen
         /// <param name="token">A cancellation token that can be used to cancel the operation.</param>
         /// <returns>A Task representing the asynchronous save operation.</returns>
         public static async Task SaveAsync(T data, CancellationToken token = default) =>
-            await SaveAsync(DefaultSlotName, data, token);
+            await SaveAsync(Cache.DefaultSlotName, data, token);
 
         /// <summary>
         /// Asynchronously loads the saved data from the default slot.
@@ -105,7 +92,7 @@ namespace NgoUyenNguyen
         /// <param name="token">A cancellation token that can be used to cancel the operation.</param>
         /// <returns>A Task containing a boolean value indicating whether the load operation was successful.</returns>
         public static async Task<bool> LoadAsync(CancellationToken token = default) =>
-            await LoadAsync(DefaultSlotName, token);
+            await LoadAsync(Cache.DefaultSlotName, token);
 
         /// <summary>
         /// Asynchronously saves the provided data to a specified save slot.
@@ -117,10 +104,12 @@ namespace NgoUyenNguyen
         public static async Task SaveAsync(string slotName, T data, CancellationToken token = default)
         {
             EnsureValidType();
-            slotName ??= DefaultSlotName;
-            var serializer = SaveSerializerFactory.Create();
+            if (data == null)
+                throw new ArgumentNullException(nameof(data));
+            
+            slotName ??= Cache.DefaultSlotName;
             var bytes = serializer.Serialize(data);
-            var path = GetSaveFilePath(slotName, serializer.FileExtension);
+            var path = PathResolver.GetSaveFilePath(slotName, serializer.FileExtension);
             var directory = Path.GetDirectoryName(path);
             if (!string.IsNullOrEmpty(directory))
             {
@@ -130,15 +119,22 @@ namespace NgoUyenNguyen
             var tempPath = path + ".tmp";
             try
             {
-                await File.WriteAllBytesAsync(tempPath, bytes, token);
-                if (File.Exists(path)) File.Delete(path);
+                await Task.Run(() =>
+                {
+                    File.WriteAllBytes(tempPath, bytes);
+                    
+                    if (File.Exists(path)) File.Delete(path);
+                    
+                    File.Move(tempPath, path);
+                }, token);
 
-                File.Move(tempPath, path);
+                OnSaveCompleted(slotName);
             }
             catch
             {
                 if (File.Exists(tempPath))
                     File.Delete(tempPath);
+                OnSaveFailed(slotName);
                 throw;
             }
 
@@ -157,21 +153,22 @@ namespace NgoUyenNguyen
         public static async Task<bool> LoadAsync(string slotName, CancellationToken token = default)
         {
             EnsureValidType();
-            slotName ??= DefaultSlotName;
-            var serializer = SaveSerializerFactory.Create();
-            var path = GetSaveFilePath(slotName, serializer.FileExtension);
+            slotName ??= Cache.DefaultSlotName;
+            var path = PathResolver.GetSaveFilePath(slotName, serializer.FileExtension);
 
-            if (!File.Exists(path)) return false;
+            if (!File.Exists(path))
+            {
+                OnLoadFailed(slotName);
+                return false;
+            }
 
             try
             {
                 var bytes = await File.ReadAllBytesAsync(path, token);
                 var data = serializer.Deserialize<T>(bytes);
-                lock (SavedData)
-                {
-                    SavedData[slotName] = data;
-                }
+                Cache.SetAtSlot(slotName, data);
 
+                OnLoadCompleted(slotName);
                 return true;
             }
             catch (OperationCanceledException)
@@ -181,34 +178,11 @@ namespace NgoUyenNguyen
             catch (Exception e)
             {
                 Debug.LogError($"Failed to load save '{slotName}': {e}");
+                OnLoadFailed(slotName);
                 return false;
             }
         }
-
-        /// <summary>
-        /// Constructs and returns the full file path for a save file, based on the specified slot name and file extension.
-        /// </summary>
-        /// <param name="slotName">The name of the save slot to uniquely identify the save file.</param>
-        /// <param name="extension">The file extension to be used for the save file.</param>
-        /// <returns>The full file path for the specified save file.</returns>
-        public static string GetSaveFilePath(string slotName, string extension)
-        {
-            slotName = string.Concat(slotName.Where(c => !Path.GetInvalidFileNameChars().Contains(c)));
-            var typeString = Application.isEditor ? typeof(T).Name : StableHash(typeof(T).FullName);
-            var folder = Application.isEditor ? EditorSaveFolder : Application.persistentDataPath;
-            return Path.Combine(
-                folder,
-                $"save_{typeString}_{slotName}{extension}"
-            );
-        }
-
-        private static string StableHash(string input)
-        {
-            using var md5 = MD5.Create();
-            var bytes = md5.ComputeHash(Encoding.UTF8.GetBytes(input));
-            return BitConverter.ToString(bytes).Replace("-", "");
-        }
-
+        
         private static void EnsureValidType()
         {
             if (!IsValidDataType)

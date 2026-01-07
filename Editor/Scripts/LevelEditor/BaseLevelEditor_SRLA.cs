@@ -184,7 +184,7 @@ namespace NgoUyenNguyen.Editor
             }
 
             level.name = $"Level {currentLevel.Index}";
-            level.EditorPath = levelPath;
+            level.EditorPath = LevelFolderPath;
             EditorUtility.SetDirty(level);
 
             // Save level as prefab

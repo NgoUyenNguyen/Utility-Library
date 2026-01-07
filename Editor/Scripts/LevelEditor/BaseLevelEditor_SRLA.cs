@@ -103,7 +103,7 @@ namespace NgoUyenNguyen.Editor
             if (currentLevel == null) return;
             if (GUILayout.Button("Save Level", GUILayout.Height(40)))
             {
-                SaveLevel(currentLevel.gameObject);
+                SaveLevel(currentLevel);
             }
         }
 
@@ -167,12 +167,12 @@ namespace NgoUyenNguyen.Editor
             AddLevelPerformed?.Invoke();
         }
 
-        protected virtual void SaveLevel(GameObject level)
+        protected virtual void SaveLevel(BaseLevel level)
         {
             // Make sure LevelFolder exist
             System.IO.Directory.CreateDirectory(LevelFolderPath);
-            currentLevel.Index = currentLevelIndex;
-            var levelPath = GetLevelPath(currentLevel);
+            level.Index = currentLevelIndex;
+            var levelPath = GetLevelPath(level);
 
             // if level already exist, show dialog
             if (System.IO.File.Exists(levelPath))
@@ -183,12 +183,12 @@ namespace NgoUyenNguyen.Editor
                 }
             }
 
-            // Change level name on scene
-            currentLevel.name = $"Level {currentLevel.Index}";
-            EditorUtility.SetDirty(currentLevel);
+            level.name = $"Level {currentLevel.Index}";
+            level.EditorPath = levelPath;
+            EditorUtility.SetDirty(level);
 
             // Save level as prefab
-            PrefabUtility.SaveAsPrefabAssetAndConnect(level, levelPath, InteractionMode.UserAction);
+            PrefabUtility.SaveAsPrefabAssetAndConnect(level.gameObject, levelPath, InteractionMode.UserAction);
 
             // Add to Addressable
             var settings = AddressableAssetSettingsDefaultObject.GetSettings(true);
@@ -227,6 +227,7 @@ namespace NgoUyenNguyen.Editor
             }
 
             currentLevelIndex = currentLevel.Index;
+            LevelFolderPath = currentLevel.EditorPath;
 
             LoadLevelPerformed?.Invoke();
         }

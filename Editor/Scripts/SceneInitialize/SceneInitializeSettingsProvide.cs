@@ -10,7 +10,7 @@ namespace NgoUyenNguyen.Editor
         [SettingsProvider]
         public static SettingsProvider CreateSettingsProvider()
         {
-            var provider = new SettingsProvider("Project/Scene Initialize", SettingsScope.Project)
+            var provider = new SettingsProvider("Project/NgoUyenNguyen/Scene Initialize", SettingsScope.Project)
             {
                 label = "Scene Initialize",
 

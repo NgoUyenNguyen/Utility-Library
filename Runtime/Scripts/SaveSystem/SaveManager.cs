@@ -44,7 +44,7 @@ namespace NgoUyenNguyen
         /// <summary>
         /// Invoked on the Unity main thread after a fail save operation.
         /// </summary>
-        public static event Action<string> OnSaveFailed = delegate { };
+        public static event Action<string, Exception> OnSaveFailed = delegate { };
         /// <summary>
         /// Invoked on the Unity main thread after a successful load operation.
         /// </summary>
@@ -52,7 +52,7 @@ namespace NgoUyenNguyen
         /// <summary>
         /// Invoked on the Unity main thread after a fail load operation.
         /// </summary>
-        public static event Action<string> OnLoadFailed = delegate { };
+        public static event Action<string, Exception> OnLoadFailed = delegate { };
         #endregion
 
         #region Exist
@@ -90,7 +90,7 @@ namespace NgoUyenNguyen
             if (!Cache.TryGetAtSlot(slotName, out var data))
             {
                 await UniTask.SwitchToMainThread();
-                OnSaveFailed(slotName);
+                OnSaveFailed(slotName, new SaveSlotNotFoundException(slotName));
                 return false;
             }
             
@@ -160,7 +160,7 @@ namespace NgoUyenNguyen
                 CleanupTemp(tempPath);
 
                 await UniTask.SwitchToMainThread();
-                OnSaveFailed(slotName);
+                OnSaveFailed(slotName, e);
                 return false;
             }
         }
@@ -200,7 +200,7 @@ namespace NgoUyenNguyen
             if (!File.Exists(path))
             {
                 await UniTask.SwitchToMainThread();
-                OnLoadFailed(slotName);
+                OnLoadFailed(slotName, new Exception("File not found"));
                 return false;
             }
 
@@ -226,10 +226,10 @@ namespace NgoUyenNguyen
             {
                 throw;
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 await UniTask.SwitchToMainThread();
-                OnLoadFailed(slotName);
+                OnLoadFailed(slotName, e);
                 return false;
             }
         }
@@ -242,5 +242,13 @@ namespace NgoUyenNguyen
                 );
         }
         #endregion
+        
+        public static void ClearEvents()
+        {
+            OnSaveCompleted = delegate { };
+            OnSaveFailed = delegate { };
+            OnLoadCompleted = delegate { };
+            OnLoadFailed = delegate { };
+        }
     }
 }

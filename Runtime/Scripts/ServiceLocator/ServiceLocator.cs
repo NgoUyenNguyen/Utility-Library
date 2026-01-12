@@ -32,6 +32,11 @@ namespace NgoUyenNguyen
         }
 
         /// <summary>
+        /// Collection of all services currently registered within this <see cref="ServiceLocator"/>.
+        /// </summary>
+        public IEnumerable<object> RegisteredServices => services.RegisteredServices;
+
+        /// <summary>
         /// Provides a global <see cref="ServiceLocator"/> instance, acting as a shared container for services that
         /// are not specific to any particular scene or object. The global instance is automatically created
         /// on first access and can be configured to persist across scene changes via DontDestroyOnLoad.
@@ -80,13 +85,9 @@ namespace NgoUyenNguyen
         /// <param name="service">The service instance to register.</param>
         /// <typeparam name="T">The type of the service being registered.</typeparam>
         /// <returns>
-        /// Returns the current <see cref="ServiceLocator"/> instance, enabling method chaining.
+        /// Returns a boolean indicating whether the service was successfully registered.
         /// </returns>
-        public ServiceLocator Register<T>(T service)
-        {
-            services.Register(service);
-            return this;
-        }
+        public bool Register<T>(T service) => services.Register(service);
 
         /// <summary>
         /// Registers a service instance with the service locator for the specified types or its own type if no additional types are specified.
@@ -94,13 +95,9 @@ namespace NgoUyenNguyen
         /// <param name="service">The service instance to register.</param>
         /// <param name="types">The types to associate with the service. If not specified, the service's own type will be used.</param>
         /// <returns>
-        /// The current instance of <see cref="ServiceLocator"/> to allow method chaining.
+        /// Returns a boolean indicating whether the service was successfully registered for all specified types.
         /// </returns>
-        public ServiceLocator Register(object service, params Type[] types)
-        {
-            services.Register(service, types);
-            return this;
-        }
+        public bool Register(object service, params Type[] types) => services.Register(service, types);
 
         /// <summary>
         /// Retrieves an instance of the specified service type <typeparamref name="T"/> that has been registered
@@ -176,10 +173,7 @@ namespace NgoUyenNguyen
         /// Returns true if the service of type <typeparamref name="T"/> was successfully unregistered;
         /// otherwise, false if the service was not registered or could not be removed.
         /// </returns>
-        public bool Unregister<T>()
-        {
-            return services.Unregister<T>();
-        }
+        public bool Unregister<T>() => services.Unregister<T>();
 
         /// <summary>
         /// Unregisters one or more service types from the ServiceLocator.
@@ -190,15 +184,12 @@ namespace NgoUyenNguyen
         /// <returns>
         /// Returns a boolean indicating whether all the provided service types were successfully unregistered.
         /// </returns>
-        public bool Unregister(params Type[] types)
-        {
-            return services.Unregister(types);
-        }
+        public bool Unregister(params Type[] types) => services.Unregister(types);
 
-        public void UnregisterAll()
-        {
-            services.UnregisterAll();
-        }
+        /// <summary>
+        /// Unregisters all services.
+        /// </summary>
+        public void UnregisterAll() => services.UnregisterAll();
 
         private bool TryGetNextInHierarchy(out ServiceLocator container)
         {

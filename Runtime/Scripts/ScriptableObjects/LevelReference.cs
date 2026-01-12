@@ -1,7 +1,9 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -9,121 +11,92 @@ using Object = UnityEngine.Object;
 
 namespace NgoUyenNguyen.ScriptableObjects
 {
-    [CreateAssetMenu(fileName ="LevelReference", menuName = "Scriptable Objects/Level Reference")]
+    [CreateAssetMenu(fileName = "LevelReference", menuName = "Scriptable Objects/Level Reference")]
     public class LevelReference : ScriptableObject, IDisposable, IEnumerable<AssetReference>
     {
-        public List<AssetReference> references;
+        [SerializeField] private List<AssetReference> references = new();
 
-        public AssetReference this[int index]
-        {
-            get => references[index];
-        }
-        
+        private readonly Dictionary<int, AsyncOperationHandle> loadedHandles = new();
+
         public int Count => references.Count;
-        
+
+        public AssetReference this[int index] => index >= 0 && index < references.Count
+                ? references[index]
+                : null;
+
+        #region IEnumerable
+
         public IEnumerator<AssetReference> GetEnumerator() => references.GetEnumerator();
-        
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public AssetReference GetReferenceFromGUID(string guid)
+        #endregion
+
+        public AssetReference GetReferenceFromGUID(string guid) =>
+            references.FirstOrDefault(r => r != null && r.AssetGUID == guid);
+
+        public async UniTask<T> LoadAsync<T>(int index, 
+            float delaySeconds = 0f, 
+            CancellationToken cancellationToken = default) where T : Object
         {
-            foreach (AssetReference reference in references)
+            if (index < 0 || index >= references.Count) return null;
+
+            var reference = references[index];
+            if (reference == null) return null;
+
+            if (loadedHandles.TryGetValue(index, out var cached)) return cached.Result as T;
+
+            var handle = reference.LoadAssetAsync<T>();
+            loadedHandles[index] = handle;
+
+            try
             {
-                if (reference.AssetGUID == guid)
-                {
-                    return reference;
-                }
+                await handle.ToUniTask(cancellationToken: cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                if (handle.IsValid())
+                    Addressables.Release(handle);
+
+                loadedHandles.Remove(index);
+                return null;
             }
 
-            return null;
-        }
-        
-        public async Task<T> LoadAsync<T>(int index, float delay = 0f, Action onComplete = null) where T : Object
-        {
-            if (index < 0 || index >= references.Count || references[index] == null) return null;
-            
-            var loadTime = 0f;
-            var loadHandle = references[index].LoadAssetAsync<T>();
-            while (!loadHandle.IsDone || loadTime < delay)
+
+            if (handle.Status != AsyncOperationStatus.Succeeded)
             {
-                loadTime += .1f;
-                await Task.Delay(100);
+                Debug.LogException(handle.OperationException);
+                loadedHandles.Remove(index);
+                return null;
             }
 
-            if (loadHandle.Status == AsyncOperationStatus.Succeeded)
-            {
-                onComplete?.Invoke();
-                return loadHandle.Result;
-            }
-            Debug.LogException(loadHandle.OperationException);
-            return null;
-        }
-        
-        public async Task<GameObject> InstantiateAsync(int index, Action onComplete = null)
-        {
-            if (index < 0 || index >= references.Count || references[index] == null) return null;
+            if (delaySeconds > 0f) 
+                await UniTask.Delay(TimeSpan.FromSeconds(delaySeconds), cancellationToken: cancellationToken);
 
-            var instantiateHandle = references[index].InstantiateAsync();
-            while (!instantiateHandle.IsDone)
-            {
-                await Task.Delay(100);
-            }
-            
-            if (instantiateHandle.Status == AsyncOperationStatus.Succeeded)
-            {
-                onComplete?.Invoke();
-                return instantiateHandle.Result;
-            }
-            Debug.LogException(instantiateHandle.OperationException);
-            return null;
+            return handle.Result;
         }
 
-        public async Task<GameObject> InstantiateAsync(int index, Vector3 position, Quaternion rotation, 
-            Transform parent = null, Action onComplete = null)
+        public void Release(int index)
         {
-            if (index < 0 || index >= references.Count || references[index] == null) return null;
+            if (!loadedHandles.TryGetValue(index, out var handle))
+                return;
 
-            var instantiateHandle = references[index].InstantiateAsync(position, rotation, parent);
-            while (!instantiateHandle.IsDone)
-            {
-                await Task.Delay(100);
-            }
-            
-            if (instantiateHandle.Status == AsyncOperationStatus.Succeeded)
-            {
-                onComplete?.Invoke();
-                return instantiateHandle.Result;
-            }
-            Debug.LogException(instantiateHandle.OperationException);
-            return null;
+            if (handle.IsValid())
+                Addressables.Release(handle);
+
+            loadedHandles.Remove(index);
         }
 
-        public async Task<GameObject> InstantiateAsync(int index, Transform parent, 
-            bool instantiateInWorldSpace = false, Action onComplete = null)
+        public void ReleaseAll()
         {
-            if (index < 0 || index >= references.Count || references[index] == null) return null;
+            foreach (var handle in loadedHandles.Values)
+            {
+                if (handle.IsValid())
+                    Addressables.Release(handle);
+            }
 
-            var instantiateHandle = references[index].InstantiateAsync(parent, instantiateInWorldSpace);
-            while (!instantiateHandle.IsDone)
-            {
-                await Task.Delay(100);
-            }
-            
-            if (instantiateHandle.Status == AsyncOperationStatus.Succeeded)
-            {
-                onComplete?.Invoke();
-                return instantiateHandle.Result;
-            }
-            Debug.LogException(instantiateHandle.OperationException);
-            return null;
+            loadedHandles.Clear();
         }
 
-        public void Dispose()
-        {
-            foreach (var reference in references.Where(reference => reference != null && reference.IsValid()))
-            {
-                reference.ReleaseAsset();
-            }
-        }
+        public void Dispose() => ReleaseAll();
     }
 }

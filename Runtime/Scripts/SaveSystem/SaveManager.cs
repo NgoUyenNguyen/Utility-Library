@@ -1,9 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using MessagePack;
-using UnityEngine;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -17,6 +16,7 @@ namespace NgoUyenNguyen
     /// <typeparam name="T">The data type to be saved and loaded. It must be serializable and decorated with MessagePackObjectAttribute.</typeparam>
     public static class SaveManager<T>
     {
+        #region Fields
         private static readonly ISaveSerializer serializer = SaveSerializerFactory.Create();
         
         /// <summary>
@@ -34,13 +34,28 @@ namespace NgoUyenNguyen
         /// The type is considered valid if it is marked with the <see cref="MessagePackObjectAttribute"/>.
         /// </summary>
         public static readonly bool IsValidDataType = Attribute.IsDefined(typeof(T), typeof(MessagePackObjectAttribute));
-        
-        public static event Action<string> OnSaveCompleted = delegate { };
-        public static event Action<string> OnSaveFailed = delegate { };
-        public static event Action<string> OnLoadCompleted = delegate { };
-        public static event Action<string> OnLoadFailed = delegate { };
+        #endregion
 
-        
+        #region Events
+        /// <summary>
+        /// Invoked on the Unity main thread after a successful save operation.
+        /// </summary>
+        public static event Action<string> OnSaveCompleted = delegate { };
+        /// <summary>
+        /// Invoked on the Unity main thread after a fail save operation.
+        /// </summary>
+        public static event Action<string> OnSaveFailed = delegate { };
+        /// <summary>
+        /// Invoked on the Unity main thread after a successful load operation.
+        /// </summary>
+        public static event Action<string> OnLoadCompleted = delegate { };
+        /// <summary>
+        /// Invoked on the Unity main thread after a fail load operation.
+        /// </summary>
+        public static event Action<string> OnLoadFailed = delegate { };
+        #endregion
+
+        #region Exist
         /// <summary>
         /// Checks if the default save file exists.
         /// </summary>
@@ -53,13 +68,15 @@ namespace NgoUyenNguyen
         /// <returns>A boolean indicating whether the save file exists.</returns>
         public static bool ExistsSaveFile(string slotName) =>
             File.Exists(PathResolver.GetSaveFilePath(slotName, serializer.FileExtension));
+        #endregion
 
+        #region Save
         /// <summary>
         /// Asynchronously saves the default data to the default slot.
         /// </summary>
         /// <param name="token">A cancellation token that can be used to cancel the operation.</param>
         /// <returns>A Task representing the asynchronous save operation.</returns>
-        public static async Task SaveAsync(CancellationToken token = default) =>
+        public static async UniTask<bool> SaveAsync(CancellationToken token = default) =>
             await SaveAsync(Cache.DefaultSlotName, Cache.DefaultSavedData, token);
 
         /// <summary>
@@ -68,31 +85,27 @@ namespace NgoUyenNguyen
         /// <param name="slotName">The name of the slot where the data will be saved.</param>
         /// <param name="token">A cancellation token that can be used to cancel the operation.</param>
         /// <returns>A Task representing the asynchronous save operation.</returns>
-        public static async Task SaveAsync(string slotName, CancellationToken token = default)
+        public static async UniTask<bool> SaveAsync(string slotName, CancellationToken token = default)
         {
             if (!Cache.TryGetAtSlot(slotName, out var data))
-                throw new InvalidOperationException($"No cached data at slot '{slotName}'");
-
-            await SaveAsync(slotName, data, token);
+            {
+                await UniTask.SwitchToMainThread();
+                OnSaveFailed(slotName);
+                return false;
+            }
+            
+            var result = await SaveAsync(slotName, data, token);
+            return result;
         }
-
-
+        
         /// <summary>
         /// Asynchronously saves the given data to the default slot.
         /// </summary>
         /// <param name="data">The data to be saved.</param>
         /// <param name="token">A cancellation token that can be used to cancel the operation.</param>
         /// <returns>A Task representing the asynchronous save operation.</returns>
-        public static async Task SaveAsync(T data, CancellationToken token = default) =>
+        public static async UniTask<bool> SaveAsync(T data, CancellationToken token = default) =>
             await SaveAsync(Cache.DefaultSlotName, data, token);
-
-        /// <summary>
-        /// Asynchronously loads the saved data from the default slot.
-        /// </summary>
-        /// <param name="token">A cancellation token that can be used to cancel the operation.</param>
-        /// <returns>A Task containing a boolean value indicating whether the load operation was successful.</returns>
-        public static async Task<bool> LoadAsync(CancellationToken token = default) =>
-            await LoadAsync(Cache.DefaultSlotName, token);
 
         /// <summary>
         /// Asynchronously saves the provided data to a specified save slot.
@@ -101,48 +114,76 @@ namespace NgoUyenNguyen
         /// <param name="data">The data to be saved.</param>
         /// <param name="token">A cancellation token that can be used to cancel the save operation.</param>
         /// <returns>A Task representing the asynchronous save operation.</returns>
-        public static async Task SaveAsync(string slotName, T data, CancellationToken token = default)
+        public static async UniTask<bool> SaveAsync(string slotName, T data, CancellationToken token = default)
         {
             EnsureValidType();
-            if (data == null)
-                throw new ArgumentNullException(nameof(data));
+            if (data is null) return false;
             
             slotName ??= Cache.DefaultSlotName;
-            var bytes = serializer.Serialize(data);
+            
             var path = PathResolver.GetSaveFilePath(slotName, serializer.FileExtension);
-            var directory = Path.GetDirectoryName(path);
-            if (!string.IsNullOrEmpty(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
             var tempPath = path + ".tmp";
+            
             try
             {
-                await Task.Run(() =>
+                await UniTask.RunOnThreadPool(() =>
                 {
+                    token.ThrowIfCancellationRequested();
+                    
+                    var bytes = serializer.Serialize(data);
+                    
+                    var dir = Path.GetDirectoryName(path);
+                    if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+                    
                     File.WriteAllBytes(tempPath, bytes);
                     
                     if (File.Exists(path)) File.Delete(path);
                     
                     File.Move(tempPath, path);
-                }, token);
+                }, cancellationToken: token);
 
+                await UniTask.SwitchToMainThread();
                 OnSaveCompleted(slotName);
+                
+#if UNITY_EDITOR
+                if (path.StartsWith("Assets")) AssetDatabase.ImportAsset(path);
+#endif
+                return true;
             }
-            catch
+            catch (OperationCanceledException)
+            {
+                CleanupTemp(tempPath);
+                throw;
+            }
+            catch (Exception e)
+            {
+                CleanupTemp(tempPath);
+
+                await UniTask.SwitchToMainThread();
+                OnSaveFailed(slotName);
+                return false;
+            }
+        }
+        
+        private static void CleanupTemp(string tempPath)
+        {
+            try
             {
                 if (File.Exists(tempPath))
                     File.Delete(tempPath);
-                OnSaveFailed(slotName);
-                throw;
             }
-
-#if UNITY_EDITOR
-            if (!path.StartsWith("Assets")) return;
-            AssetDatabase.ImportAsset(path);
-#endif
+            catch { /* ignored */ }
         }
+        #endregion
+
+        #region Load
+        /// <summary>
+        /// Asynchronously loads the saved data from the default slot.
+        /// </summary>
+        /// <param name="token">A cancellation token that can be used to cancel the operation.</param>
+        /// <returns>A Task containing a boolean value indicating whether the load operation was successful.</returns>
+        public static async UniTask<bool> LoadAsync(CancellationToken token = default) =>
+            await LoadAsync(Cache.DefaultSlotName, token);
 
         /// <summary>
         /// Asynchronously loads the saved data from the specified slot.
@@ -150,7 +191,7 @@ namespace NgoUyenNguyen
         /// <param name="slotName">The name of the slot from which to load the data.</param>
         /// <param name="token">A cancellation token that can be used to cancel the operation.</param>
         /// <returns>A Task containing a boolean value that indicates whether the data was successfully loaded.</returns>
-        public static async Task<bool> LoadAsync(string slotName, CancellationToken token = default)
+        public static async UniTask<bool> LoadAsync(string slotName, CancellationToken token = default)
         {
             EnsureValidType();
             slotName ??= Cache.DefaultSlotName;
@@ -158,16 +199,26 @@ namespace NgoUyenNguyen
 
             if (!File.Exists(path))
             {
+                await UniTask.SwitchToMainThread();
                 OnLoadFailed(slotName);
                 return false;
             }
 
             try
             {
-                var bytes = await File.ReadAllBytesAsync(path, token);
+                var bytes = await UniTask.RunOnThreadPool(
+                    () =>
+                    {
+                        token.ThrowIfCancellationRequested();
+                        return File.ReadAllBytes(path);
+                    },
+                    cancellationToken: token
+                );
                 var data = serializer.Deserialize<T>(bytes);
+                
+                await UniTask.SwitchToMainThread();
+                
                 Cache.SetAtSlot(slotName, data);
-
                 OnLoadCompleted(slotName);
                 return true;
             }
@@ -175,9 +226,9 @@ namespace NgoUyenNguyen
             {
                 throw;
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Debug.LogError($"Failed to load save '{slotName}': {e}");
+                await UniTask.SwitchToMainThread();
                 OnLoadFailed(slotName);
                 return false;
             }
@@ -190,5 +241,6 @@ namespace NgoUyenNguyen
                     $"Type {typeof(T)} must be marked with [MessagePackObject]."
                 );
         }
+        #endregion
     }
 }

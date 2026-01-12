@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace NgoUyenNguyen
@@ -6,7 +6,7 @@ namespace NgoUyenNguyen
     public partial class SceneGroupLoader
     {
         private static float staticDelayLoading;
-        private static int _tmpSceneBuildIndex;
+        private static int tmpSceneBuildIndex;
         
         internal static SceneGroupLoader Instance { get; set; }
 
@@ -117,8 +117,8 @@ namespace NgoUyenNguyen
         /// </summary>
         public static int TempSceneBuildIndex
         {
-            get => _tmpSceneBuildIndex;
-            set => _tmpSceneBuildIndex = Mathf.Max(0, value);
+            get => tmpSceneBuildIndex;
+            set => tmpSceneBuildIndex = Mathf.Max(0, value);
         }
 
         /// <summary>
@@ -127,7 +127,7 @@ namespace NgoUyenNguyen
         /// <param name="groupIndex">The index of the scene group to load.</param>
         /// <param name="reuseExistingScene">Indicates whether to reuse the existing scene if it is active. Defaults to true.</param>
         /// <returns>A task that represents the asynchronous operation of loading the scene group.</returns>
-        public static async Task LoadAsync(int groupIndex, bool reuseExistingScene = true)
+        public static async UniTask LoadAsync(int groupIndex, bool reuseExistingScene = true)
             => await Instance.LoadSceneGroupAsync(groupIndex, reuseExistingScene);
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace NgoUyenNguyen
         /// </summary>
         /// <param name="groupName"></param>
         /// <param name="reuseExistingScene"></param>
-        public static async Task LoadAsync(string groupName, bool reuseExistingScene = true)
+        public static async UniTask LoadAsync(string groupName, bool reuseExistingScene = true)
             => await Instance.LoadSceneGroupAsync(groupName, reuseExistingScene);
     }
 }

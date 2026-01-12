@@ -10,6 +10,56 @@ namespace NgoUyenNguyen
         private readonly Dictionary<(Type, Delegate), Delegate> wrapperMap = new();
 
         /// <summary>
+        /// Subscribes a callback which invoked once to a specific event type with an optional execution order.
+        /// </summary>
+        /// <param name="callback">The callback to invoke when the event is published.</param>
+        /// <param name="executionOrder">The order in which the callback should be executed when the event is triggered. Defaults to 0.</param>
+        /// <typeparam name="T">The type of the event to subscribe to.</typeparam>
+        public void SubscribeOnce<T>(Action<T> callback, int executionOrder = 0)
+        {
+            var type = typeof(T);
+            
+            if (wrapperMap.ContainsKey((type, callback))) return;
+
+            Action<object> wrapper = null;
+            wrapper = o =>
+            {
+                callback((T)o);
+
+                RemoveListener(type, wrapper);
+                wrapperMap.Remove((type, callback));
+            };
+            
+            wrapperMap[(type, callback)] = wrapper;
+            AddListener(type, wrapper, executionOrder);
+        }
+        
+        /// <summary>
+        /// Subscribes a callback which invoked once to a specific event type with an optional execution order.
+        /// </summary>
+        /// <param name="callback">The callback to invoke when the event is published.</param>
+        /// <param name="executionOrder">The order in which the callback should be executed when the event is triggered. Defaults to 0.</param>
+        /// <typeparam name="T">The type of the event to subscribe to.</typeparam>
+        public void SubscribeOnce<T>(Action callback, int executionOrder = 0)
+        {
+            var type = typeof(T);
+            
+            if (wrapperMap.ContainsKey((type, callback))) return;
+
+            Action<object> wrapper = null;
+            wrapper = _ =>
+            {
+                callback();
+
+                RemoveListener(type, wrapper);
+                wrapperMap.Remove((type, callback));
+            };
+            
+            wrapperMap[(type, callback)] = wrapper;
+            AddListener(type, wrapper, executionOrder);
+        }
+
+        /// <summary>
         /// Subscribes a callback to a specific event type with an optional execution order.
         /// </summary>
         /// <typeparam name="T">The type of the event to subscribe to.</typeparam>

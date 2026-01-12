@@ -8,17 +8,11 @@ namespace NgoUyenNguyen
     internal class ServiceManager
     {
         private readonly Dictionary<Type, object> services = new();
-        public IEnumerable<object> RegisteredServices => services.Values;
+        public IEnumerable<object> RegisteredServices => services.Values.Distinct();
 
-        public bool Has<T>()
-        {
-            return services.ContainsKey(typeof(T));
-        }
+        public bool Has<T>() => services.ContainsKey(typeof(T));
 
-        public bool Has(Type serviceType)
-        {
-            return services.ContainsKey(serviceType);
-        }
+        public bool Has(Type serviceType) => services.ContainsKey(serviceType);
 
         public bool TryGet<T>(out T service)
         {
@@ -41,36 +35,33 @@ namespace NgoUyenNguyen
             return default;
         }
 
-        public void Register<T>(T service)
+        public bool Register<T>(T service) => service != null && services.TryAdd(typeof(T), service);
+
+        public bool Register(object service, params Type[] types)
         {
-            if (!services.TryAdd(typeof(T), service))
+            if (service == null) return false;
+
+            var allTypes = types
+                .Append(service.GetType())
+                .Distinct()
+                .ToArray();
+
+            if (allTypes.Any(t =>
+                    !t.IsInstanceOfType(service) ||
+                    services.ContainsKey(t)))
             {
-                Debug.LogError(
-                    $"ServiceManager.Register: Service of type '{typeof(T).FullName}' already registered");
+                return false;
             }
-        }
 
-        public void Register(object service, params Type[] types)
-        {
-            var distinctTypes = types.Append(service.GetType()).Distinct();
-            foreach (var type in distinctTypes)
+            foreach (var type in allTypes)
             {
-                if (!type.IsInstanceOfType(service))
-                {
-                    throw new ArgumentException($"'{service}' does not implement '{type}'");
-                }
-
-                if (!services.TryAdd(type, service))
-                {
-                    Debug.LogError($"ServiceManager.Register: Service of type {type.FullName} already registered");
-                }
+                services.Add(type, service);
             }
+
+            return true;
         }
 
-        public bool Unregister<T>()
-        {
-            return services.Remove(typeof(T));
-        }
+        public bool Unregister<T>() => services.Remove(typeof(T));
 
         public bool Unregister(params Type[] types)
         {
@@ -87,9 +78,6 @@ namespace NgoUyenNguyen
             return result;
         }
 
-        public void UnregisterAll()
-        {
-            services.Clear();
-        }
+        public void UnregisterAll() => services.Clear();
     }
 }

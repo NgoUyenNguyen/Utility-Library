@@ -14,11 +14,15 @@ namespace NgoUyenNguyen.ScriptableObjects
     [CreateAssetMenu(fileName = "LevelReference", menuName = "Scriptable Objects/Level Reference")]
     public class LevelReference : ScriptableObject, IDisposable, IEnumerable<AssetReference>
     {
-        public List<AssetReference> references = new();
+        [SerializeField] private List<AssetReference> references = new();
 
         private readonly Dictionary<int, AsyncOperationHandle> loadedHandles = new();
 
         public int Count => references.Count;
+        
+        public bool Remove(AssetReference reference) => references.Remove(reference);
+        
+        public void Add(AssetReference reference) => references.Add(reference);
 
         public AssetReference this[int index] => index >= 0 && index < references.Count
                 ? references[index]

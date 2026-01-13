@@ -37,7 +37,7 @@ namespace NgoUyenNguyen.Editor
             EditorGUILayout.EndHorizontal();
 
 
-            if (!isLoadingLevel || levelReferences == null || levelReferences.references == null) return;
+            if (!isLoadingLevel || levelReferences == null) return;
             
             levelScrollPos = EditorGUILayout.BeginScrollView(levelScrollPos);
             GUILayout.Space(10);
@@ -127,7 +127,7 @@ namespace NgoUyenNguyen.Editor
             else if (System.IO.File.Exists(GetLevelPath(level)))
             {
                 var levelGUID = AssetDatabase.AssetPathToGUID(GetLevelPath(level));
-                levelReferences.references.Remove(levelReferences.GetReferenceFromGUID(levelGUID));
+                levelReferences.Remove(levelReferences.GetReferenceFromGUID(levelGUID));
                 AssetDatabase.DeleteAsset(GetLevelPath(level));
 
                 UnloadLevel();
@@ -199,7 +199,7 @@ namespace NgoUyenNguyen.Editor
             // Save to LevelReference
             if (!System.IO.File.Exists(levelPath) || levelReferences.GetReferenceFromGUID(levelGUID) == null)
             {
-                levelReferences.references.Add(new AssetReference(levelGUID));
+                levelReferences.Add(new AssetReference(levelGUID));
                 EditorUtility.SetDirty(levelReferences);
             }
 

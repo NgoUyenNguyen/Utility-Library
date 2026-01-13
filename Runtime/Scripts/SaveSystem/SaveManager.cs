@@ -28,12 +28,6 @@ namespace NgoUyenNguyen
         /// Resolver for determining the file paths for saving and loading data of type <typeparamref name="T"/>.
         /// </summary>
         public static readonly SavePathResolver<T> PathResolver = new();
-        
-        /// <summary>
-        /// Indicates whether the type <typeparamref name="T"/> is valid for use with the SaveManager.
-        /// The type is considered valid if it is marked with the <see cref="MessagePackObjectAttribute"/>.
-        /// </summary>
-        public static readonly bool IsValidDataType = Attribute.IsDefined(typeof(T), typeof(MessagePackObjectAttribute));
         #endregion
 
         #region Events
@@ -116,7 +110,6 @@ namespace NgoUyenNguyen
         /// <returns>A Task representing the asynchronous save operation.</returns>
         public static async UniTask<bool> SaveAsync(string slotName, T data, CancellationToken token = default)
         {
-            EnsureValidType();
             if (data is null) return false;
             
             slotName ??= Cache.DefaultSlotName;
@@ -193,14 +186,13 @@ namespace NgoUyenNguyen
         /// <returns>A Task containing a boolean value that indicates whether the data was successfully loaded.</returns>
         public static async UniTask<bool> LoadAsync(string slotName, CancellationToken token = default)
         {
-            EnsureValidType();
             slotName ??= Cache.DefaultSlotName;
             var path = PathResolver.GetSaveFilePath(slotName, serializer.FileExtension);
 
             if (!File.Exists(path))
             {
                 await UniTask.SwitchToMainThread();
-                OnLoadFailed(slotName, new Exception("File not found"));
+                OnLoadFailed(slotName, new FileNotFoundException(path));
                 return false;
             }
 
@@ -232,14 +224,6 @@ namespace NgoUyenNguyen
                 OnLoadFailed(slotName, e);
                 return false;
             }
-        }
-        
-        private static void EnsureValidType()
-        {
-            if (!IsValidDataType)
-                throw new InvalidOperationException(
-                    $"Type {typeof(T)} must be marked with [MessagePackObject]."
-                );
         }
         #endregion
         

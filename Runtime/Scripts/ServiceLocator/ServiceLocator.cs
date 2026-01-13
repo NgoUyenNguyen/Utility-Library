@@ -52,10 +52,8 @@ namespace NgoUyenNguyen
         /// This method checks the parent hierarchy for a ServiceLocator, falls back to the scene-specific ServiceLocator,
         /// and ultimately defaults to the global instance if no other locator is found.
         /// </returns>
-        public static ServiceLocator For(MonoBehaviour mb)
-        {
-            return mb.GetComponentInParent<ServiceLocator>() ?? ForSceneOf(mb) ?? Global;
-        }
+        public static ServiceLocator For(MonoBehaviour mb) => 
+            mb.GetComponentInParent<ServiceLocator>() ?? ForSceneOf(mb) ?? Global;
 
         /// <summary>
         /// Retrieves the <see cref="ServiceLocator"/> instance associated with the scene of the specified <see cref="MonoBehaviour"/>.
@@ -112,13 +110,7 @@ namespace NgoUyenNguyen
         public T Get<T>()
         {
             if (services.Has<T>()) return services.Get<T>();
-            if (TryGetNextInHierarchy(out var container))
-            {
-                return container.Get<T>();
-            }
-
-            Debug.LogWarning($"ServiceLocator.Get: Service of type {typeof(T).FullName} not registered");
-            return default;
+            return TryGetNextInHierarchy(out var container) ? container.Get<T>() : default;
         }
 
         /// <summary>

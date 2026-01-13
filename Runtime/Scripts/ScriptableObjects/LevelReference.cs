@@ -14,7 +14,7 @@ namespace NgoUyenNguyen.ScriptableObjects
     [CreateAssetMenu(fileName = "LevelReference", menuName = "Scriptable Objects/Level Reference")]
     public class LevelReference : ScriptableObject, IDisposable, IEnumerable<AssetReference>
     {
-        [SerializeField] private List<AssetReference> references = new();
+        public List<AssetReference> references = new();
 
         private readonly Dictionary<int, AsyncOperationHandle> loadedHandles = new();
 

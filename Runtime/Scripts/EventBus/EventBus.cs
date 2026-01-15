@@ -36,7 +36,11 @@ namespace NgoUyenNguyen
         /// <typeparam name="T">The type of event that implements <see cref="IEvent"/>.</typeparam>
         /// <param name="binding">The event binding to subscribe,
         /// containing the actions to be executed when the event is triggered.</param>
-        public static void Subscribe(EventBinding<T> binding) => Bindings.Add(binding);
+        public static void Subscribe(EventBinding<T> binding)
+        {
+            if (binding == null || Bindings.Contains(binding)) return;
+            Bindings.Add(binding);
+        }
 
         /// <summary>
         /// Unsubscribes the specified event binding from the event bus,
@@ -44,7 +48,7 @@ namespace NgoUyenNguyen
         /// </summary>
         /// <param name="binding">The event binding to unsubscribe,
         /// containing the actions previously registered for the event type.</param>
-        public static void Unsubscribe(EventBinding<T> binding) => Bindings.Remove(binding);
+        public static bool Unsubscribe(EventBinding<T> binding) => Bindings.Remove(binding);
 
         /// <summary>
         /// Publishes an event of the specified type to all subscribed event handlers.
@@ -53,7 +57,7 @@ namespace NgoUyenNguyen
         public static void Publish(T @event)
         {
             Bindings.Sort((a, b) => a.ExecuteOrder.CompareTo(b.ExecuteOrder));
-            foreach (var binding in Bindings)
+            foreach (var binding in Bindings.ToArray())
             {
                 binding.OnEvent(@event);
                 binding.OnEventNoArgs();

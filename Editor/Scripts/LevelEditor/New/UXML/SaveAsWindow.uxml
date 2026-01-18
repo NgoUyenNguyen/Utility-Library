@@ -1,0 +1,27 @@
+<engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <Style src="project://database/Packages/com.ngouyennguyen.utilitylibrary/Editor/Scripts/LevelEditor/New/USS/SaveAsWindow.uss?fileID=7433441132597879392&amp;guid=f33e7ea9edd1b6844807bf4a37e37f96&amp;type=3#SaveAsWindow" />
+    <engine:VisualElement class="header" style="display: none;">
+        <engine:Label text="Save As" class="header__label" />
+    </engine:VisualElement>
+    <engine:VisualElement class="content" style="flex-grow: 1;">
+        <engine:VisualElement class="main-content">
+            <engine:VisualElement class="folder">
+                <engine:Label text="Location" class="field-label" />
+                <engine:VisualElement class="folder-path">
+                    <engine:Label text="Packages/com.ngouyennguyen.utilitylibrary/Editor/Scripts/LevelEditor/New/USS/Test" name="folder-path--label"/>
+                    <engine:Button text="Select Folder" name="select-folder" />
+                </engine:VisualElement>
+            </engine:VisualElement>
+            <engine:VisualElement class="file-name">
+                <engine:Label text="Name" class="field-label" />
+                <engine:TextField placeholder-text="Level Name" name="file-name__text-field"/>
+            </engine:VisualElement>
+        </engine:VisualElement>
+        <engine:VisualElement class="footer">
+            <engine:VisualElement class="footer__buttons">
+                <engine:Button text="Save" name="save" style="border-left-color: rgb(0, 137, 248); border-right-color: rgb(0, 137, 248); border-top-color: rgb(0, 137, 248); border-bottom-color: rgb(0, 137, 248);" />
+                <engine:Button text="Cancel" name="cancel" />
+            </engine:VisualElement>
+        </engine:VisualElement>
+    </engine:VisualElement>
+</engine:UXML>

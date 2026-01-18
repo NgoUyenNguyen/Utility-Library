@@ -1,0 +1,17 @@
+<engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <editor:Toolbar name="toollbar">
+        <editor:Toolbar name="toolbar-left">
+            <editor:ToolbarButton name="save-button" tooltip="Save" style="height: auto; width: 25px; background-image: url(&quot;project://database/Packages/com.ngouyennguyen.utilitylibrary/Editor/Textures/save.png?fileID=2800000&amp;guid=3ba84cd4120d31446aca6f9ca2e6c65c&amp;type=3#save&quot;); background-size: 65% 65%; -unity-background-image-tint-color: rgb(168, 168, 168); margin-left: 0;" />
+            <engine:IMGUIContainer name="toolbar-left--IMGUI" />
+        </editor:Toolbar>
+        <editor:ToolbarMenu name="option" tooltip="Options" style="padding-left: 2px;" />
+        <editor:Toolbar name="toolbar-right" style="margin-left: auto;">
+            <editor:ToolbarButton parse-escape-sequences="true" tooltip="Settings" name="setting-button" style="position: relative; right: auto; background-image: url(&quot;project://database/Packages/com.ngouyennguyen.utilitylibrary/Editor/Textures/gear.png?fileID=2800000&amp;guid=73d014ce270a3a64580aed30195ec201&amp;type=3#gear&quot;); background-size: 70% 70%; min-width: 20px;" />
+            <engine:IMGUIContainer name="toolbar-right--IMGUI" />
+        </editor:Toolbar>
+    </editor:Toolbar>
+    <editor:ToolbarSpacer style="height: 5px; width: 100%;" />
+    <engine:VisualElement name="content" style="flex-grow: 1;">
+        <engine:IMGUIContainer name="content--IMGUI" />
+    </engine:VisualElement>
+</engine:UXML>

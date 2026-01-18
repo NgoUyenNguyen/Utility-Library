@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<engine:UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:engine="UnityEngine.UIElements"
+    xmlns:editor="UnityEditor.UIElements"
+    xsi:noNamespaceSchemaLocation="../../../../../../UIElementsSchema/UIElements.xsd">
+    
+    <engine:Style src="/Packages/com.ngouyennguyen.utilitylibrary/Editor/Scripts/LevelEditor/New/USS/LevelEditorSettingWindow.uss"/>
+    <engine:VisualElement class="header">
+        <engine:Label text="Settings" class="header__label" />
+    </engine:VisualElement>
+    <editor:InspectorElement name="content" />
+</engine:UXML>

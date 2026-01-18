@@ -1,0 +1,15 @@
+.header{
+    font-size: 20px;
+    -unity-font-style: bold;
+    border-color: black;
+    border-bottom-width: 1px;
+}
+
+.header .header__label{
+    margin: 2px 0 2px 10px;
+}
+
+#reference-list{
+    flex-grow: 1;
+    flex-shrink: 1;
+}

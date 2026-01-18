@@ -8,14 +8,14 @@ namespace NgoUyenNguyen
         internal EventBus Parent { get; private set; }
         internal ServiceLocator Container { get; set; }
 
-        internal void AttachTo(EventBus parent)
+        public void AttachTo(EventBus parent)
         {
             Detach();
             Parent = parent;
             parent?.Children.Add(this);
         }
 
-        internal void Detach()
+        public void Detach()
         {
             Parent?.Children.Remove(this);
             Parent = null;

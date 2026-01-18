@@ -16,7 +16,16 @@ namespace NgoUyenNguyen
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void BootstrapGlobal()
         {
-            var go = new GameObject(ServiceLocator.GlobalServiceLocatorName);
+            var go = new GameObject(ServiceLocator.GlobalServiceLocatorName)
+            {
+                transform =
+                {
+                    position = Vector3.zero,
+                    rotation = Quaternion.identity,
+                    localScale = Vector3.one
+                },
+                isStatic = true
+            };
             ServiceLocator.Global = go.AddComponent<ServiceLocator>();
             Object.DontDestroyOnLoad(go);
         }

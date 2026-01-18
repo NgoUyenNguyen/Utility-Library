@@ -1,0 +1,7 @@
+<engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Packages/com.ngouyennguyen.utilitylibrary/Editor/Scripts/LevelEditor/New/USS/LevelSelectWindow.uss?fileID=7433441132597879392&amp;guid=9e882233d5b301c45bde79304546ed19&amp;type=3#LevelSelectWindow" />
+    <engine:VisualElement class="header">
+        <engine:Label text="Level References" class="header__label" />
+    </engine:VisualElement>
+    <engine:ListView name="reference-list" show-alternating-row-backgrounds="ContentOnly"/>
+</engine:UXML>

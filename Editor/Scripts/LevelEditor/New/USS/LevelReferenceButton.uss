@@ -1,0 +1,16 @@
+.button-field{
+    flex-direction: row;
+    align-items: center;
+}
+
+.button-field>Label{
+    width: 100px;
+    -unity-text-align: middle-left;
+    -unity-font-style: bold;
+    margin-left: 5;
+}
+
+.button-field>Button{
+    flex-grow: 1;
+    -unity-font-style: bold;
+}

@@ -62,7 +62,7 @@ namespace NgoUyenNguyen.Editor
             
             TryGetAssetPath(absolutePath, out var assetPath);
             
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath)?.GetComponent<BaseLevel>();
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
             if (prefab == null) return null;
             
             var data = (PrefabUtility.InstantiatePrefab(prefab) as GameObject)?

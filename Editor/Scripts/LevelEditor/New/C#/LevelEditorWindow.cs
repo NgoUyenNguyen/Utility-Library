@@ -18,7 +18,7 @@ namespace NgoUyenNguyen.Editor
         private string levelName;
         private object levelData;
 
-        internal static LevelEditorSettings Settings
+        public static LevelEditorSettings Settings
         {
             get
             {

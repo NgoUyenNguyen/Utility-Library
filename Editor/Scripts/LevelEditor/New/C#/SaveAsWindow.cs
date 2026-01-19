@@ -48,7 +48,7 @@ namespace NgoUyenNguyen.Editor
 
         private void OnSelectFolderButtonClicked()
         {
-            var absolutePath = EditorUtility.OpenFolderPanel("Select Folder", "Assets", "");
+            var absolutePath = EditorUtility.OpenFolderPanel("Select Folder", folderPath, "");
 
             var relativePath = ConvertAbsoluteToRelativePath(absolutePath);
 

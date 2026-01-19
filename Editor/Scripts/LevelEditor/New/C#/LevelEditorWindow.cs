@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -58,7 +57,7 @@ namespace NgoUyenNguyen.Editor
             }
         }
 
-        private void OnGUI()
+        protected virtual void OnGUI()
         {
             var e = Event.current;
             if (e.type == EventType.KeyDown && e.keyCode == KeyCode.S && e.control)
@@ -142,11 +141,7 @@ namespace NgoUyenNguyen.Editor
 
         private void OnRequestSave()
         {
-            if (levelData == null)
-            {
-                Debug.LogWarning("No level data to save!");
-                return;
-            }
+            if (levelData == null) return;
             
             if (string.IsNullOrEmpty(levelFolderPath) || string.IsNullOrEmpty(levelName))
             {
@@ -179,6 +174,8 @@ namespace NgoUyenNguyen.Editor
         private void InternalLoad(AssetReference levelReference)
         {
             var levelDescription = Load(levelReference);
+            if (levelDescription == null) return;
+            
             levelData = levelDescription.Data;
             levelFolderPath = Path.GetDirectoryName(levelDescription.FilePath);
             levelName = Path.GetFileNameWithoutExtension(levelDescription.FilePath);

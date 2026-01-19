@@ -1,6 +1,6 @@
 ﻿namespace NgoUyenNguyen.Editor
 {
-    public struct LevelSaveDescription<TLevelData>
+    public class LevelSaveDescription<TLevelData>
     {
         public readonly TLevelData Data;
         public readonly string FolderPath;
@@ -14,7 +14,7 @@
         }
     }
 
-    public struct LevelLoadDescription<TLevelData>
+    public class LevelLoadDescription<TLevelData>
     {
         public readonly TLevelData Data;
         public readonly string FilePath;

@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
@@ -8,7 +9,25 @@ namespace NgoUyenNguyen.Editor
 {
     public partial class LevelEditorWindow<TLevelData>
     {
-        public string GetFullPath(LevelSaveDescription<TLevelData> saveDescription, string extension)
+        public static bool TryGetAssetPath(
+            string absolutePath,
+            out string relativePath)
+        {
+            relativePath = null;
+            if (string.IsNullOrEmpty(absolutePath)) return false;
+
+            absolutePath = absolutePath.Replace('\\', '/');
+            var dataPath = Application.dataPath.Replace('\\', '/');
+
+            if (!absolutePath.StartsWith(dataPath, StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            relativePath = "Assets" + absolutePath[dataPath.Length..];
+            return true;
+        }
+
+        
+        public static string GetFullPath(LevelSaveDescription<TLevelData> saveDescription, string extension)
         {
             if (!extension.StartsWith('.'))
             {
@@ -18,7 +37,7 @@ namespace NgoUyenNguyen.Editor
             return System.IO.Path.Combine(saveDescription.FolderPath, saveDescription.Name + extension);
         }
         
-        public GameObject SaveAsPrefab(GameObject gameObject, string fullPath)
+        public static GameObject SaveAsPrefab(GameObject gameObject, string fullPath)
             => PrefabUtility.SaveAsPrefabAssetAndConnect(gameObject, fullPath, InteractionMode.UserAction);
 
         public bool SaveToLevelReference(string fullPath, string addressableGroup = "Levels")
@@ -26,29 +45,34 @@ namespace NgoUyenNguyen.Editor
             var levelReferences = Settings.levelReference;
             if (levelReferences == null) return false;
             
-            AddToAddressable(fullPath, addressableGroup);
-            
             var levelGuid = AssetDatabase.AssetPathToGUID(fullPath);
             if (System.IO.File.Exists(fullPath) 
                 && levelReferences.GetReferenceFromGUID(levelGuid) != null)
                 return false;
+            
+            AddToAddressable(fullPath, addressableGroup);
             
             levelReferences.Add(new AssetReference(levelGuid));
             EditorUtility.SetDirty(levelReferences);
             return true;
         }
 
-        public void AddToAddressable(string fullPath, string addressableGroup = "Levels")
+        public static void AddToAddressable(string fullPath, string addressableGroup = "Levels")
         {
             var settings = AddressableAssetSettingsDefaultObject.GetSettings(true);
             var levelGuid = AssetDatabase.AssetPathToGUID(fullPath);
             var entry = settings.CreateOrMoveEntry(levelGuid, GetAddressableGroup(addressableGroup));
             entry.address = fullPath;
+            
+            EditorUtility.SetDirty(settings);
         }
         
         private static AddressableAssetGroup GetAddressableGroup(string groupName)
         {
             var settings = AddressableAssetSettingsDefaultObject.GetSettings(true);
+            
+            if (string.IsNullOrEmpty(groupName))
+                return settings.DefaultGroup;
 
             var group = settings.FindGroup(groupName);
             if (group != null) return group;

@@ -23,6 +23,7 @@ namespace NgoUyenNguyen.Editor
 
         public void RefreshUI()
         {
+            rootVisualElement.Clear();
             rootVisualElement.Add(visualTreeAsset.CloneTree());
 
             var saveButton = rootVisualElement.Q<Button>(name: "save");
@@ -48,25 +49,27 @@ namespace NgoUyenNguyen.Editor
         private void OnSelectFolderButtonClicked()
         {
             var absolutePath = EditorUtility.OpenFolderPanel("Select Folder", "Assets", "");
-            var dataPath = Application.dataPath;
-            
-            if (absolutePath.StartsWith(dataPath))
+
+            var relativePath = ConvertAbsoluteToRelativePath(absolutePath);
+
+            if (relativePath != null)
             {
-                folderPath = "Assets" + absolutePath[dataPath.Length..];
+                folderPath = relativePath;
             }
             else if (!string.IsNullOrEmpty(absolutePath))
             {
                 if (!EditorUtility.DisplayDialog(
-                        "Warning", 
-                        "Your selected folder is not under Assets folder?\n Do you want to continue?", 
+                        "Warning",
+                        "Your selected folder is not under Assets folder?\nDo you want to continue?",
                         "Cancel", "Continue"))
                 {
                     folderPath = absolutePath;
                 }
             }
-            
-            var folderPathLabel = rootVisualElement.Q<Label>(name:"folder-path--label");
-            folderPathLabel.text = folderPath;
+
+            rootVisualElement
+                .Q<Label>("folder-path--label")
+                .text = folderPath;
         }
 
         private void OnCancelButtonClicked() => Close();
@@ -79,6 +82,19 @@ namespace NgoUyenNguyen.Editor
             }
             Close();
             SavePerformedEvent?.Invoke();
+        }
+
+        private static string ConvertAbsoluteToRelativePath(string absolutePath) 
+        { 
+            if (string.IsNullOrEmpty(absolutePath)) return null; 
+            
+            // Normalize separators
+            absolutePath = absolutePath.Replace('\\', '/'); 
+            var dataPath = Application.dataPath.Replace('\\', '/'); 
+            
+            if (!absolutePath.StartsWith(dataPath, StringComparison.OrdinalIgnoreCase)) return null;
+            
+            return "Assets" + absolutePath[dataPath.Length..]; 
         }
     }
 }

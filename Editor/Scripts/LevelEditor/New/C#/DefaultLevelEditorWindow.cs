@@ -101,7 +101,7 @@ namespace NgoUyenNguyen.Editor
                 data = (PrefabUtility
                     .InstantiatePrefab(defaultSettings.levelTemplate) as GameObject)?
                     .GetComponent<BaseLevel>();
-                LevelData!.name = "New Level";
+                data!.name = "New Level";
             }
             else
             {

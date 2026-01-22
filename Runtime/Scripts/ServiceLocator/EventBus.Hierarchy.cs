@@ -4,20 +4,22 @@ namespace NgoUyenNguyen
 {
     public partial class EventBus
     {
-        internal HashSet<EventBus> Children { get; } = new();
-        internal EventBus Parent { get; private set; }
+        private readonly HashSet<EventBus> children = new();
+        
+        public IEnumerable<EventBus> Children => children;
+        public EventBus Parent { get; private set; }
         internal ServiceLocator Container { get; set; }
 
         public void AttachTo(EventBus parent)
         {
             Detach();
             Parent = parent;
-            parent?.Children.Add(this);
+            parent?.children.Add(this);
         }
 
         public void Detach()
         {
-            Parent?.Children.Remove(this);
+            Parent?.children.Remove(this);
             Parent = null;
         }
     }

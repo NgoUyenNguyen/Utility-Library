@@ -1,5 +1,4 @@
 using System.Linq;
-using UnityEngine;
 
 namespace NgoUyenNguyen
 {
@@ -22,6 +21,12 @@ namespace NgoUyenNguyen
                 return eventBus;
             }
         }
+
+        /// <summary>
+        /// Reattaches the current instance's EventBus, ensuring it is correctly connected
+        /// to its parent EventBus in the hierarchy or to the global EventBus if applicable.
+        /// </summary>
+        public void ReattachEventBus() => AttachEventBus();
 
         private void Awake()
         {

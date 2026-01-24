@@ -7,7 +7,7 @@ namespace NgoUyenNguyen
     public partial class EventBus
     {
         private readonly Dictionary<Type, SortedDictionary<int, HashSet<Delegate>>> listeners = new();
-        private readonly Dictionary<(Type, Delegate), Delegate> wrapperMap = new();
+        private readonly Dictionary<(Type eventType, Delegate origin), Delegate> wrapperMap = new();
 
         /// <summary>
         /// Subscribes a callback which invoked once to a specific event type with an optional execution order.
@@ -18,7 +18,7 @@ namespace NgoUyenNguyen
         public void SubscribeOnce<T>(Action<T> callback, int executionOrder = 0)
         {
             var type = typeof(T);
-            
+
             if (wrapperMap.ContainsKey((type, callback))) return;
 
             Action<object> wrapper = null;
@@ -29,11 +29,11 @@ namespace NgoUyenNguyen
                 RemoveListener(type, wrapper);
                 wrapperMap.Remove((type, callback));
             };
-            
+
             wrapperMap[(type, callback)] = wrapper;
             AddListener(type, wrapper, executionOrder);
         }
-        
+
         /// <summary>
         /// Subscribes a callback which invoked once to a specific event type with an optional execution order.
         /// </summary>
@@ -43,7 +43,7 @@ namespace NgoUyenNguyen
         public void SubscribeOnce<T>(Action callback, int executionOrder = 0)
         {
             var type = typeof(T);
-            
+
             if (wrapperMap.ContainsKey((type, callback))) return;
 
             Action<object> wrapper = null;
@@ -54,7 +54,7 @@ namespace NgoUyenNguyen
                 RemoveListener(type, wrapper);
                 wrapperMap.Remove((type, callback));
             };
-            
+
             wrapperMap[(type, callback)] = wrapper;
             AddListener(type, wrapper, executionOrder);
         }
@@ -68,7 +68,7 @@ namespace NgoUyenNguyen
         public void Subscribe<T>(Action<T> callback, int executionOrder = 0)
         {
             var type = typeof(T);
-            
+
             if (wrapperMap.ContainsKey((type, callback))) return;
 
             Action<object> wrapper = o => callback((T)o);
@@ -86,7 +86,7 @@ namespace NgoUyenNguyen
         public void Subscribe<T>(Action callback, int executionOrder = 0)
         {
             var type = typeof(T);
-            
+
             if (wrapperMap.ContainsKey((type, callback))) return;
 
             Action<object> wrapper = _ => callback();
@@ -120,21 +120,6 @@ namespace NgoUyenNguyen
             Subscribe<T>(callback, order);
             return new Subscription(() => Unsubscribe<T>(callback));
         }
-
-        /// <summary>
-        /// Retrieves the total count of listeners registered for a specific event type.
-        /// </summary>
-        /// <typeparam name="T">The type of the event for which listeners are counted.</typeparam>
-        /// <returns>The total number of registered listeners for the given event type.</returns>
-        public int ListenerCount<T>()
-        {
-            var type = typeof(T);
-            return listeners.TryGetValue(type, out var sorted)
-                ? sorted.Values.Sum(c => c.Count)
-                : 0;
-        }
-
-
 
         /// <summary>
         /// Unsubscribes a callback from a specific event type.
@@ -205,18 +190,25 @@ namespace NgoUyenNguyen
         /// <param name="propagation">Specifies the propagation mode for the message.</param>
         public void Publish<T>(T message, PropagationMode propagation = PropagationMode.Downstream)
         {
-            var messageType = typeof(T);
+            if (propagation != PropagationMode.DownstreamIgnoreSelf
+                && propagation != PropagationMode.UpstreamIgnoreSelf)
+            {
+                var messageType = typeof(T);
 
-            for (var type = messageType; type != null; type = type.BaseType)
-                InvokeForType(type, message);
+                for (var type = messageType; type != null; type = type.BaseType)
+                    InvokeForType(type, message);
 
-            foreach (var @interface in messageType.GetInterfaces())
-                InvokeForType(@interface, message);
-            
+                foreach (var @interface in messageType.GetInterfaces())
+                    InvokeForType(@interface, message);
+            }
+
             switch (propagation)
             {
                 case PropagationMode.Upstream:
                     Parent?.Publish(message, propagation);
+                    break;
+                case PropagationMode.UpstreamIgnoreSelf:
+                    Parent?.Publish(message, PropagationMode.Upstream);
                     break;
                 case PropagationMode.Downstream:
                 {
@@ -224,8 +216,16 @@ namespace NgoUyenNguyen
                     {
                         child.Publish(message, propagation);
                     }
+
                     break;
                 }
+                case PropagationMode.DownstreamIgnoreSelf:
+                    foreach (var child in Children)
+                    {
+                        child.Publish(message, PropagationMode.Downstream);
+                    }
+
+                    break;
             }
         }
 

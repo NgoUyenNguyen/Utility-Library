@@ -41,7 +41,7 @@ Shader "Unlit/Raymarch"
                 float3 hitPos : TEXCOORD2;
             };
 
-            
+
             float4 _BaseColor;
             float4 _Sphere1;
             float4 _Sphere2;
@@ -75,7 +75,7 @@ Shader "Unlit/Raymarch"
                 float sphere1 = length(p - _Sphere1.xyz) - _Sphere1.w;
                 float sphere2 = length(p - _Sphere2.xyz) - _Sphere2.w;
                 float torus = length(float2(length(p.xz) - 0.3, p.y)) - 0.1;
-                
+
                 float k = remap(_Blend, 0, 1, 1e-9, 0.05);
 
                 return smin(smin(sphere1, sphere2, k), torus, k);

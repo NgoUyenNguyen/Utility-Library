@@ -24,7 +24,7 @@ namespace NgoUyenNguyen
 
         /// <summary>
         /// Reattaches the current instance's EventBus, ensuring it is correctly connected
-        /// to its parent EventBus in the hierarchy or to the global EventBus if applicable.
+        /// to its parent EventBus in the hierarchy.
         /// </summary>
         public void ReattachEventBus() => AttachEventBus();
 

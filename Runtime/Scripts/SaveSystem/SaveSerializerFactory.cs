@@ -13,7 +13,8 @@ namespace NgoUyenNguyen
             return serializerOption switch
             {
                 SerializerOption.Json => new JsonSaveSerializer(),
-                SerializerOption.MessagePack => new MessagePackSaveSerializer()
+                SerializerOption.MessagePack => new MessagePackSaveSerializer(),
+                _ => throw new System.ArgumentOutOfRangeException()
             };
 #else
             return new MessagePackSaveSerializer();

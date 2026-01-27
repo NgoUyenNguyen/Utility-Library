@@ -41,6 +41,16 @@ namespace NgoUyenNguyen
         /// Provides functionality to add, remove, and handle event logic.
         /// </summary>
         /// <typeparam name="T">The type of event that implements the <see cref="IEvent"/> interface.</typeparam>
+        public EventBinding(params Action<T>[] onEvents)
+        {
+            foreach (var onEvent in onEvents) Add(onEvent);
+        }
+
+        /// <summary>
+        /// Represents a class that manages the binding of event handlers to events of type <typeparamref name="T"/>.
+        /// Provides functionality to add, remove, and handle event logic.
+        /// </summary>
+        /// <typeparam name="T">The type of event that implements the <see cref="IEvent"/> interface.</typeparam>
         public EventBinding(Action onEventNoArgs, int executeOrder = 0)
         {
             ExecuteOrder = executeOrder;

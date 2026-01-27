@@ -35,6 +35,8 @@ namespace NgoUyenNguyen
         {
             staticDelayLoading = delayLoading;
             currentSceneGroupIndex = -1;
+            Status = new ObservableProperty<StatusValue>(StatusValue.Idle);
+            
             CheckSceneGroups();
         }
 
@@ -108,6 +110,9 @@ namespace NgoUyenNguyen
 
         private async UniTask LoadSceneGroup(List<string> sceneToLoad)
         {
+            if (sceneToLoad.Count == 0) return;
+            Status.Value = StatusValue.Loading;
+            
             var opHandles = new AsyncOperationHandleGroup(sceneToLoad.Count);
             var ops = new AsyncOperationGroup(sceneToLoad.Count);
 
@@ -161,7 +166,7 @@ namespace NgoUyenNguyen
             );
 
             await UniTask.WaitUntil(() => activatingOps.All(op => op.isDone),
-                cancellationToken: this.GetCancellationTokenOnDestroy());
+                cancellationToken: destroyCancellationToken);
         }
 
         private List<string> GetScenesToLoad(List<string> sceneToRemain)
@@ -229,12 +234,14 @@ namespace NgoUyenNguyen
         
         private void PostLoading()
         {
+            Status.Value = StatusValue.Idle;
             IsLoading = false;
             smoothProgressUpdating = false;
         }
 
         private async UniTask SetActiveScene()
         {
+            Status.Value = StatusValue.Activating;
             var activeScene = SceneManager.GetSceneByName(CurrentSceneGroupInstance.activeScene.Name);
             SceneManager.SetActiveScene(activeScene);
             await UnloadTempSceneIfNecessary();
@@ -242,6 +249,7 @@ namespace NgoUyenNguyen
 
         private void PreLoading()
         {
+            Status.Value = StatusValue.Idle;
             IsLoading = true;
             Progress = 0;
             SmoothProgress = 0;
@@ -249,6 +257,9 @@ namespace NgoUyenNguyen
         
         private async UniTask UnloadSceneGroup(List<string> scenesToUnload)
         {
+            if (scenesToUnload.Count == 0) return;
+            Status.Value = StatusValue.Unloading;
+            
             await LoadTempSceneIfNecessary(scenesToUnload);
 
             var ops = new AsyncOperationGroup(scenesToUnload.Count);
@@ -261,7 +272,7 @@ namespace NgoUyenNguyen
             if (ops.Operations.Count == 0 && opHandles.Operations.Count == 0) return;
 
             await UniTask.WaitUntil(() => ops.IsDone && opHandles.IsDone, 
-                cancellationToken: this.GetCancellationTokenOnDestroy());
+                cancellationToken: destroyCancellationToken);
             
             foreach (var scene in scenesToUnload)
             {

@@ -120,6 +120,8 @@ namespace NgoUyenNguyen
             get => tmpSceneBuildIndex;
             set => tmpSceneBuildIndex = Mathf.Max(0, value);
         }
+        
+        public static ObservableProperty<StatusValue> Status { get; private set; }
 
         /// <summary>
         /// Loads a scene group by its index and manages the transition, optionally reusing the existing scene.

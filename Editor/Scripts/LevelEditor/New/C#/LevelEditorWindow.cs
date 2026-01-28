@@ -56,7 +56,8 @@ namespace NgoUyenNguyen.Editor
                 {
                     settings = CreateInstance<LevelEditorSettings>();
                     AssetDatabase.CreateAsset(settings, LevelEditorSettingWindow.DefaultSettingsPath);
-                    Debug.Log($"Created new settings asset at '{LevelEditorSettingWindow.DefaultSettingsPath}'");
+                    AssetDatabase.ImportAsset(LevelEditorSettingWindow.DefaultSettingsPath);
+                    Debug.Log($"Created new  LevelEditorSettings asset at '{LevelEditorSettingWindow.DefaultSettingsPath}'");
                 }
 
                 return settings;
@@ -127,7 +128,6 @@ namespace NgoUyenNguyen.Editor
         private void Init()
         {
             windowName = titleContent.text;
-            ChangeTitle(true);
             minSize = new Vector2(750, 750);
         }
 

@@ -34,14 +34,12 @@ namespace NgoUyenNguyen.Editor
                 false
             );
 
-
-            if (newAsset == settingsAsset) return;
-
+            
             if (newAsset == null)
             {
                 EditorPrefs.DeleteKey(SettingsGuidKey);
             }
-            else
+            else if (newAsset != settingsAsset)
             {
                 var path = AssetDatabase.GetAssetPath(newAsset);
                 var guid = AssetDatabase.AssetPathToGUID(path);

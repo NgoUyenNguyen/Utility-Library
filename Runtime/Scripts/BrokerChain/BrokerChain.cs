@@ -1,11 +1,25 @@
-using System.Collections.Generic;
-using UnityEngine;
 
 namespace NgoUyenNguyen
 {
+    /// <summary>
+    /// Represents a chain of brokers, designed to process a context by passing it sequentially
+    /// through each broker in the chain.
+    /// </summary>
+    /// <typeparam name="TContext">
+    /// The type of the context to be processed, which must be a class implementing <see cref="IBrokerContext"/>.
+    /// </typeparam>
     public class BrokerChain<TContext> : IBrokerChain<TContext> where TContext : class, IBrokerContext
     {
         private readonly IBroker<TContext>[] brokers;
+        
+        /// <summary>
+        /// The number of brokers in the chain.
+        /// </summary>
+        public int Count => brokers.Length;
+        /// <summary>
+        /// True if the chain is empty, false otherwise.
+        /// </summary>
+        public bool IsEmpty => brokers.Length == 0;
         
         public BrokerChain(params IBroker<TContext>[] brokers)
         {
@@ -14,7 +28,7 @@ namespace NgoUyenNguyen
         
         public void Execute(TContext context)
         {
-            int index = -1;
+            var index = -1;
 
             void Next()
             {
@@ -26,49 +40,6 @@ namespace NgoUyenNguyen
             }
             
             Next();
-        }
-    }
-    
-    public class DynamicBrokerChain<TContext> : IBrokerChain<TContext> where TContext : class, IBrokerContext
-    {
-        private readonly LinkedList<IBroker<TContext>> brokers = new();
-
-        public DynamicBrokerChain(params IBroker<TContext>[] brokers)
-        {
-            foreach (var broker in brokers)
-            {
-                this.brokers.AddLast(broker);
-            }
-        }
-
-        public void AddLast(IBroker<TContext> broker) => brokers.AddLast(broker);
-        
-        public void AddFirst(IBroker<TContext> broker) => brokers.AddFirst(broker);
-
-        public void RemoveLast() => brokers.RemoveLast();
-
-        public void RemoveFirst() => brokers.RemoveFirst();
-
-        public void Clear() => brokers.Clear();
-
-        public void Remove(IBroker<TContext> broker) => brokers.Remove(broker);
-
-        public void Execute(TContext context)
-        {
-            if (brokers.First == null) return;
-            ExecuteNode(brokers.First, context);
-        }
-
-        private void ExecuteNode(LinkedListNode<IBroker<TContext>> node, TContext context)
-        {
-            void Next()
-            {
-                var nextNode = node.Next;
-                if (nextNode != null)
-                    ExecuteNode(nextNode, context);
-            }
-
-            node.Value.Execute(context, Next);
         }
     }
 }

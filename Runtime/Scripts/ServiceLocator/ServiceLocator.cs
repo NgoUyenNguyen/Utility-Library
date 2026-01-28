@@ -5,6 +5,11 @@ using UnityEngine.SceneManagement;
 
 namespace NgoUyenNguyen
 {
+    /// <summary>
+    /// A service locator class that facilitates dependency injection and service retrieval in Unity.
+    /// This class enables the registration, retrieval, and management of services across different scopes:
+    /// global, scene-specific, and GameObject-specific.
+    /// </summary>
     [DefaultExecutionOrder(-900)]
     public partial class ServiceLocator : MonoBehaviour
     {

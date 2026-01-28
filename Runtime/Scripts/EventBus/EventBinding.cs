@@ -2,16 +2,8 @@
 
 namespace NgoUyenNguyen
 {
-    internal interface IEventBinding<T>
-    {
-        public int ExecuteOrder { get; set; }
-        public Action<T> OnEvent { get; set; }
-        public Action OnEventNoArgs { get; set; }
-    }
-
     /// <summary>
     /// Represents a class that manages the binding of event handlers to events of type <typeparamref name="T"/>.
-    /// Provides functionality to add, remove, and handle event logic.
     /// </summary>
     /// <typeparam name="T">The type of event that implements the <see cref="IEvent"/> interface.</typeparam>
     public class EventBinding<T> : IEventBinding<T> where T : IEvent
@@ -21,7 +13,6 @@ namespace NgoUyenNguyen
         /// The value of this property determines the priority of the event execution, with smaller values being executed earlier.
         /// </summary>
         public int ExecuteOrder { get; set; }
-
         public Action<T> OnEvent { get; set; } = _ => { };
         public Action OnEventNoArgs { get; set; } = () => { };
 

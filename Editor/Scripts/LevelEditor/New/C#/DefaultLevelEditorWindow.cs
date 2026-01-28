@@ -5,10 +5,34 @@ using UnityEngine.AddressableAssets;
 
 namespace NgoUyenNguyen.Editor
 {
+    /// <summary>
+    /// Represents a default editor window for managing levels in the Unity Editor.
+    /// Inherits from <see cref="LevelEditorWindow{BaseLevel}"/> and provides
+    /// functionality for creating, saving, and loading levels.
+    /// </summary>
+    /// <remarks>
+    /// This class is designed to work with level data of type <see cref="BaseLevel"/> and
+    /// includes both file-based and reference-based level loading capabilities.
+    /// </remarks>
+    /// <seealso cref="LevelEditorWindow{TLevelData}"/>
     public abstract class DefaultLevelEditorWindow : LevelEditorWindow<BaseLevel>
     {
+        /// <summary>
+        /// Event triggered when a new level is successfully added in the level editor.
+        /// </summary>
+        /// <seealso cref="DefaultLevelEditorWindow.New"/>
         public event Action AddLevelPerformed;
+
+        /// <summary>
+        /// Event triggered when a level is successfully loaded in the level editor.
+        /// </summary>
+        /// <seealso cref="DefaultLevelEditorWindow.Load"/>
         public event Action LoadLevelPerformed;
+
+        /// <summary>
+        /// Event triggered upon successfully saving a level in the level editor.
+        /// </summary>
+        /// <seealso cref="DefaultLevelEditorWindow.Save"/>
         public event Action SaveLevelPerformed;
         
         protected override void Save(LevelSaveDescription<BaseLevel> levelSaveDescription)

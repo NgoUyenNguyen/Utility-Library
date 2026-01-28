@@ -28,10 +28,7 @@ namespace NgoUyenNguyen
         /// </summary>
         public void ReattachEventBus() => AttachEventBus();
 
-        private void Awake()
-        {
-            AttachEventBus();
-        }
+        private void Awake() => AttachEventBus();
 
         private void AttachEventBus()
         {

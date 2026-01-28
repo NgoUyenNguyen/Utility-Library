@@ -8,6 +8,15 @@ using PopupWindow = UnityEditor.PopupWindow;
 
 namespace NgoUyenNguyen.Editor
 {
+    /// <summary>
+    /// Represents the main editor window for designing and managing levels within the Unity Editor.
+    /// This abstract class serves as a base for creating custom level editor windows and provides
+    /// essential features such as level saving, loading, and user interface integration.
+    /// </summary>
+    /// <typeparam name="TLevelData">
+    /// The type of level data managed within the editor window. This type defines the structure of
+    /// the level and its associated data.
+    /// </typeparam>
     public abstract partial class LevelEditorWindow<TLevelData> : EditorWindow
     {
         private const string UxmlAssetPath =
@@ -18,6 +27,17 @@ namespace NgoUyenNguyen.Editor
         private string levelName;
         private object levelData;
 
+        /// <summary>
+        /// Provides access to the current instance of the Level Editor settings.
+        /// </summary>
+        /// <remarks>
+        /// This property retrieves the Level Editor settings asset associated with the editor window.
+        /// If a settings asset does not already exist, a new one will be created and stored at a default path.
+        /// The path is determined based on a GUID stored in the editor preferences or falls back to a predefined default path.
+        /// </remarks>
+        /// <returns>
+        /// A <see cref="LevelEditorSettings"/> object representing the settings for the Level Editor.
+        /// </returns>
         public static LevelEditorSettings Settings
         {
             get
@@ -43,6 +63,16 @@ namespace NgoUyenNguyen.Editor
             }
         }
 
+        /// <summary>
+        /// The level data currently being managed and edited within the level editor window.
+        /// </summary>
+        /// <remarks>
+        /// The <c>LevelData</c> property represents the core structure and content of the level. It is used
+        /// to retrieve or assign the level data being manipulated in the editor.
+        /// </remarks>
+        /// <returns>
+        /// A <typeparamref name="TLevelData"/> object representing the structure and data of the level.
+        /// </returns>
         public TLevelData LevelData
         {
             get
@@ -76,7 +106,7 @@ namespace NgoUyenNguyen.Editor
                 e.Use();
             }
         }
-
+        
         protected virtual void CreateGUI()
         {
             var visualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(UxmlAssetPath);

@@ -4,6 +4,11 @@ using System.Linq;
 
 namespace NgoUyenNguyen
 {
+    /// <summary>
+    /// Represents a centralized event management system that facilitates communication
+    /// between various parts of an application by allowing subscription, publishing,
+    /// and unsubscription of events.
+    /// </summary>
     public partial class EventBus
     {
         private readonly Dictionary<Type, SortedDictionary<int, HashSet<Delegate>>> listeners = new();

@@ -5,10 +5,6 @@ namespace NgoUyenNguyen
     /// <summary>
     /// Represents a marker interface for events.
     /// </summary>
-    /// <remarks>
-    /// This interface is designed to be implemented by any event type that will be
-    /// used within the event-driven architecture in the application.
-    /// </remarks>
     public interface IEvent
     {
     }
@@ -36,7 +32,7 @@ namespace NgoUyenNguyen
         /// <typeparam name="T">The type of event that implements <see cref="IEvent"/>.</typeparam>
         /// <param name="binding">The event binding to subscribe,
         /// containing the actions to be executed when the event is triggered.</param>
-        public static void Subscribe(EventBinding<T> binding)
+        public static void Subscribe(IEventBinding<T> binding)
         {
             if (binding == null || Bindings.Contains(binding)) return;
             Bindings.Add(binding);
@@ -48,7 +44,7 @@ namespace NgoUyenNguyen
         /// </summary>
         /// <param name="binding">The event binding to unsubscribe,
         /// containing the actions previously registered for the event type.</param>
-        public static bool Unsubscribe(EventBinding<T> binding) => Bindings.Remove(binding);
+        public static bool Unsubscribe(IEventBinding<T> binding) => Bindings.Remove(binding);
 
         /// <summary>
         /// Publishes an event of the specified type to all subscribed event handlers.

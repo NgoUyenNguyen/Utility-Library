@@ -1,0 +1,38 @@
+<engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <Style src="project://database/Packages/com.ngouyennguyen.utilitylibrary/Editor/Scripts/CreateFoldersTemplate/CreateFoldersTemplateWindow.uss?fileID=7433441132597879392&amp;guid=3ff19dd029b035c46ad9ef23000c2a15&amp;type=3#CreateFoldersTemplateWindow" />
+    <engine:VisualElement style="flex-grow: 1;">
+        <engine:VisualElement class="element">
+            <engine:VisualElement style="flex-grow: 1; flex-direction: row; align-items: center; overflow: hidden; width: 75%;">
+                <engine:Label text="Root Folder" name="folder-label" class="label-field" style="margin-right: 5px;" />
+                <engine:VisualElement style="flex-grow: 1;">
+                    <engine:Label name="folder-path" class="folder-path" style="overflow: hidden; text-overflow: ellipsis;" />
+                </engine:VisualElement>
+            </engine:VisualElement>
+            <engine:VisualElement>
+                <engine:Button text="Select Folder" name="select-folder" class="select-button" />
+            </engine:VisualElement>
+        </engine:VisualElement>
+        <engine:VisualElement class="element" style="flex-grow: 0;">
+            <engine:VisualElement style="flex-grow: 1; flex-direction: row; height: auto; align-items: center; overflow: hidden; width: 75%;">
+                <engine:VisualElement style="width: 15px; height: 100%; margin-left: 8px; max-height: 15px; background-image: url(&quot;project://database/Packages/com.unity.addressables/Editor/Icons/white_help@2x.png?fileID=2800000&amp;guid=2a1c92f384e631d4c95ab63b4d466677&amp;type=3#white_help@2x&quot;); margin-right: 8px;" />
+                <engine:Label text="By default, Git will ignore empty folders when commiting. Include a .gitkeep file to tell Git not ignore empty folders." style="width: 75%; height: auto; -unity-text-align: middle-left; max-height: 50px; font-size: 10px; white-space: normal; margin-top: 2px; margin-right: 2px; margin-bottom: 2px; margin-left: 2px;" />
+            </engine:VisualElement>
+            <engine:VisualElement>
+                <engine:Button text="Include All" name="include-all" class="select-button" />
+                <engine:Button text="Exclude All" name="exclude-all" class="select-button" />
+            </engine:VisualElement>
+        </engine:VisualElement>
+        <engine:VisualElement class="element" style="flex-grow: 1; flex-direction: column; align-items: flex-start; padding-top: 0;">
+            <engine:MultiColumnTreeView name="preview" auto-expand="true" show-border="true" style="width: 100%; max-height: none;">
+                <engine:Columns>
+                    <engine:Column name="folders" title="Folders" width="75%" stretchable="false" cell-template="project://database/Packages/com.ngouyennguyen.utilitylibrary/Editor/Scripts/CreateFoldersTemplate/FolderItem.uxml?fileID=9197481963319205126&amp;guid=af3bef71cbece664190c98f5aa72d8c8&amp;type=3#FolderItem" />
+                    <engine:Column name="include-gitkeep" title="Include .gitkeep" cell-template="project://database/Packages/com.ngouyennguyen.utilitylibrary/Editor/Scripts/CreateFoldersTemplate/IncludeItem.uxml?fileID=9197481963319205126&amp;guid=a218a340b4336ab47b22b0a13b5bd599&amp;type=3#IncludeItem" min-width="15%" width="auto" stretchable="true" />
+                </engine:Columns>
+                <engine:SortColumnDescriptions />
+            </engine:MultiColumnTreeView>
+        </engine:VisualElement>
+        <engine:VisualElement class="footer" style="height: 50px;">
+            <engine:Button text="Create" name="create" class="select-button" style="width: 100px; -unity-font-style: bold; height: 75%; font-size: 15px;" />
+        </engine:VisualElement>
+    </engine:VisualElement>
+</engine:UXML>

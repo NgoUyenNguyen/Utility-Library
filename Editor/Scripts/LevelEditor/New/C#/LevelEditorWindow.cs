@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -203,14 +204,21 @@ namespace NgoUyenNguyen.Editor
 
         private void InternalLoad(AssetReference levelReference)
         {
-            var levelDescription = Load(levelReference);
-            if (levelDescription == null) return;
-            
-            levelData = levelDescription.Data;
-            levelFolderPath = Path.GetDirectoryName(levelDescription.FilePath);
-            levelName = Path.GetFileNameWithoutExtension(levelDescription.FilePath);
+            try
+            {
+                var levelDescription = Load(levelReference);
+                if (levelDescription == null) return;
 
-            ChangeTitle(true);
+                levelData = levelDescription.Data;
+                levelFolderPath = Path.GetDirectoryName(levelDescription.FilePath);
+                levelName = Path.GetFileNameWithoutExtension(levelDescription.FilePath);
+
+                ChangeTitle(true);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error occurred while loading level: {ex.Message}");
+            }
         }
 
         private void InternalNew()

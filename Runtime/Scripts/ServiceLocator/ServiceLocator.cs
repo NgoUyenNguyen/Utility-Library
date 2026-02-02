@@ -200,8 +200,17 @@ namespace NgoUyenNguyen
             return container != null;
         }
 
+        private void DisposeAllServices()
+        {
+            foreach (var service in RegisteredServices)
+            {
+                if (service is IDisposable disposable) disposable.Dispose();
+            }
+        } 
+
         private void OnDestroy()
         {
+            DisposeAllServices();
             DetachEventBus();
             if (this == Global)
             {

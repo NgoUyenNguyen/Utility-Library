@@ -112,7 +112,12 @@ namespace NgoUyenNguyen.Editor
         protected virtual void CreateGUI()
         {
             var visualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(UxmlAssetPath);
-            rootVisualElement.Add(visualTreeAsset.CloneTree());
+            var templateContainer = visualTreeAsset.CloneTree();
+            templateContainer.style.flexGrow = 1;
+            templateContainer.style.width = new StyleLength(Length.Percent(100));
+            templateContainer.style.height = new StyleLength(Length.Percent(100));
+            
+            rootVisualElement.Add(templateContainer);
 
             Init();
             SetupElements(rootVisualElement.Q<ToolbarButton>(name: "save-button"),

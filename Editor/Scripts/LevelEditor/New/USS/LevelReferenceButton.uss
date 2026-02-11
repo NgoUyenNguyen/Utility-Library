@@ -7,7 +7,7 @@
     width: 100px;
     -unity-text-align: middle-left;
     -unity-font-style: bold;
-    margin-left: 5;
+    margin-left: 5px;
 }
 
 .button-field>Button{

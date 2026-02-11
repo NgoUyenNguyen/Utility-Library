@@ -38,7 +38,8 @@ namespace NgoUyenNguyen.Editor
                         {
                             new Folder("Entities"),
                             new Folder("Systems"),
-                            new Folder("ScriptableObjects")
+                            new Folder("ScriptableObjects"),
+                            new Folder("UI")
                         }
                     ),
                     new Folder("Shaders")

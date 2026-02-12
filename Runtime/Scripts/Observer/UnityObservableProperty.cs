@@ -32,7 +32,7 @@ namespace NgoUyenNguyen
             }
         }
         
-        public UnityObservableProperty(T value, params UnityAction<T, T>[] callbacks)
+        public UnityObservableProperty(T value = default, params UnityAction<T, T>[] callbacks)
         {
             this.value = value;
             onValueChanged = new UnityEvent<T, T>();

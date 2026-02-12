@@ -29,7 +29,7 @@ namespace NgoUyenNguyen
             }
         }
 
-        public ObservableProperty(T value, params Action<T, T>[] callbacks)
+        public ObservableProperty(T value = default, params Action<T, T>[] callbacks)
         {
             this.value = value;
             if (callbacks.Length > 0)

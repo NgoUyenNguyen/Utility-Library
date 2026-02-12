@@ -229,6 +229,8 @@ namespace NgoUyenNguyen.Editor
         private void InternalNew()
         {
             levelData = New();
+            levelName = string.Empty;
+
             
             ChangeTitle(true);
         }

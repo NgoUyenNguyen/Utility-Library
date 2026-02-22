@@ -175,7 +175,7 @@ namespace NgoUyenNguyen.Grid
 
                         return _cellMap[index.x + index.y * size.x];
                     default:
-                        throw new NotImplementedException();
+                        throw new NotSupportedException($"Layout {_layout} is not supported");
                 }
             }
         }

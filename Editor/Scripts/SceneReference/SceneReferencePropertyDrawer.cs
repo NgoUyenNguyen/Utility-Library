@@ -172,7 +172,7 @@ namespace Eflatun.SceneReference.Editor
                     height = selectorFieldRect.height - 1
                 };
 
-                // TODO: we should ship our own icon to prevent this breaking in the future
+                // we should ship our own icon to prevent this breaking in the future
                 var settingsIcon = EditorGUIUtility.IconContent("SettingsIcon");
 
 // Backwards compatibility (https://github.com/starikcetin/Eflatun.SceneReference/issues/74)

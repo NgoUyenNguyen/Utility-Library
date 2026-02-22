@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
+using ZLinq;
 
 namespace NgoUyenNguyen
 {
@@ -42,11 +42,12 @@ namespace NgoUyenNguyen
             if (service == null) return false;
 
             var allTypes = types
+                .AsValueEnumerable()
                 .Append(service.GetType())
                 .Distinct()
                 .ToArray();
 
-            if (allTypes.Any(t =>
+            if (allTypes.AsValueEnumerable().Any(t =>
                     !t.IsInstanceOfType(service) ||
                     services.ContainsKey(t)))
             {
@@ -66,7 +67,7 @@ namespace NgoUyenNguyen
         public bool Unregister(params Type[] types)
         {
             var result = true;
-            var distinctTypes = types.Distinct();
+            var distinctTypes = types.AsValueEnumerable().Distinct();
             foreach (var type in distinctTypes)
             {
                 if (!services.Remove(type))

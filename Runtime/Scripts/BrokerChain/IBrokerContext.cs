@@ -5,9 +5,5 @@
     /// </summary>
     public interface IBrokerContext : IReusable
     {
-        void IReusable.Reset()
-        {
-            throw new System.NotImplementedException();
-        }
     }
 }

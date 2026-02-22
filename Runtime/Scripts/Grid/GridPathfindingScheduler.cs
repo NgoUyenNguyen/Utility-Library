@@ -116,7 +116,7 @@ namespace NgoUyenNguyen.Grid
                         OpenSet = openSet,
                         ClosedSet = closedSet,
                     }.Schedule(),
-                    _ => throw new NotImplementedException()
+                    _ => throw new NotSupportedException($"Layout {Layout} is not supported!")
                 };
                 runningJobs.Add(jobHandle);
                 pendingResults.Add((t, path, hasPath));

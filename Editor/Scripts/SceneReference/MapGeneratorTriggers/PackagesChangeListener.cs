@@ -1,7 +1,7 @@
 ﻿using UnityEditor;
 using UnityEditor.PackageManager;
 
-// TODO: run the generator only if there is a change in the packages we are interested in.
+//run the generator only if there is a change in the packages we are interested in.
 
 namespace Eflatun.SceneReference.Editor.MapGeneratorTriggers
 {

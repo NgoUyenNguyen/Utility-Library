@@ -51,30 +51,30 @@ namespace NgoUyenNguyen
         /// <summary>
         /// Retrieves the closest <see cref="ServiceLocator"/> instance associated with the specified <see cref="MonoBehaviour"/>.
         /// </summary>
-        /// <param name="mb">The MonoBehaviour instance for which the ServiceLocator is being retrieved.</param>
+        /// <param name="component">The Component instance for which the ServiceLocator is being retrieved.</param>
         /// <returns>
         /// Returns the <see cref="ServiceLocator"/> found for the specified MonoBehaviour.
         /// This method checks the parent hierarchy for a ServiceLocator, falls back to the scene-specific ServiceLocator,
         /// and ultimately defaults to the global instance if no other locator is found.
         /// </returns>
-        public static ServiceLocator For(MonoBehaviour mb) => 
-            mb.GetComponentInParent<ServiceLocator>() ?? ForSceneOf(mb) ?? Global;
+        public static ServiceLocator For(Component component) => 
+            component.GetComponentInParent<ServiceLocator>() ?? ForSceneOf(component) ?? Global;
 
         /// <summary>
         /// Retrieves the <see cref="ServiceLocator"/> instance associated with the scene of the specified <see cref="MonoBehaviour"/>.
         /// If no dedicated scene-specific ServiceLocator is found, returns the global instance.
         /// </summary>
-        /// <param name="mb">The MonoBehaviour for which the scene's ServiceLocator is being retrieved.</param>
+        /// <param name="component">The Component for which the scene's ServiceLocator is being retrieved.</param>
         /// <returns>
         /// The <see cref="ServiceLocator"/> instance associated with the scene containing the specified MonoBehaviour.
         /// If no appropriate ServiceLocator exists in the scene, the method falls back to the global instance.
         /// </returns>
-        public static ServiceLocator ForSceneOf(MonoBehaviour mb)
+        public static ServiceLocator ForSceneOf(Component component)
         {
-            var scene = mb.gameObject.scene;
+            var scene = component.gameObject.scene;
 
             if (SceneContainers.TryGetValue(scene, out var container) 
-                && container != mb)
+                && container != component)
             {
                 return container;
             }

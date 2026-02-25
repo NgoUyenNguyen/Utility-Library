@@ -1,4 +1,5 @@
-using System.Linq;
+
+using ZLinq;
 
 namespace NgoUyenNguyen
 {
@@ -37,7 +38,7 @@ namespace NgoUyenNguyen
             var parent = SceneContainers.ContainsValue(this) ? Global?.EventBus : FindParentBus();
             if (parent == null) return;
             EventBus.AttachTo(parent);
-            foreach (var child in EventBus.Parent.Children.ToArray())
+            foreach (var child in EventBus.Parent.Children.AsValueEnumerable().ToArray())
             {
                 if (child == EventBus) continue;
                 child.AttachTo(child.Container.FindParentBus());
@@ -46,7 +47,7 @@ namespace NgoUyenNguyen
 
         private void DetachEventBus()
         {
-            foreach (var child in EventBus.Children.ToArray())
+            foreach (var child in EventBus.Children.AsValueEnumerable().ToArray())
             {
                 child.AttachTo(EventBus.Parent);
             }

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using ZLinq;
 
 namespace NgoUyenNguyen
 {
@@ -176,7 +176,7 @@ namespace NgoUyenNguyen
         {
             if (!listeners.TryGetValue(type, out var sorted)) return;
 
-            foreach (var (order, callbacks) in sorted.ToArray())
+            foreach (var (order, callbacks) in sorted.AsValueEnumerable().ToArray())
             {
                 callbacks.Remove(callback);
                 if (callbacks.Count == 0)
@@ -237,7 +237,12 @@ namespace NgoUyenNguyen
         private void InvokeForType<T>(Type type, T message)
         {
             if (!listeners.TryGetValue(type, out var sorted)) return;
-            foreach (var callback in sorted.Values.SelectMany(callbacks => callbacks.ToArray()))
+            foreach (var callback in sorted.Values
+                         .AsValueEnumerable()
+                         .SelectMany(callbacks => 
+                             callbacks
+                                 .AsValueEnumerable()
+                                 .ToArray()))
             {
                 ((Action<object>)callback).Invoke(message);
             }

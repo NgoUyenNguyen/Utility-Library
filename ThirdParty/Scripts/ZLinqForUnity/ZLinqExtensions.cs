@@ -4,7 +4,7 @@ namespace ZLinq
 {
     public static class ZLinqExtensions
     {
-        public static IEnumerable<T> AsEnumerable<TEnumerator, T>(this ValueEnumerable<TEnumerator, T> valueEnumerable)
+        public static IEnumerable<T> ToEnumerable<TEnumerator, T>(this ValueEnumerable<TEnumerator, T> valueEnumerable)
             where TEnumerator : struct, IValueEnumerator<T>
         {
             using var e = valueEnumerable.Enumerator;

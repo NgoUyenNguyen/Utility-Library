@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ZLinq;
 
 namespace NgoUyenNguyen
 {
@@ -22,7 +23,9 @@ namespace NgoUyenNguyen
         /// <param name="methodName">The name of the method.</param>
         public bool Contains<T>(string methodName) =>
             !string.IsNullOrEmpty(methodName)
-            && Listeners<T>().Any(callback => callback.Method.Name == methodName);
+            && Listeners<T>()
+                .AsValueEnumerable()
+                .Any(callback => callback.Method.Name == methodName);
 
         /// <summary>
         /// Retrieves the total count of listeners registered for a specific event type.
@@ -33,7 +36,7 @@ namespace NgoUyenNguyen
         {
             var type = typeof(T);
             return listeners.TryGetValue(type, out var sorted)
-                ? sorted.Values.Sum(c => c.Count)
+                ? sorted.Values.AsValueEnumerable().Sum(c => c.Count)
                 : 0;
         }
 
@@ -47,6 +50,7 @@ namespace NgoUyenNguyen
             if (!listeners.TryGetValue(type, out var sorted)) yield break;
 
             var reverseMap = wrapperMap
+                .AsValueEnumerable()
                 .Where(pair => pair.Key.eventType == type)
                 .ToDictionary(pair => pair.Value, pair => pair.Key.origin);
 

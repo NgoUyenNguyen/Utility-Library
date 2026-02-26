@@ -53,13 +53,15 @@ namespace NgoUyenNguyen.Editor
                 }
                 
                 var settings = AssetDatabase.LoadAssetAtPath<LevelEditorSettings>(path);
-                if (settings == null)
-                {
-                    settings = CreateInstance<LevelEditorSettings>();
-                    AssetDatabase.CreateAsset(settings, LevelEditorSettingWindow.DefaultSettingsPath);
-                    AssetDatabase.ImportAsset(LevelEditorSettingWindow.DefaultSettingsPath);
-                    Debug.Log($"Created new  LevelEditorSettings asset at '{LevelEditorSettingWindow.DefaultSettingsPath}'");
-                }
+                if (settings != null) return settings;
+                
+                settings = CreateInstance<LevelEditorSettings>();
+                
+                var folder = Path.GetDirectoryName(LevelEditorSettingWindow.DefaultSettingsPath);
+                Directory.CreateDirectory(folder!);
+                AssetDatabase.CreateAsset(settings, LevelEditorSettingWindow.DefaultSettingsPath);
+                AssetDatabase.ImportAsset(LevelEditorSettingWindow.DefaultSettingsPath);
+                Debug.Log($"Created new  LevelEditorSettings asset at '{LevelEditorSettingWindow.DefaultSettingsPath}'");
 
                 return settings;
             }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Unity.Properties;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -38,7 +37,7 @@ namespace NgoUyenNguyen.Editor
                         {
                             new Folder("Entities"),
                             new Folder("Systems"),
-                            new Folder("ScriptableObjects"),
+                            new Folder("Common"),
                             new Folder("UI")
                         }
                     ),

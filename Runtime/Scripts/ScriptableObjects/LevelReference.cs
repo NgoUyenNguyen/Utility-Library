@@ -1,13 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
-using UnityEngine.SceneManagement;
+using ZLinq;
 using Object = UnityEngine.Object;
 
 namespace NgoUyenNguyen.ScriptableObjects
@@ -38,8 +37,11 @@ namespace NgoUyenNguyen.ScriptableObjects
 
         #endregion
 
+        // ReSharper disable once InconsistentNaming
         public AssetReference GetReferenceFromGUID(string guid) =>
-            references.FirstOrDefault(r => r != null && r.AssetGUID == guid);
+            references
+                .AsValueEnumerable()
+                .FirstOrDefault(r => r != null && r.AssetGUID == guid);
 
         public async UniTask<T> LoadAsync<T>(int index, 
             float delaySeconds = 0f, 
@@ -82,72 +84,40 @@ namespace NgoUyenNguyen.ScriptableObjects
             return handle.Result;
         }
 
-        public async UniTask<T> InstantiateAsync<T>(int index, 
-            float delaySeconds = 0f,
-            CancellationToken cancellationToken = default) where T : Object
-        {
-            var instance = await LoadAsync<T>(index, delaySeconds, cancellationToken);
-            return Instantiate(instance);
-        }
-
-        public async UniTask<T> InstantiateAsync<T>(int index, 
-            Scene scene,
-            float delaySeconds = 0f,
-            CancellationToken cancellationToken = default) where T : Object
-        {
-            var instance = await LoadAsync<T>(index, delaySeconds, cancellationToken);
-            return Instantiate(instance, scene) as T;
-        }
-
-        public async UniTask<T> InstantiateAsync<T>(int index, 
-            Transform parent,
-            bool worldPositionStays,
-            float delaySeconds = 0f,
-            CancellationToken cancellationToken = default) where T : Object
-        {
-            var instance = await LoadAsync<T>(index, delaySeconds, cancellationToken);
-            return Instantiate(instance, parent, worldPositionStays);
-        }
-        
-        public async UniTask<T> InstantiateAsync<T>(int index, 
-            Vector3 position, 
-            Quaternion rotation,
-            float delaySeconds = 0f,
-            CancellationToken cancellationToken = default) where T : Object
-        {
-            var instance = await LoadAsync<T>(index, delaySeconds, cancellationToken);
-            return Instantiate(instance, position, rotation);
-        }
-        
-        public async UniTask<T> InstantiateAsync<T>(int index, 
-            Vector3 position, 
-            Quaternion rotation,
-            Transform parent, 
-            float delaySeconds = 0f,
-            CancellationToken cancellationToken = default) where T : Object
-        {
-            var instance = await LoadAsync<T>(index, delaySeconds, cancellationToken);
-            return Instantiate(instance, position, rotation, parent);
-        }
-
         public async UniTask<T> InstantiateAsync<T>(int index,
-            InstantiateParameters parameters,
+            Vector3 position = default,
+            Quaternion quaternion = default,
+            InstantiateParameters parameters = default,
             float delaySeconds = 0f,
             CancellationToken cancellationToken = default) where T : Object
         {
-            var instance = await LoadAsync<T>(index, delaySeconds, cancellationToken);
-            return Instantiate(instance, parameters);
+            var loaded = await LoadAsync<T>(index, delaySeconds, cancellationToken);
+            var instances = await InstantiateAsync(loaded, position, quaternion, parameters, cancellationToken);
+            return instances[0];
         }
-        
+
         public async UniTask<T> InstantiateAsync<T>(int index, 
-            Vector3 position, 
-            Quaternion rotation,
-            InstantiateParameters parameters,
+            int count = 1,
+            InstantiateParameters parameters = default,
             float delaySeconds = 0f,
             CancellationToken cancellationToken = default) where T : Object
         {
-            var instance = await LoadAsync<T>(index, delaySeconds, cancellationToken);
-            return Instantiate(instance, position, rotation, parameters);
+            var loaded = await LoadAsync<T>(index, delaySeconds, cancellationToken);
+            var instances = await InstantiateAsync(loaded, count, parameters, cancellationToken);
+            return instances[0];
+        }
+
+        public async UniTask<T> InstantiateAsync<T>(int index, 
+            int count = 1,
+            Transform parent = null,
+            Vector3 position = default,
+            Quaternion quaternion = default,
+            float delaySeconds = 0f,
+            CancellationToken cancellationToken = default) where T : Object
+        {
+            var loaded = await LoadAsync<T>(index, delaySeconds, cancellationToken);
+            var instances = await InstantiateAsync(loaded, count, parent, position, quaternion, cancellationToken);
+            return instances[0];
         }
 
         public void Release(int index)
@@ -163,10 +133,11 @@ namespace NgoUyenNguyen.ScriptableObjects
 
         public void ReleaseAll()
         {
-            foreach (var handle in loadedHandles.Values)
+            foreach (var handle in loadedHandles.Values
+                         .AsValueEnumerable()
+                         .Where(handle => handle.IsValid()))
             {
-                if (handle.IsValid())
-                    Addressables.Release(handle);
+                Addressables.Release(handle);
             }
 
             loadedHandles.Clear();

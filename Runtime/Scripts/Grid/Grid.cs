@@ -59,7 +59,7 @@ namespace NgoUyenNguyen.Grid
 
         public IEnumerator<T> GetEnumerator()
         {
-            foreach (var t in cellMap)
+            foreach (var t in CellMap)
             {
                 if (t == null) continue;
                 yield return t as T;

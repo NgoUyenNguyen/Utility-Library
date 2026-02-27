@@ -11,7 +11,7 @@ namespace NgoUyenNguyen.Grid
         {
             get
             {
-                return grid.space switch
+                return grid.Space switch
                 {
                     GridSpace.Horizontal => grid.transform.up,
                     GridSpace.Vertical => -grid.transform.forward,
@@ -24,7 +24,7 @@ namespace NgoUyenNguyen.Grid
         {
             get
             {
-                return grid.space switch
+                return grid.Space switch
                 {
                     GridSpace.Horizontal => grid.transform.forward,
                     GridSpace.Vertical => grid.transform.up,
@@ -45,9 +45,9 @@ namespace NgoUyenNguyen.Grid
         {
             get
             {
-                return grid.layout switch
+                return grid.Layout switch
                 {
-                    CellLayout.Square => new Vector2(grid.cellSize * grid.size.x, grid.cellSize * grid.size.y),
+                    CellLayout.Square => new Vector2(grid.CellSize * grid.Size.x, grid.CellSize * grid.Size.y),
                     CellLayout.Hexagon => default,
                     _ => throw new InvalidOperationException("Invalid Layout!")
                 };
@@ -58,46 +58,46 @@ namespace NgoUyenNguyen.Grid
         {
             get
             {
-                switch (grid.layout)
+                switch (grid.Layout)
                 {
                     case CellLayout.Square:
-                        return grid.alignment switch
+                        return grid.Alignment switch
                         {
                             GridAlignment.Center =>
                                 grid.transform.position,
                             GridAlignment.BottomLeft =>
                                 grid.transform.position +
-                                (GridRight * grid.size.x / 2 + GridForward * grid.size.y / 2) * grid.cellSize,
+                                (GridRight * grid.Size.x / 2 + GridForward * grid.Size.y / 2) * grid.CellSize,
                             GridAlignment.BottomRight =>
                                 grid.transform.position +
-                                (GridLeft * grid.size.x / 2 + GridForward * grid.size.y / 2) * grid.cellSize,
+                                (GridLeft * grid.Size.x / 2 + GridForward * grid.Size.y / 2) * grid.CellSize,
                             GridAlignment.TopLeft =>
                                 grid.transform.position +
-                                (GridRight * grid.size.x / 2 + GridBackward * grid.size.y / 2) *
-                                grid.cellSize,
+                                (GridRight * grid.Size.x / 2 + GridBackward * grid.Size.y / 2) *
+                                grid.CellSize,
                             GridAlignment.TopRight =>
                                 grid.transform.position +
-                                (GridLeft * grid.size.x / 2 + GridBackward * grid.size.y / 2) * grid.cellSize,
+                                (GridLeft * grid.Size.x / 2 + GridBackward * grid.Size.y / 2) * grid.CellSize,
                             _ => throw new InvalidOperationException("Invalid Alignment!")
                         };
                     case CellLayout.Hexagon:
-                        return grid.alignment switch
+                        return grid.Alignment switch
                         {
                             GridAlignment.Center =>
                                 grid.transform.position,
                             GridAlignment.BottomLeft =>
                                 grid.transform.position +
-                                (GridRight * ((grid.size.x * 2 + 1) * Mathf.Sqrt(3) / 4) + GridForward * grid.size.y / 2) * grid.cellSize / 2,
+                                (GridRight * ((grid.Size.x * 2 + 1) * Mathf.Sqrt(3) / 4) + GridForward * grid.Size.y / 2) * grid.CellSize / 2,
                             GridAlignment.BottomRight =>
                                 grid.transform.position +
-                                (GridLeft * grid.size.x / 2 + GridForward * grid.size.y / 2) * grid.cellSize,
+                                (GridLeft * grid.Size.x / 2 + GridForward * grid.Size.y / 2) * grid.CellSize,
                             GridAlignment.TopLeft =>
                                 grid.transform.position +
-                                (GridRight * grid.size.x / 2 + GridBackward * grid.size.y / 2) *
-                                grid.cellSize,
+                                (GridRight * grid.Size.x / 2 + GridBackward * grid.Size.y / 2) *
+                                grid.CellSize,
                             GridAlignment.TopRight =>
                                 grid.transform.position +
-                                (GridLeft * grid.size.x / 2 + GridBackward * grid.size.y / 2) * grid.cellSize,
+                                (GridLeft * grid.Size.x / 2 + GridBackward * grid.Size.y / 2) * grid.CellSize,
                             _ => throw new InvalidOperationException("Invalid Alignment!")
                         };
                     default:

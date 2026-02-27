@@ -74,32 +74,32 @@ namespace NgoUyenNguyen.Editor
         // Method to handle undo and redo
         private void OnUndoRedo()
         {
-            var grid = target as BaseGrid;
+            var grid = (BaseGrid)target;
             
             // Undo grid size
-            if (sizeProp.vector2IntValue != grid.size)
+            if (sizeProp.vector2IntValue != grid.Size)
             {
-                grid.PrefabCreate(grid.size, grid.cellPrefab.gameObject); // Recreate grid
+                grid.PrefabCreate(grid.Size, grid.CellPrefab); // Recreate grid
                 var cells = grid.GetComponentsInChildren<Cell>(); // Find all child cell objects
                 for (int i = cells.Length - 1; i >= 0; i--)
                 {
                     if (cells[i].transform == grid.transform) continue;
                     // If cell is not in the new grid, destroy it
-                    if (!grid.cellMap.Contains(cells[i]))
+                    if (!grid.CellMap.Contains(cells[i]))
                     {
                         DestroyImmediate(cells[i].gameObject);
                     }
                 }
             }
             // Undo cell prefab
-            else if (cellPrefabProp.objectReferenceValue != grid.cellPrefab)
+            else if (cellPrefabProp.objectReferenceValue != grid.CellPrefab)
             {
                 serializedObject.ApplyModifiedProperties();
-                for (int x = 0; x < grid.size.x; x++)
+                for (int x = 0; x < grid.Size.x; x++)
                 {
-                    for (int y = 0; y < grid.size.y; y++)
+                    for (int y = 0; y < grid.Size.y; y++)
                     {
-                        grid.SpawnCellPrefab(grid.cellPrefab, new Vector2Int(x, y)); // Replace cell prefab
+                        grid.SpawnCellPrefab(grid.CellPrefab, new Vector2Int(x, y)); // Replace cell prefab
                     }
                 }
                 
@@ -108,7 +108,7 @@ namespace NgoUyenNguyen.Editor
                 {
                     if (cells[i].transform == grid.transform) continue;
                     // If cell is not in the new grid, destroy it
-                    if (!grid.cellMap.Contains(cells[i]))
+                    if (!grid.CellMap.Contains(cells[i]))
                     {
                         DestroyImmediate(cells[i].gameObject);
                     }
@@ -116,18 +116,18 @@ namespace NgoUyenNguyen.Editor
                 grid.CalculateCellsPosition();
             }
             // Undo cell size, alignment, or space
-            else if (cellSizeProp.floatValue != grid.cellSize
-                || alignmentProp.intValue != (int)grid.alignment
-                || spaceProp.intValue != (int)grid.space)
+            else if (cellSizeProp.floatValue != grid.CellSize
+                || alignmentProp.intValue != (int)grid.Alignment
+                || spaceProp.intValue != (int)grid.Space)
             {
                 serializedObject.ApplyModifiedProperties();
                 grid.CalculateCellsPosition(); // Recalculate cell position
             }
             // Undo layout
-            else if (layoutProp.intValue != (int)grid.layout)
+            else if (layoutProp.intValue != (int)grid.Layout)
             {
                 serializedObject.ApplyModifiedProperties();
-                grid.PrefabCreate(grid.size, grid.cellPrefab.gameObject);
+                grid.PrefabCreate(grid.Size, grid.CellPrefab);
             }
             else
             {
@@ -136,7 +136,7 @@ namespace NgoUyenNguyen.Editor
                 for (int i = 0; i < cellMapProp.arraySize; i++)
                 {
                     var cellProp = cellMapProp.GetArrayElementAtIndex(i);
-                    grid.cellMap[i] = cellProp.objectReferenceValue as Cell;
+                    grid.CellMap[i] = cellProp.objectReferenceValue as Cell;
                 }
 
                 serializedObject.ApplyModifiedProperties();
@@ -163,7 +163,7 @@ namespace NgoUyenNguyen.Editor
         {
             var t = (BaseGrid)target;
 
-            foreach (var cell in t.cellMap)
+            foreach (var cell in t.CellMap)
             {
                 if (cell == null) continue;
 
@@ -236,7 +236,7 @@ namespace NgoUyenNguyen.Editor
                         else
                         {
                             // Add Cell
-                            Undo.RegisterCreatedObjectUndo(grid.SpawnCellPrefab(grid.cellPrefab, new Vector2Int(x, y)).gameObject, "Instantiate Prefab");
+                            Undo.RegisterCreatedObjectUndo(grid.SpawnCellPrefab(grid.CellPrefab, new Vector2Int(x, y)).gameObject, "Instantiate Prefab");
                             serializedObject.ApplyModifiedProperties();
                             grid.CalculateCellsPosition();
                         }
@@ -272,12 +272,12 @@ namespace NgoUyenNguyen.Editor
 
                 foreach (var t in targets)
                 {
-                    for (int x = 0; x < grid.size.x; x++)
+                    for (int x = 0; x < grid.Size.x; x++)
                     {
-                        for (int y = 0; y < grid.size.y; y++)
+                        for (int y = 0; y < grid.Size.y; y++)
                         {
-                            if (grid.cellMap[x + y * grid.size.x] == null) continue;
-                            grid.SpawnCellPrefab(grid.cellPrefab, new Vector2Int(x, y));
+                            if (grid.CellMap[x + y * grid.Size.x] == null) continue;
+                            grid.SpawnCellPrefab(grid.CellPrefab, new Vector2Int(x, y));
                         }
                     }
                     grid.CalculateCellsPosition();
@@ -296,7 +296,7 @@ namespace NgoUyenNguyen.Editor
                 foreach (var t in targets)
                 {
                     serializedObject.ApplyModifiedProperties();
-                    grid.PrefabCreate(grid.size, grid.cellPrefab.gameObject);
+                    grid.PrefabCreate(grid.Size, grid.CellPrefab);
                 }
             }
 
@@ -340,14 +340,14 @@ namespace NgoUyenNguyen.Editor
             {
                 foreach (var t in targets)
                 {
-                    grid.PrefabCreate(grid.size, grid.cellPrefab.gameObject);
+                    grid.PrefabCreate(grid.Size, grid.CellPrefab);
                 }
                 var cells = grid.GetComponentsInChildren<Cell>(); // Find all child cell objects
                 for (int i = cells.Length - 1; i >= 0; i--)
                 {
                     if (cells[i].transform == grid.transform) continue;
                     // If cell is not in the new grid, destroy it
-                    if (!grid.cellMap.Contains(cells[i]))
+                    if (!grid.CellMap.Contains(cells[i]))
                     {
                         DestroyImmediate(cells[i].gameObject);
                     }

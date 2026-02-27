@@ -19,11 +19,11 @@ namespace NgoUyenNguyen.Grid
         public void RemoveGridReference()
         {
             if (grid == null) return;
-            for (int i = 0; i < grid.cellMap.Length; i++)
+            for (int i = 0; i < grid.CellMap.Length; i++)
             {
-                if (grid.cellMap[i] == this)
+                if (grid.CellMap[i] == this)
                 {
-                    grid.cellMap[i] = null;
+                    grid.CellMap[i] = null;
                     break;
                 }
             }

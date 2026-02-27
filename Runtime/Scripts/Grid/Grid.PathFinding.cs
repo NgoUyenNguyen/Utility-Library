@@ -49,7 +49,7 @@ namespace NgoUyenNguyen.Grid
         /// <returns>A <see cref="PathHandle{T}"/> object representing the requested path operation.</returns>
         public PathHandle<T> RequestPath(T from, T to, NeighborFilter filter = NeighborFilter.None)
         {
-            if (!cellMap.Contains(from) || !cellMap.Contains(to))
+            if (!CellMap.Contains(from) || !CellMap.Contains(to))
             {
                 throw new ArgumentException($"{nameof(from)} and {nameof(to)} must be in the grid!");
             }
@@ -85,7 +85,7 @@ namespace NgoUyenNguyen.Grid
         /// </summary>
         public void UpdatePathFindingData()
         {
-            UpdatePathfindingDataEvent?.Invoke(cellMap, size, layout);
+            UpdatePathfindingDataEvent?.Invoke(CellMap, Size, Layout);
         }
     }
 }

@@ -1,8 +1,6 @@
-using System;
 using NgoUyenNguyen.Grid;
 using UnityEditor;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace NgoUyenNguyen.Editor
 {
@@ -12,122 +10,104 @@ namespace NgoUyenNguyen.Editor
     public static class GridEditorExten
     {
         /// <summary>
-        /// <c>ONLY USE IN EDITOR</c><br/>
-        /// Method to create <c>Grid</c> which remaining its connecting to original <c>Cell</c> prefab
+        /// Method to create a grid with specified dimensions and a given prefab for the cells.
+        /// This method establishes a new grid configuration, destroys previous cell prefabs,
+        /// and spawns new cell prefabs based on the specified width, height, and prefab.
         /// </summary>
-        /// <param name="width">Width of grid</param>
-        /// <param name="height">Height of grid</param>
-        /// <param name="cellPrefab">Cell Prefab to be spawned</param>
-        /// <param name="map">Map to set each cell spawned in detail.<br/> 
-        /// <c>True = spawn in this index</c> <br/>
-        /// <c>False = not spawn in this index</c>
-        /// </param>
-        public static void PrefabCreate(this BaseGrid grid, int width, int height, GameObject cellPrefab)
+        /// <param name="grid">The grid object where the cells will be created.</param>
+        /// <param name="width">The number of columns for the grid.</param>
+        /// <param name="height">The number of rows for the grid.</param>
+        /// <param name="cellPrefab">The cell prefab to instantiate for each grid cell.</param>
+        public static void PrefabCreate(this BaseGrid grid, int width, int height, Cell cellPrefab)
         {
-            PrefabCreate(grid, new Vector2Int(width, height), cellPrefab);
+            grid.PrefabCreate(new Vector2Int(width, height), cellPrefab);
         }
 
         /// <summary>
-        /// <c>ONLY USE IN EDITOR</c><br/>
-        /// Method to create <c>Grid</c> which remaining its connecting to original <c>Cell</c> prefab
+        /// Method to create a grid with specified dimensions and a given prefab for the cells.
+        /// This method establishes a new grid configuration, destroys previous cell prefabs,
+        /// and spawns new cell prefabs based on the specified width, height, and prefab.
         /// </summary>
-        /// <param name="size">Size of grid</param>
-        /// <param name="cellPrefab">Cell Prefab to be spawned</param>
-        /// <param name="map">Map to set each cell spawned in detail.<br/> 
-        /// <c>True = spawn in this index</c> <br/>
-        /// <c>False = not spawn in this index</c>
-        /// </param>
-        public static void PrefabCreate(this BaseGrid grid, Vector2Int size, GameObject cellPrefab)
+        /// <param name="grid">The target grid to be modified.</param>
+        /// <param name="size">The size of the grid.</param>
+        /// <param name="cellPrefab">The cell prefab to be instantiated within the grid.</param>
+        public static void PrefabCreate(this BaseGrid grid, Vector2Int size, Cell cellPrefab)
         {
-            if (!cellPrefab.TryGetComponent<Cell>(out _))
-            {
-                throw new ArgumentException("Prefab does not have Cell component!", nameof(cellPrefab));
-            }
-
-            DestroyOldCellPrefabs(grid);
+            grid.DestroyOldCellPrefabs();
 
             // Set Size
-            grid.size = size;
-            grid.cellMap = new Cell[size.x * size.y];
+            grid.Size = size;
+            grid.CellMap = new Cell[size.x * size.y];
 
-            CellPrefabSpawn(grid, cellPrefab);
+            grid.CellPrefabSpawn(cellPrefab);
         }
 
         /// <summary>
-        /// <c>ONLY USE IN EDITOR</c><br/>
-        /// Method to create <c>Grid</c> which remaining its connecting to original <c>Cell</c> prefab
+        /// Creates a grid using a two-dimensional boolean map to define the placement of cell prefabs.
+        /// This method destroys any existing cell prefabs in the grid, updates the grid's size,
+        /// and spawns new cell prefabs based on the provided map.
         /// </summary>
-        /// <param name="map">Map to set each cell spawned in detail.<br/> 
-        /// <c>True = spawn in this index</c> <br/>
-        /// <c>False = not spawn in this index</c></param>
-        /// <param name="cellPrefab">Cell Prefab to be spawned</param>
-        public static void PrefabCreate(this BaseGrid grid, bool[,] map, GameObject cellPrefab)
+        /// <param name="grid">The grid object where the cells will be created.</param>
+        /// <param name="map">A two-dimensional boolean array representing the grid layout, where true indicates the presence of a cell.</param>
+        /// <param name="cellPrefab">The cell prefab to instantiate for each active grid cell based on the map.</param>
+        public static void PrefabCreate(this BaseGrid grid, bool[,] map, Cell cellPrefab)
         {
-            if (!cellPrefab.TryGetComponent<Cell>(out _))
-            {
-                throw new ArgumentException("Prefab does not have Cell component!", nameof(cellPrefab));
-            }
-
-            DestroyOldCellPrefabs(grid);
+            grid.DestroyOldCellPrefabs();
 
             // Set Size
-            grid.size = new Vector2Int(map.GetLength(0), map.GetLength(1));
-            grid.cellMap = new Cell[grid.size.x * grid.size.y];
+            grid.Size = new Vector2Int(map.GetLength(0), map.GetLength(1));
+            grid.CellMap = new Cell[grid.Size.x * grid.Size.y];
 
-            CellPrefabSpawn(grid, cellPrefab, map);
+            grid.CellPrefabSpawn(cellPrefab, map);
         }
 
         private static void DestroyOldCellPrefabs(this BaseGrid grid)
         {
-            for (int i = grid.cellMap.Length - 1; i >= 0; i--)
+            for (var i = grid.CellMap.Length - 1; i >= 0; i--)
             {
-                if (grid.cellMap[i] != null)
+                if (grid.CellMap[i] != null)
                 {
-                    Object.DestroyImmediate(grid.cellMap[i].gameObject);
+                    Object.DestroyImmediate(grid.CellMap[i].gameObject);
                 }
             }
         }
 
-        private static void CellPrefabSpawn(this BaseGrid grid , GameObject cellPrefab, bool[,] map = null)
+        private static void CellPrefabSpawn(this BaseGrid grid , Cell cellPrefab, bool[,] map = null)
         {
-            grid.cellPrefab = cellPrefab.GetComponent<Cell>();
+            grid.CellPrefab = cellPrefab;
 
-            for (int x = 0; x < grid.size.x; x++)
+            for (var x = 0; x < grid.Size.x; x++)
             {
-                for (int y = 0; y < grid.size.y; y++)
+                for (var y = 0; y < grid.Size.y; y++)
                 {
                     if (map != null && !map[x, y]) continue;
-                    grid.cellMap[x + y * grid.size.x] = (PrefabUtility.InstantiatePrefab(cellPrefab, grid.transform) as GameObject)
+                    grid.CellMap[x + y * grid.Size.x] = (PrefabUtility.InstantiatePrefab(cellPrefab.gameObject, grid.transform) as GameObject)!
                         .GetComponent<Cell>();
-                    grid.cellMap[x + y * grid.size.x].grid = grid;
-                    grid.AssignCellIndex(grid.cellMap[x + y * grid.size.x], new Vector2Int(x, y));
-                    grid.cellMap[x + y * grid.size.x].transform.localPosition = grid.CellToLocal(grid.cellMap[x + y * grid.size.x]);
+                    grid.CellMap[x + y * grid.Size.x].grid = grid;
+                    grid.AssignCellIndex(grid.CellMap[x + y * grid.Size.x], new Vector2Int(x, y));
+                    
+                    var localPos = grid.CellToLocal(grid.CellMap[x + y * grid.Size.x]);
+                    if (localPos == null) continue;
+                    grid.CellMap[x + y * grid.Size.x].transform.localPosition = localPos.Value;
                 }
             }
         }
-
-        /// <summary>
-        /// Spawns a cell prefab at the specified index within the grid, replacing any existing cell at that position.
-        /// </summary>
-        /// <param name="grid">The grid in which the cell should be spawned.</param>
-        /// <param name="cellPrefab">The cell prefab to be instantiated.</param>
-        /// <param name="index">The index within the grid where the cell should be placed.</param>
-        /// <returns>The newly instantiated cell.</returns>
-        public static Cell SpawnCellPrefab(this BaseGrid grid, Cell cellPrefab, Vector2Int index)
+        
+        internal static Cell SpawnCellPrefab(this BaseGrid grid, Cell cellPrefab, Vector2Int index)
         {
             if (cellPrefab == null) return null;
-            if (grid.cellMap[index.x + index.y * grid.size.x] != null)
-                Object.DestroyImmediate(grid.cellMap[index.x + index.y * grid.size.x].gameObject);
+            if (grid.CellMap[index.x + index.y * grid.Size.x] != null)
+                Object.DestroyImmediate(grid.CellMap[index.x + index.y * grid.Size.x].gameObject);
 
-            Cell cell = (PrefabUtility.InstantiatePrefab(cellPrefab.gameObject, grid.transform) as GameObject)
+            var cell = (PrefabUtility.InstantiatePrefab(cellPrefab.gameObject, grid.transform) as GameObject)!
                 .GetComponent<Cell>();
-            cell.index = grid.layout switch
+            cell.index = grid.Layout switch
             {
                 CellLayout.Hexagon => grid.IndexToAxial(index),
                 _ => index
             };
             cell.grid = grid;
-            grid.cellMap[index.x + index.y * grid.size.x] = cell;
+            grid.CellMap[index.x + index.y * grid.Size.x] = cell;
 
             return cell;
         }

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using ZLinq;
+using UnityEngine.Pool;
 
 namespace NgoUyenNguyen
 {
@@ -11,8 +11,14 @@ namespace NgoUyenNguyen
     /// </summary>
     public partial class EventBus
     {
-        private readonly Dictionary<Type, SortedDictionary<int, HashSet<Delegate>>> listeners = new();
-        private readonly Dictionary<(Type eventType, Delegate origin), Delegate> wrapperMap = new();
+        private static readonly Dictionary<Type, List<Type>> TypeHierarchyCache = new();
+        private readonly Dictionary<Type, SortedDictionary<int, HashSet<Action<object>>>> listeners = new();
+        private readonly Dictionary<(Type eventType, Delegate origin), Action<object>> wrapperMap = new();
+
+        /// <summary>
+        /// Clears the cached type hierarchy used for optimizing event type lookups in the EventBus.
+        /// </summary>
+        public static void ClearTypeHierarchyCache() => TypeHierarchyCache.Clear();
 
         /// <summary>
         /// Subscribes a callback which invoked once to a specific event type with an optional execution order.
@@ -157,30 +163,41 @@ namespace NgoUyenNguyen
         /// <summary>
         /// Clears all registered event listeners for all event types, resetting the event bus to its initial state.
         /// </summary>
-        public void Clear()
+        public void ClearListeners()
         {
             listeners.Clear();
             wrapperMap.Clear();
         }
 
-        private void AddListener(Type type, Delegate callback, int executionOrder)
+        private void AddListener(Type type, Action<object> callback, int executionOrder)
         {
             if (!listeners.TryGetValue(type, out var sortedDictionary))
-                listeners[type] = sortedDictionary = new SortedDictionary<int, HashSet<Delegate>>();
+                listeners[type] = sortedDictionary = new SortedDictionary<int, HashSet<Action<object>>>();
             if (!sortedDictionary.TryGetValue(executionOrder, out var callbacks))
-                sortedDictionary[executionOrder] = callbacks = new HashSet<Delegate>();
+                sortedDictionary[executionOrder] = callbacks = new HashSet<Action<object>>();
             callbacks.Add(callback);
         }
 
-        private void RemoveListener(Type type, Delegate callback)
+        private void RemoveListener(Type type, Action<object> callback)
         {
             if (!listeners.TryGetValue(type, out var sorted)) return;
 
-            foreach (var (order, callbacks) in sorted.AsValueEnumerable().ToArray())
+            var ordersToRemove = ListPool<int>.Get();
+            try
             {
-                callbacks.Remove(callback);
-                if (callbacks.Count == 0)
+                // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+                foreach (var pair in sorted)
+                {
+                    if (pair.Value.Remove(callback) && pair.Value.Count == 0)
+                        ordersToRemove.Add(pair.Key);
+                }
+
+                foreach (var order in ordersToRemove)
                     sorted.Remove(order);
+            }
+            finally
+            {
+                ListPool<int>.Release(ordersToRemove);
             }
 
             if (sorted.Count == 0)
@@ -200,10 +217,7 @@ namespace NgoUyenNguyen
             {
                 var messageType = typeof(T);
 
-                for (var type = messageType; type != null; type = type.BaseType)
-                    InvokeForType(type, message);
-
-                foreach (var @interface in messageType.GetInterfaces())
+                foreach (var @interface in GetTypeHierarchy(messageType))
                     InvokeForType(@interface, message);
             }
 
@@ -234,17 +248,36 @@ namespace NgoUyenNguyen
             }
         }
 
+        private static List<Type> GetTypeHierarchy(Type type)
+        {
+            if (TypeHierarchyCache.TryGetValue(type, out var cached)) return cached;
+
+            var hierarchy = new List<Type>();
+            for (var t = type; t != null; t = t.BaseType) hierarchy.Add(t);
+            hierarchy.AddRange(type.GetInterfaces());
+
+            TypeHierarchyCache[type] = hierarchy;
+            return hierarchy;
+        }
+
         private void InvokeForType<T>(Type type, T message)
         {
             if (!listeners.TryGetValue(type, out var sorted)) return;
-            foreach (var callback in sorted.Values
-                         .AsValueEnumerable()
-                         .SelectMany(callbacks => 
-                             callbacks
-                                 .AsValueEnumerable()
-                                 .ToArray()))
+
+            var buffer = ListPool<Action<object>>.Get();
+            try
             {
-                ((Action<object>)callback).Invoke(message);
+                foreach (var callbacks in sorted.Values)
+                {
+                    buffer.AddRange(callbacks);
+                }
+
+                foreach (var t in buffer)
+                    t.Invoke(message);
+            }
+            finally
+            {
+                ListPool<Action<object>>.Release(buffer);
             }
         }
     }

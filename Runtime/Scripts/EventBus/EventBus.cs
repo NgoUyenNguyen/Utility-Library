@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace NgoUyenNguyen
@@ -21,6 +22,7 @@ namespace NgoUyenNguyen
     /// When an event is published, all subscribed handlers are invoked in the order
     /// they are registered.
     /// </remarks>
+    [Obsolete("EventBus<> has been deprecated.\n Use ServiceLocator.Global instead")]
     public static class EventBus<T> where T : IEvent
     {
         private static readonly List<IEventBinding<T>> Bindings = new();

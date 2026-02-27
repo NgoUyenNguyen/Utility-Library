@@ -4,8 +4,6 @@ namespace NgoUyenNguyen
 {
     public partial class EventBus
     {
-        private readonly HashSet<EventBus> children = new();
-
         /// <summary>
         /// Collection of child <see cref="EventBus"/> instances attached to the current <see cref="EventBus"/>.
         /// </summary>
@@ -14,7 +12,7 @@ namespace NgoUyenNguyen
         /// facilitates event propagation to child buses when events are published with a propagation mode
         /// that includes downstream communication.
         /// </remarks>
-        public IEnumerable<EventBus> Children => children;
+        public HashSet<EventBus> Children { get; } = new();
 
         /// <summary>
         /// The parent <see cref="EventBus"/> instance in the hierarchy to which the current <see cref="EventBus"/> is attached.
@@ -38,7 +36,7 @@ namespace NgoUyenNguyen
         {
             Detach();
             Parent = parent;
-            parent?.children.Add(this);
+            parent?.Children.Add(this);
         }
 
         /// <summary>
@@ -47,7 +45,7 @@ namespace NgoUyenNguyen
         /// </summary>
         public void Detach()
         {
-            Parent?.children.Remove(this);
+            Parent?.Children.Remove(this);
             Parent = null;
         }
     }

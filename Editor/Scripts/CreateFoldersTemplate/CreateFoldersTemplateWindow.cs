@@ -11,6 +11,7 @@ namespace NgoUyenNguyen.Editor
     public class CreateFoldersTemplateWindow : EditorWindow
     {
         #region Readonly
+
         private const string DefaultRootFolder = "Assets/_Project";
 
         private readonly Folder[] folderStructure =
@@ -35,10 +36,20 @@ namespace NgoUyenNguyen.Editor
                 {
                     new Folder("Scripts", children: new[]
                         {
-                            new Folder("Entities"),
-                            new Folder("Systems"),
-                            new Folder("Common"),
-                            new Folder("UI")
+                            new Folder("Runtime", children: new[]
+                            {
+                                new Folder("Entities"),
+                                new Folder("Systems"),
+                                new Folder("Common"),
+                                new Folder("Data"),
+                                new Folder("UI")
+                            }),
+                            new("Editor"),
+                            new("Tests", children: new[]
+                            {
+                                new Folder("Runtime"),
+                                new Folder("Editor")
+                            })
                         }
                     ),
                     new Folder("Shaders")
@@ -56,8 +67,8 @@ namespace NgoUyenNguyen.Editor
                     new Folder("Scenes")
                 }
             ),
-            new("Editor")
         };
+
         #endregion
 
         [SerializeField] private VisualTreeAsset visualTreeAsset;
@@ -79,7 +90,7 @@ namespace NgoUyenNguyen.Editor
             InitializeButtons();
             CalculateTreeItems();
             InitializeFolderPreview();
-            
+
             serializedObject = new SerializedObject(this);
             rootVisualElement.Bind(serializedObject);
         }
@@ -98,10 +109,10 @@ namespace NgoUyenNguyen.Editor
 
             var relativePath = ConvertAbsoluteToRelativePath(absolutePath);
             if (string.IsNullOrEmpty(absolutePath)) relativePath = DefaultRootFolder;
-            
+
             if (relativePath == null
                 && EditorUtility.DisplayDialog("Warning",
-                    "The selected folder is outside folder Assets!", 
+                    "The selected folder is outside folder Assets!",
                     "Cancel"))
             {
                 return;
@@ -111,7 +122,7 @@ namespace NgoUyenNguyen.Editor
             CalculateTreeItems();
             InitializeFolderPreview();
         }
-        
+
         private void SetRootFolderPath(string value)
         {
             serializedObject.Update();
@@ -135,10 +146,11 @@ namespace NgoUyenNguyen.Editor
             var preview = rootVisualElement.Q<MultiColumnTreeView>("preview");
             preview.RefreshItems();
         }
-        
+
         private void SetIncludeValueRecursive(Folder folder, bool value)
         {
             folder.IncludeGitKeep = value;
+
             if (folder.Children == null) return;
 
             foreach (var child in folder.Children)
@@ -150,7 +162,7 @@ namespace NgoUyenNguyen.Editor
         private void OnCreateClicked()
         {
             Close();
-            
+
             foreach (var root in rootFolder)
             {
                 CreateFolderRecursive(null, root.data);
@@ -189,10 +201,10 @@ namespace NgoUyenNguyen.Editor
         {
             var preview = rootVisualElement.Q<MultiColumnTreeView>(name: "preview");
             preview.Clear();
-            
+
             preview.SetRootItems(rootFolder);
             preview.ExpandAll();
-            
+
             preview.columns[0].bindCell = (element, id) =>
             {
                 var folderName = element.Q<Label>();
@@ -211,6 +223,7 @@ namespace NgoUyenNguyen.Editor
                 toggle.SetValueWithoutNotify(data.IncludeGitKeep);
                 toggle.UnregisterCallback<ChangeEvent<bool>>(OnToggleChanged);
                 toggle.RegisterCallback<ChangeEvent<bool>>(OnToggleChanged);
+
                 return;
 
                 void OnToggleChanged(ChangeEvent<bool> evt)
@@ -229,10 +242,10 @@ namespace NgoUyenNguyen.Editor
                 rootFolders[i] = new Folder(rootFolderNames[i]);
                 if (i > 0)
                 {
-                    rootFolders[i - 1].Children = new []{rootFolders[i]};
+                    rootFolders[i - 1].Children = new[] { rootFolders[i] };
                 }
             }
-            
+
             rootFolders[^1].Children = folderStructure;
             rootFolder = BuildTreeViewItemData(rootFolders[0]);
         }
@@ -240,6 +253,7 @@ namespace NgoUyenNguyen.Editor
         private List<TreeViewItemData<Folder>> BuildTreeViewItemData(Folder rootFolder)
         {
             var id = 0;
+
             return new List<TreeViewItemData<Folder>>
             {
                 BuildTreeViewItemDataRecursive(rootFolder, ref id)
@@ -265,7 +279,7 @@ namespace NgoUyenNguyen.Editor
 
         private void InitializeFolderPath()
         {
-            rootVisualElement.Q<Label>(name:"folder-path").bindingPath = nameof(rootFolderPath);
+            rootVisualElement.Q<Label>(name: "folder-path").bindingPath = nameof(rootFolderPath);
         }
 
         private void InitializeVisualTree()
@@ -274,25 +288,25 @@ namespace NgoUyenNguyen.Editor
             visualTree.style.width = new StyleLength(Length.Percent(100));
             visualTree.style.height = new StyleLength(Length.Percent(100));
             visualTree.dataSource = this;
-            
+
             rootVisualElement.Add(visualTree);
         }
-        
-        private static string ConvertAbsoluteToRelativePath(string absolutePath) 
-        { 
-            if (string.IsNullOrEmpty(absolutePath)) return null; 
-            
+
+        private static string ConvertAbsoluteToRelativePath(string absolutePath)
+        {
+            if (string.IsNullOrEmpty(absolutePath)) return null;
+
             // Normalize separators
-            absolutePath = absolutePath.Replace('\\', '/'); 
-            var dataPath = Application.dataPath.Replace('\\', '/'); 
-            
+            absolutePath = absolutePath.Replace('\\', '/');
+            var dataPath = Application.dataPath.Replace('\\', '/');
+
             if (absolutePath == Path.GetDirectoryName(dataPath)?.Replace('\\', '/')) return "Assets";
-            
+
             if (!absolutePath.StartsWith(dataPath, StringComparison.OrdinalIgnoreCase)) return null;
-            
-            return "Assets" + absolutePath[dataPath.Length..]; 
+
+            return "Assets" + absolutePath[dataPath.Length..];
         }
-        
+
         private class Folder
         {
             public readonly string Name;

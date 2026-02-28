@@ -7,7 +7,7 @@ namespace NgoUyenNguyen.Editor
     /// <summary>
     /// Provides static extension methods for creating and managing grids in the editor.
     /// </summary>
-    public static class GridEditorExten
+    public static class GridEditorExtend
     {
         /// <summary>
         /// Method to create a grid with specified dimensions and a given prefab for the cells.

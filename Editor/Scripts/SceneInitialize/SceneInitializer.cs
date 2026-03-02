@@ -9,8 +9,6 @@ namespace NgoUyenNguyen.Editor
     {
         public const string PreviousScenesFieldName = "PreviousScenes";
         public const string ActiveSceneFieldName = "ActiveScene";
-        public const string ShouldLoadBootstrapFieldName = "ShouldLoadBootsScene";
-        public const string ScenePathFieldName = "ScenePathToLoad";
 
         private static string PreviousScenes
         {
@@ -24,8 +22,11 @@ namespace NgoUyenNguyen.Editor
             set => EditorPrefs.SetString(ActiveSceneFieldName, value);
         }
 
-        private static bool ShouldLoadBootstrapScene => EditorPrefs.GetBool(ShouldLoadBootstrapFieldName, false);
-        private static string ScenePathToLoad => EditorPrefs.GetString(ScenePathFieldName, null);
+        private static bool ShouldLoadBootstrapScene => 
+            EditorSettings.GetOrCreate().sceneInitializeEnable;
+
+        private static string ScenePathToLoad =>
+            AssetDatabase.GetAssetOrScenePath(EditorSettings.GetOrCreate().sceneInitializeSceneAsset);
 
 
         static SceneInitializer()

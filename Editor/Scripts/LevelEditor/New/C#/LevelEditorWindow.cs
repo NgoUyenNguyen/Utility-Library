@@ -43,16 +43,13 @@ namespace NgoUyenNguyen.Editor
         {
             get
             {
-                var guid = 
-                    EditorPrefs.GetString(LevelEditorSettingsProvider.SettingsGuidKey, string.Empty);
+                var editorSettings = EditorSettings.GetOrCreate();
+                if (editorSettings.levelEditorSettings != null)
+                    return editorSettings.levelEditorSettings;
                 
-                var path = LevelEditorSettingWindow.DefaultSettingsPath;
-                if (!string.IsNullOrEmpty(guid))
-                {
-                    path = AssetDatabase.GUIDToAssetPath(guid);
-                }
                 
-                var settings = AssetDatabase.LoadAssetAtPath<LevelEditorSettings>(path);
+                var settings = AssetDatabase
+                    .LoadAssetAtPath<LevelEditorSettings>(LevelEditorSettingWindow.DefaultSettingsPath);
                 if (settings != null) return settings;
                 
                 settings = CreateInstance<LevelEditorSettings>();

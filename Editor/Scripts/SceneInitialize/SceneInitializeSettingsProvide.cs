@@ -21,27 +21,24 @@ namespace NgoUyenNguyen.Editor
                     EditorGUILayout.HelpBox(HelpBoxContent, MessageType.Info);
                     EditorGUILayout.Space();
 
-                    var enableFeature = EditorPrefs.GetBool(SceneInitializer.ShouldLoadBootstrapFieldName, false);
-                    var newEnableValue = EditorGUILayout.Toggle("Enable Scene Initialize", enableFeature);
+                    var editorSettings = EditorSettings.GetOrCreate();
 
-                    if (newEnableValue != enableFeature)
-                    {
-                        enableFeature = newEnableValue;
-                        EditorPrefs.SetBool(SceneInitializer.ShouldLoadBootstrapFieldName, newEnableValue);
-                    }
+                    var enable = EditorGUILayout
+                        .Toggle("Enable Scene Initialize", editorSettings.sceneInitializeEnable);
 
-                    if (!enableFeature) return;
+                    editorSettings.sceneInitializeEnable = enable;
 
-                    var scenePath = EditorPrefs.GetString(SceneInitializer.ScenePathFieldName, string.Empty);
-                    var sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(scenePath);
-                    var newSceneAsset =
-                        EditorGUILayout.ObjectField("Scene to Load", sceneAsset, typeof(SceneAsset), false);
-                    if (newSceneAsset != sceneAsset)
-                    {
-                        EditorPrefs.SetString(SceneInitializer.ScenePathFieldName, newSceneAsset != null
-                            ? AssetDatabase.GetAssetPath(newSceneAsset)
-                            : string.Empty);
-                    }
+                    if (!enable) return;
+
+                    var sceneAsset =
+                        EditorGUILayout.ObjectField(
+                            "Scene to Load",
+                            editorSettings.sceneInitializeSceneAsset,
+                            typeof(SceneAsset),
+                            false
+                        );
+
+                    editorSettings.sceneInitializeSceneAsset = (SceneAsset)sceneAsset;
                 },
             };
 

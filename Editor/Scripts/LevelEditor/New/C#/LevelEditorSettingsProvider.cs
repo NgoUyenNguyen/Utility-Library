@@ -19,45 +19,22 @@ namespace NgoUyenNguyen.Editor
                     EditorGUILayout.Space();
                     ProvideSettings();
                     EditorGUILayout.Space();
-                }
+                },
             };
         }
 
         private static void ProvideSettings()
         {
-            var settingsAsset = LoadSettingsAsset();
+            var editorSettings = EditorSettings.GetOrCreate();
 
-            var newAsset = (LevelEditorSettings)EditorGUILayout.ObjectField(
+            var asset = (LevelEditorSettings)EditorGUILayout.ObjectField(
                 "Settings Asset",
-                settingsAsset,
+                editorSettings.levelEditorSettings,
                 typeof(LevelEditorSettings),
                 false
             );
 
-            
-            if (newAsset == null)
-            {
-                EditorPrefs.DeleteKey(SettingsGuidKey);
-            }
-            else if (newAsset != settingsAsset)
-            {
-                var path = AssetDatabase.GetAssetPath(newAsset);
-                var guid = AssetDatabase.AssetPathToGUID(path);
-                EditorPrefs.SetString(SettingsGuidKey, guid);
-            }
-        }
-
-        private static LevelEditorSettings LoadSettingsAsset()
-        {
-            if (!EditorPrefs.HasKey(SettingsGuidKey))
-                return null;
-
-            var guid = EditorPrefs.GetString(SettingsGuidKey);
-            var path = AssetDatabase.GUIDToAssetPath(guid);
-
-            return string.IsNullOrEmpty(path) 
-                ? null 
-                : AssetDatabase.LoadAssetAtPath<LevelEditorSettings>(path);
+            editorSettings.levelEditorSettings = asset;
         }
     }
 }

@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
+using ZLinq;
 
 namespace NgoUyenNguyen.Grid
 {
@@ -116,5 +118,12 @@ namespace NgoUyenNguyen.Grid
             direction.Normalize();
             throw new NotImplementedException();
         }
+
+        public IEnumerable<TCell> GetBorderCells() => grid
+            .AsValueEnumerable()
+            .Where(cell => grid.GetNeighbors(cell, NeighborFilter.OrthogonalOnly)
+                .AsValueEnumerable()
+                .Count() < 4)
+            .ToList();
     }
 }

@@ -24,8 +24,8 @@ namespace NgoUyenNguyen.Editor
             if (settings == null)
             {
                 settings = CreateInstance<EditorSettings>();
-                if (!AssetDatabase.IsValidFolder("Assets/Editor"))
-                    AssetDatabase.CreateFolder("Assets", "Editor");
+                if (!AssetDatabase.IsValidFolder("Assets/Settings"))
+                    AssetDatabase.CreateFolder("Assets", "Settings");
                 
                 AssetDatabase.CreateAsset(settings, settingsPath);
                 AssetDatabase.ImportAsset(settingsPath);

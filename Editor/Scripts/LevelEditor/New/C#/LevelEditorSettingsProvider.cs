@@ -27,6 +27,7 @@ namespace NgoUyenNguyen.Editor
         {
             var editorSettings = EditorSettings.GetOrCreate();
 
+            using var check = new EditorGUI.ChangeCheckScope();
             var asset = (LevelEditorSettings)EditorGUILayout.ObjectField(
                 "Settings Asset",
                 editorSettings.levelEditorSettings,
@@ -34,7 +35,12 @@ namespace NgoUyenNguyen.Editor
                 false
             );
 
+            if (!check.changed) return;
             editorSettings.levelEditorSettings = asset;
+
+            EditorUtility.SetDirty(editorSettings);
+
+            AssetDatabase.SaveAssets();
         }
     }
 }

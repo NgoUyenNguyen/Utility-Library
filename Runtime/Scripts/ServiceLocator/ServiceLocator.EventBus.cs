@@ -3,35 +3,26 @@ using ZLinq;
 
 namespace NgoUyenNguyen
 {
-    public partial class ServiceLocator
+    public partial class ServiceLocator : IEventBusContainer
     {
-        private EventBus eventBus;
-
         /// <summary>
         /// Provides a centralized event bus mechanism, allowing the subscription, publishing, and propagation of events
         /// within a hierarchical structure of <see cref="ServiceLocator"/> instances.
         /// </summary>
-        public EventBus EventBus
+        public EventBus EventBus { get; private set; }
+
+        
+        private void Awake()
         {
-            get
-            {
-                eventBus ??= new EventBus
-                {
-                    Container = this
-                };
-                return eventBus;
-            }
+            EventBus = new EventBus(this);
+            ReattachEventBus();
         }
 
         /// <summary>
         /// Reattaches the current instance's EventBus, ensuring it is correctly connected
         /// to its parent EventBus in the hierarchy.
         /// </summary>
-        public void ReattachEventBus() => AttachEventBus();
-
-        private void Awake() => AttachEventBus();
-
-        private void AttachEventBus()
+        public void ReattachEventBus()
         {
             if (this == Global) return;
             
@@ -41,7 +32,11 @@ namespace NgoUyenNguyen
             foreach (var child in EventBus.Parent.Children.AsValueEnumerable().ToArray())
             {
                 if (child == EventBus) continue;
-                child.AttachTo(child.Container.FindParentBus());
+                
+                var serviceLocator = child.Container as ServiceLocator;
+                if (serviceLocator == null) continue;
+                
+                child.AttachTo(serviceLocator.FindParentBus());
             }
         }
 

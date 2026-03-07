@@ -4,6 +4,21 @@ namespace NgoUyenNguyen
 {
     public partial class EventBus
     {
+        public EventBus(IEventBusContainer container = null, 
+            EventBus parent = null, 
+            params EventBus[] children
+            )
+        {
+            Container = container;
+            Parent = parent;
+            foreach (var child in children)
+            {
+                child.AttachTo(this);
+            }
+        }
+        
+        private readonly HashSet<EventBus> children = new();
+
         /// <summary>
         /// Collection of child <see cref="EventBus"/> instances attached to the current <see cref="EventBus"/>.
         /// </summary>
@@ -12,7 +27,7 @@ namespace NgoUyenNguyen
         /// facilitates event propagation to child buses when events are published with a propagation mode
         /// that includes downstream communication.
         /// </remarks>
-        public HashSet<EventBus> Children { get; } = new();
+        public IEnumerable<EventBus> Children => children;
 
         /// <summary>
         /// The parent <see cref="EventBus"/> instance in the hierarchy to which the current <see cref="EventBus"/> is attached.
@@ -22,7 +37,7 @@ namespace NgoUyenNguyen
         /// when the propagation mode requires communication to parent buses.
         /// </remarks>
         public EventBus Parent { get; private set; }
-        internal ServiceLocator Container { get; set; }
+        public IEventBusContainer Container { get; }
 
         /// <summary>
         /// Attaches the current EventBus instance to a specified parent EventBus,
@@ -36,7 +51,7 @@ namespace NgoUyenNguyen
         {
             Detach();
             Parent = parent;
-            parent?.Children.Add(this);
+            parent?.children.Add(this);
         }
 
         /// <summary>
@@ -45,7 +60,7 @@ namespace NgoUyenNguyen
         /// </summary>
         public void Detach()
         {
-            Parent?.Children.Remove(this);
+            Parent?.children.Remove(this);
             Parent = null;
         }
     }

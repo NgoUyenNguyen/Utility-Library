@@ -15,6 +15,8 @@ namespace NgoUyenNguyen
         private readonly Dictionary<Type, SortedDictionary<int, HashSet<Action<object>>>> listeners = new();
         private readonly Dictionary<(Type eventType, Delegate origin), Action<object>> wrapperMap = new();
 
+        
+        
         /// <summary>
         /// Clears the cached type hierarchy used for optimizing event type lookups in the EventBus.
         /// </summary>
@@ -231,7 +233,7 @@ namespace NgoUyenNguyen
                     break;
                 case PropagationMode.Downstream:
                 {
-                    foreach (var child in Children)
+                    foreach (var child in children)
                     {
                         child.Publish(message, propagation);
                     }
@@ -239,7 +241,7 @@ namespace NgoUyenNguyen
                     break;
                 }
                 case PropagationMode.DownstreamIgnoreSelf:
-                    foreach (var child in Children)
+                    foreach (var child in children)
                     {
                         child.Publish(message, PropagationMode.Downstream);
                     }

@@ -72,6 +72,7 @@ namespace NgoUyenNguyen.Editor
         #endregion
 
         [SerializeField] private VisualTreeAsset visualTreeAsset;
+        [SerializeField] private VisualTreeAsset folderItemTreeAsset;
         [SerializeField, HideInInspector] private string rootFolderPath = DefaultRootFolder;
         private List<TreeViewItemData<Folder>> rootFolder;
         private SerializedObject serializedObject;
@@ -205,6 +206,7 @@ namespace NgoUyenNguyen.Editor
             preview.SetRootItems(rootFolder);
             preview.ExpandAll();
 
+            preview.columns[0].makeCell = () => folderItemTreeAsset.CloneTree();
             preview.columns[0].bindCell = (element, id) =>
             {
                 var folderName = element.Q<Label>();

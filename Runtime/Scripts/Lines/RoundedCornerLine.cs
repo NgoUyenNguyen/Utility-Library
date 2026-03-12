@@ -39,7 +39,7 @@ namespace NgoUyenNguyen.Line
             line.SetPositions(rounded);
         }
 
-        public Vector3[] AddRoundedCorners(Vector3[] pts, float radius, int segments, bool loop = false)
+        public static Vector3[] AddRoundedCorners(Vector3[] pts, float radius, int segments, bool loop = false)
         {
             // If no corners, return
             if (pts.Length < 3) return pts;

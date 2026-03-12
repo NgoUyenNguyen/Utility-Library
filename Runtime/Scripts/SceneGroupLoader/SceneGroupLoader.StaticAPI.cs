@@ -1,4 +1,6 @@
 using Cysharp.Threading.Tasks;
+using System;
+using System.Threading;
 using UnityEngine;
 
 namespace NgoUyenNguyen
@@ -7,7 +9,7 @@ namespace NgoUyenNguyen
     {
         private static float staticDelayLoading;
         private static int tmpSceneBuildIndex;
-        
+
         internal static SceneGroupLoader Instance { get; set; }
 
         /// <summary>
@@ -79,7 +81,7 @@ namespace NgoUyenNguyen
         /// loading animations or progress bars. The smoothing behavior is governed by the `delayLoading` property.
         /// </remarks>
         public static float SmoothProgress { get; private set; }
-        
+
         /// <summary>
         /// Specifies a delay duration applied during the scene loading process.
         /// </summary>
@@ -120,24 +122,84 @@ namespace NgoUyenNguyen
             get => tmpSceneBuildIndex;
             set => tmpSceneBuildIndex = Mathf.Max(0, value);
         }
-        
+
         public static ObservableProperty<StatusValue> Status { get; private set; }
 
-        /// <summary>
-        /// Loads a scene group by its index and manages the transition, optionally reusing the existing scene.
-        /// </summary>
-        /// <param name="groupIndex">The index of the scene group to load.</param>
-        /// <param name="reuseExistingScene">Indicates whether to reuse the existing scene if it is active. Defaults to true.</param>
-        /// <returns>A task that represents the asynchronous operation of loading the scene group.</returns>
-        public static async UniTask LoadAsync(int groupIndex, bool reuseExistingScene = true)
-            => await Instance.LoadSceneGroupAsync(groupIndex, reuseExistingScene);
 
         /// <summary>
-        /// Loads a scene group by its name and manages the transition, optionally reusing the existing scene.
+        /// Asynchronously loads a scene group specified by its group index.
         /// </summary>
-        /// <param name="groupName"></param>
-        /// <param name="reuseExistingScene"></param>
-        public static async UniTask LoadAsync(string groupName, bool reuseExistingScene = true)
-            => await Instance.LoadSceneGroupAsync(groupName, reuseExistingScene);
+        /// <param name="groupIndex">The index of the scene group to load.</param>
+        /// <param name="delay">Delay coefficient</param>
+        /// <param name="progress">
+        /// An IProgress object for reporting the loading progress,
+        /// represented as a value between 0 and 1.
+        /// </param>
+        /// <param name="smoothProgress">
+        /// An IProgress object for reporting the smoothed loading progress,
+        /// represented as a value between 0 and 1.
+        /// </param>
+        /// <param name="reuseExistingScene">
+        /// Indicating whether to reuse the existing scenes
+        /// if it is already loaded, instead of reloading it.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A CancellationToken that can be used to cancel the loading process.
+        /// </param>
+        /// <returns>A UniTask representing the asynchronous loading operation.</returns>
+        public static async UniTask LoadAsync(
+            int groupIndex,
+            float? delay = null,
+            IProgress<float> progress = null,
+            IProgress<float> smoothProgress = null,
+            bool reuseExistingScene = true,
+            CancellationToken cancellationToken = default
+        )
+            => await Instance.LoadSceneGroupAsync(
+                groupIndex,
+                delay,
+                progress,
+                smoothProgress,
+                reuseExistingScene,
+                cancellationToken
+            );
+
+        /// <summary>
+        /// Asynchronously loads a scene group specified by its group name.
+        /// </summary>
+        /// <param name="groupName">The name of the scene group to load.</param>
+        /// <param name="delay">Delay coefficient</param>
+        /// <param name="progress">
+        /// An IProgress object for reporting the loading progress,
+        /// represented as a value between 0 and 1.
+        /// </param>
+        /// <param name="smoothProgress">
+        /// An IProgress object for reporting the smoothed loading progress,
+        /// represented as a value between 0 and 1.
+        /// </param>
+        /// <param name="reuseExistingScene">
+        /// Indicating whether to reuse the existing scenes
+        /// if it is already loaded, instead of reloading it.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A CancellationToken that can be used to cancel the loading process.
+        /// </param>
+        /// <returns>A UniTask representing the asynchronous loading operation.</returns>
+        public static async UniTask LoadAsync(
+            string groupName,
+            float? delay = null,
+            IProgress<float> progress = null,
+            IProgress<float> smoothProgress = null,
+            bool reuseExistingScene = true,
+            CancellationToken cancellationToken = default
+        )
+            => await Instance.LoadSceneGroupAsync(
+                groupName,
+                delay,
+                progress,
+                smoothProgress,
+                reuseExistingScene,
+                cancellationToken
+            );
     }
 }

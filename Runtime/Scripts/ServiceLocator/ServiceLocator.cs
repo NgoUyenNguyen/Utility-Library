@@ -10,7 +10,7 @@ namespace NgoUyenNguyen
     /// This class enables the registration, retrieval, and management of services across different scopes:
     /// global, scene-specific, and GameObject-specific.
     /// </summary>
-    [DefaultExecutionOrder(-900)]
+    [DefaultExecutionOrder(-1000)]
     public partial class ServiceLocator : MonoBehaviour
     {
         public const string GlobalServiceLocatorName = "ServiceLocator [Global]";
@@ -20,6 +20,8 @@ namespace NgoUyenNguyen
         internal static Dictionary<Scene, ServiceLocator> SceneContainers;
 
         private readonly ServiceManager services = new();
+        
+        public event Action OnDestroyEvent;
 
         internal void ConfigureForScene()
         {
@@ -49,6 +51,12 @@ namespace NgoUyenNguyen
         public static ServiceLocator Global { get; internal set; }
 
         /// <summary>
+        /// Determines whether IDisposable services registered with this <see cref="ServiceLocator"/>
+        /// should be automatically disposed when the <see cref="ServiceLocator"/> is destroyed.
+        /// </summary>
+        public bool AutoDisposeServicesOnDestroy { get; set; } = true;
+
+        /// <summary>
         /// Retrieves the closest <see cref="ServiceLocator"/> instance associated with the specified <see cref="MonoBehaviour"/>.
         /// </summary>
         /// <param name="component">The Component instance for which the ServiceLocator is being retrieved.</param>
@@ -58,7 +66,7 @@ namespace NgoUyenNguyen
         /// and ultimately defaults to the global instance if no other locator is found.
         /// </returns>
         public static ServiceLocator For(Component component) => 
-            component.GetComponentInParent<ServiceLocator>() ?? ForSceneOf(component) ?? Global;
+            component?.GetComponentInParent<ServiceLocator>() ?? ForSceneOf(component) ?? Global;
 
         /// <summary>
         /// Retrieves the <see cref="ServiceLocator"/> instance associated with the scene of the specified <see cref="MonoBehaviour"/>.
@@ -91,6 +99,38 @@ namespace NgoUyenNguyen
         /// Returns a boolean indicating whether the service was successfully registered.
         /// </returns>
         public bool Register<T>(T service) => services.Register(service);
+
+        /// <summary>
+        /// Registers a service instance of type <typeparamref name="T"/> with the current <see cref="ServiceLocator"/>
+        /// and provides a disposable subscription for unregistering the service.
+        /// </summary>
+        /// <param name="service">The service instance to register.</param>
+        /// <typeparam name="T">The type of the service being registered.</typeparam>
+        /// <returns>
+        /// A <see cref="IDisposable"/> object that, when disposed, unregisters the specified service from the ServiceLocator.
+        /// </returns>
+        public IDisposable RegisterWithDisposable<T>(T service)
+        {
+            Register(service);
+
+            return new Subscription(() => Unregister<T>());
+        }
+
+        /// <summary>
+        /// Registers a service instance of type <typeparamref name="T"/> with the current <see cref="ServiceLocator"/>
+        /// and provides a disposable subscription for unregistering the service.
+        /// </summary>
+        /// <param name="service">The service instance to be registered.</param>
+        /// <param name="types">The specific types or interfaces that the service implements.</param>
+        /// <returns>
+        /// A <see cref="IDisposable"/> object that, when disposed, unregisters the specified service from the ServiceLocator.
+        /// </returns>
+        public IDisposable RegisterWithDisposable(object service, params Type[] types)
+        {
+            Register(service, types);
+
+            return new Subscription(() => Unregister(types));
+        }
 
         /// <summary>
         /// Registers a service instance with the service locator for the specified types or its own type if no additional types are specified.
@@ -202,6 +242,7 @@ namespace NgoUyenNguyen
 
         private void DisposeAllServices()
         {
+            if (!AutoDisposeServicesOnDestroy) return;
             foreach (var service in RegisteredServices)
             {
                 if (service is IDisposable disposable) disposable.Dispose();
@@ -220,6 +261,8 @@ namespace NgoUyenNguyen
             {
                 SceneContainers.Remove(gameObject.scene);
             }
+            
+            OnDestroyEvent?.Invoke();
         }
     }
 }

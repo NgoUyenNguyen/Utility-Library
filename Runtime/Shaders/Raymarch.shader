@@ -70,16 +70,25 @@ Shader "Unlit/Raymarch"
                 return min(a, b) - k * 0.5 * (1.0 + h - sqrt(1.0 - h * (h - 2.0)));
             }
 
-            float GetDist(float3 p)
+            float round_box(float3 p, float3 b, float r)
             {
-                float sphere1 = length(p - _Sphere1.xyz) - _Sphere1.w;
-                float sphere2 = length(p - _Sphere2.xyz) - _Sphere2.w;
-                float torus = length(float2(length(p.xz) - 0.3, p.y)) - 0.1;
+                float3 q = abs(p) - b + r;
+                return length(max(q, 0) + min(max(q.x, max(q.y, q.z)), 0)) - r;
+            }
+            
+            float get_dist(float3 p)
+            {
+                // float sphere1 = length(p - _Sphere1.xyz) - _Sphere1.w;
+                // float sphere2 = length(p - _Sphere2.xyz) - _Sphere2.w;
+                // float torus = length(float2(length(p.xz) - 0.3, p.y)) - 0.1;
+                float box1 = round_box(p - _Sphere1.xyz, .25f, _Sphere1.w);
+                float box2 = round_box(p - _Sphere2.xyz, .25f, _Sphere1.w);
 
                 float k = remap(_Blend, 0, 1, 1e-9, 0.05);
 
-                return smin(smin(sphere1, sphere2, k), torus, k);
+                return smin(box1, box2, k);
             }
+            
 
             float RayMarch(float3 ro, float3 rd)
             {
@@ -89,7 +98,7 @@ Shader "Unlit/Raymarch"
                 for (int i = 0; i < MAX_STEPS; i++)
                 {
                     float3 p = ro + dO * rd;
-                    dS = GetDist(p);
+                    dS = get_dist(p);
                     dO += dS;
                     if (dS < SURF_DIST || dO > MAX_DIST) break;
                 }
@@ -100,10 +109,10 @@ Shader "Unlit/Raymarch"
             float3 GetNormal(float3 p)
             {
                 float2 e = float2(1e-2, 0);
-                float3 n = GetDist(p) - float3(
-                    GetDist(p - e.xyy),
-                    GetDist(p - e.yxy),
-                    GetDist(p - e.yyx)
+                float3 n = get_dist(p) - float3(
+                    get_dist(p - e.xyy),
+                    get_dist(p - e.yxy),
+                    get_dist(p - e.yyx)
                 );
 
                 return normalize(n);

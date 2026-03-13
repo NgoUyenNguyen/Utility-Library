@@ -93,6 +93,9 @@ namespace NgoUyenNguyen
             var sceneToRemain = new List<string>();
             SeparateUnloadRemain(reuseExistingScene, oldSceneGroupIndex, sceneToUnload, sceneToRemain);
             
+            var previousGroupIndex = currentSceneGroupIndex;
+            currentSceneGroupIndex = groupIndex;
+
             try
             {
                 await UnloadSceneGroup(sceneToUnload, cancellationToken);
@@ -109,8 +112,10 @@ namespace NgoUyenNguyen
 
                 await SetActiveScene(cancellationToken);
                 OnSceneGroupLoaded?.Invoke(groupIndex);
-
-                currentSceneGroupIndex = groupIndex;
+            }
+            catch (OperationCanceledException)
+            {
+                currentSceneGroupIndex = previousGroupIndex;
             }
             finally
             {
@@ -140,19 +145,23 @@ namespace NgoUyenNguyen
 
             if (ops.Operations.Count > 0 || opHandles.Operations.Count > 0)
             {
-                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, destroyCancellationToken);
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(
+                    cancellationToken,
+                    destroyCancellationToken
+                );
+
                 await UniTask.WaitUntil(
                     () =>
                     {
                         Progress = (ops.Progress + opHandles.Progress) / 2f;
-                        
+
                         SmoothProgress =
                             delay <= 0
                                 ? Progress
                                 : Mathf.Lerp(SmoothProgress, Progress, Time.deltaTime / delay);
 
                         if (Progress - SmoothProgress <= 0.05f) SmoothProgress = Progress;
-                        
+
                         progress?.Report(Progress);
                         smoothProgress?.Report(SmoothProgress);
 
@@ -179,7 +188,11 @@ namespace NgoUyenNguyen
 
             if (op == null) return;
 
-            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, destroyCancellationToken);
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(
+                cancellationToken,
+                destroyCancellationToken
+            );
+
             await UniTask.WaitUntil(() => op.isDone, cancellationToken: cts.Token);
 
             tmpSceneName = null;
@@ -200,7 +213,11 @@ namespace NgoUyenNguyen
                 opHandles.Operations.Select(h => h.Result.ActivateAsync())
             );
 
-            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, destroyCancellationToken);
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(
+                cancellationToken,
+                destroyCancellationToken
+            );
+
             await UniTask.WaitUntil(
                 () => activatingOps.All(op => op.isDone),
                 cancellationToken: cts.Token
@@ -229,8 +246,8 @@ namespace NgoUyenNguyen
                 var sceneName = SceneManager.GetSceneAt(i).name;
                 if (reuseExistingScene)
                 {
-                    if (!CurrentSceneGroupInstance.HasScene(sceneName) &&
-                        sceneGroups[oldSceneGroupIndex].HasScene(sceneName))
+                    if (!CurrentSceneGroupInstance.HasScene(sceneName)
+                        && sceneGroups[oldSceneGroupIndex].HasScene(sceneName))
                     {
                         sceneToUnload.Add(sceneName);
                     }
@@ -319,7 +336,11 @@ namespace NgoUyenNguyen
 
             if (ops.Operations.Count == 0 && opHandles.Operations.Count == 0) return;
 
-            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, destroyCancellationToken);
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(
+                cancellationToken,
+                destroyCancellationToken
+            );
+
             await UniTask.WaitUntil(
                 () => ops.IsDone && opHandles.IsDone,
                 cancellationToken: cts.Token
@@ -340,7 +361,11 @@ namespace NgoUyenNguyen
 
             if (op == null) return;
 
-            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, destroyCancellationToken);
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(
+                cancellationToken,
+                destroyCancellationToken
+            );
+
             await UniTask.WaitUntil(() => op.isDone, cancellationToken: cts.Token);
 
             var tmpScene = SceneManager.GetSceneByBuildIndex(tmpSceneBuildIndex);

@@ -41,62 +41,83 @@ namespace NgoUyenNguyen.Line
 
         public static Vector3[] AddRoundedCorners(Vector3[] pts, float radius, int segments, bool loop = false)
         {
-            // If no corners, return
             if (pts.Length < 3) return pts;
 
-            List<Vector3> result = new List<Vector3>();
+            var result = new List<Vector3>();
+            const float epsilon = 0.001f;
 
-            if (!loop) result.Add(pts[0]);
+            if (!loop) TryAdd(pts[0]);
 
-            for (int i = loop ? 0 : 1, max = loop ? pts.Length : pts.Length - 1; i < max; i++)
+            var count = pts.Length;
+            var max = loop ? count : count - 1;
+
+            for (var i = (loop ? 0 : 1); i < max; i++)
             {
-                Vector3 prev = loop ? pts[(i - 1 + pts.Length) % pts.Length] : pts[i - 1];
-                Vector3 current = pts[i];
-                Vector3 next = loop ? pts[(i + 1) % pts.Length] : pts[i + 1];
+                var prev = pts[(i - 1 + count) % count];
+                var current = pts[i];
+                var next = pts[(i + 1) % count];
 
-                Vector3 dir1 = (prev - current).normalized;
-                Vector3 dir2 = (next - current).normalized;
+                var dir1 = (prev - current).normalized;
+                var dir2 = (next - current).normalized;
 
-                float angle = Vector3.Angle(dir1, dir2) * Mathf.Deg2Rad;
-                float halfAngle = angle / 2f;
+                var angleDeg = Vector3.Angle(dir1, dir2);
 
-                float cutDist = radius / Mathf.Tan(halfAngle);
-
-                float len1 = (prev - current).magnitude;
-                float len2 = (next - current).magnitude;
-
-                float dist1 = Mathf.Min(cutDist, len1 - 0.001f);
-                float dist2 = Mathf.Min(cutDist, len2 - 0.001f);
-
-                Vector3 p1 = current + dir1 * dist1;
-                Vector3 p2 = current + dir2 * dist2;
-
-                Vector3 bisector = (dir1 + dir2).normalized;
-                float offset = radius / Mathf.Sin(halfAngle);
-                Vector3 center = current + bisector * offset;
-
-                Vector3 startDir = (p1 - center).normalized;
-                Vector3 endDir = (p2 - center).normalized;
-
-                Vector3 normal = Vector3.Cross(dir1, dir2).normalized;
-
-                float sweepAngle = Vector3.SignedAngle(startDir, endDir, normal);
-
-                result.Add(p1);
-
-                for (int j = 1; j < segments; j++)
+                if (angleDeg is > 179.9f or < 0.1f)
                 {
-                    float t = j / (float)segments;
-                    Quaternion rot = Quaternion.AngleAxis(sweepAngle * t, normal);
-                    Vector3 arcPoint = center + rot * startDir * radius;
-                    result.Add(arcPoint);
+                    TryAdd(current);
+
+                    continue;
                 }
 
-                result.Add(p2);
+                var halfAngle = (angleDeg * Mathf.Deg2Rad) / 2f;
+
+                var cutDist = radius / Mathf.Tan(halfAngle);
+                var len1 = Vector3.Distance(prev, current);
+                var len2 = Vector3.Distance(next, current);
+
+                var dist1 = Mathf.Min(cutDist, len1 * 0.5f);
+                var dist2 = Mathf.Min(cutDist, len2 * 0.5f);
+
+                var p1 = current + dir1 * dist1;
+                var p2 = current + dir2 * dist2;
+
+                var bisector = (dir1 + dir2).normalized;
+                var offset = radius / Mathf.Sin(halfAngle);
+                var center = current + bisector * offset;
+
+                var startDir = (p1 - center).normalized;
+                var endDir = (p2 - center).normalized;
+                var normal = Vector3.Cross(dir1, dir2).normalized;
+
+                var sweepAngle = Vector3.SignedAngle(startDir, endDir, normal);
+
+                TryAdd(p1);
+                for (var j = 1; j < segments; j++)
+                {
+                    var t = j / (float)segments;
+                    var rot = Quaternion.AngleAxis(sweepAngle * t, normal);
+                    var arcPoint = center + rot * startDir * radius;
+                    TryAdd(arcPoint);
+                }
+
+                TryAdd(p2);
             }
 
-            if (!loop) result.Add(pts[pts.Length - 1]);
+            if (!loop) TryAdd(pts[^1]);
+            else if (result.Count > 0 && Vector3.Distance(result[^1], result[0]) < epsilon)
+            {
+                result.RemoveAt(result.Count - 1);
+            }
+
             return result.ToArray();
+
+            void TryAdd(Vector3 point)
+            {
+                if (result.Count == 0 || Vector3.Distance(result[^1], point) > epsilon)
+                {
+                    result.Add(point);
+                }
+            }
         }
     }
 }

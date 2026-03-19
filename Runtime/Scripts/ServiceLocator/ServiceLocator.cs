@@ -10,7 +10,7 @@ namespace NgoUyenNguyen
     /// This class enables the registration, retrieval, and management of services across different scopes:
     /// global, scene-specific, and GameObject-specific.
     /// </summary>
-    [DefaultExecutionOrder(-1000)]
+    [DefaultExecutionOrder(-900)]
     public partial class ServiceLocator : MonoBehaviour
     {
         public const string GlobalServiceLocatorName = "ServiceLocator [Global]";

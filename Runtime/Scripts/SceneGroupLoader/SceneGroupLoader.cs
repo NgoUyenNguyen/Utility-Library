@@ -9,6 +9,7 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
 using UnityEngine.SceneManagement;
+using ZLinq;
 
 namespace NgoUyenNguyen
 {
@@ -91,10 +92,10 @@ namespace NgoUyenNguyen
             var oldSceneGroupIndex = currentSceneGroupIndex;
             var sceneToUnload = new List<string>();
             var sceneToRemain = new List<string>();
+            currentSceneGroupIndex = groupIndex;
             SeparateUnloadRemain(reuseExistingScene, oldSceneGroupIndex, sceneToUnload, sceneToRemain);
             
             var previousGroupIndex = currentSceneGroupIndex;
-            currentSceneGroupIndex = groupIndex;
 
             try
             {
@@ -226,10 +227,12 @@ namespace NgoUyenNguyen
 
         private List<string> GetScenesToLoad(List<string> sceneToRemain)
         {
-            return (from sceneRef
-                    in CurrentSceneGroupInstance.AllScenes
-                where !sceneToRemain.Contains(sceneRef.Name) && !SceneManager.GetSceneByName(sceneRef.Name).isLoaded
-                select sceneRef.Name).ToList();
+            return CurrentSceneGroupInstance.AllScenes
+                .AsValueEnumerable()
+                .Where(sceneRef => !sceneToRemain.Contains(sceneRef.Name)
+                                   && !SceneManager.GetSceneByName(sceneRef.Name).isLoaded
+                )
+                .Select(sceneRef => sceneRef.Name).ToList();
         }
 
         private void SeparateUnloadRemain(

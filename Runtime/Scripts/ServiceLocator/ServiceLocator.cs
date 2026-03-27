@@ -20,7 +20,7 @@ namespace NgoUyenNguyen
         internal static Dictionary<Scene, ServiceLocator> SceneContainers;
 
         private readonly ServiceManager services = new();
-        
+
         public event Action OnDestroyEvent;
 
         internal void ConfigureForScene()
@@ -31,7 +31,9 @@ namespace NgoUyenNguyen
             {
                 Debug.LogWarning(
                     "ServiceLocator.ConfigureAsScene: Another ServiceLocator is already configured for this scene",
-                    this);
+                    this
+                );
+
                 return;
             }
 
@@ -65,7 +67,7 @@ namespace NgoUyenNguyen
         /// This method checks the parent hierarchy for a ServiceLocator, falls back to the scene-specific ServiceLocator,
         /// and ultimately defaults to the global instance if no other locator is found.
         /// </returns>
-        public static ServiceLocator For(Component component) => 
+        public static ServiceLocator For(Component component) =>
             component?.GetComponentInParent<ServiceLocator>() ?? ForSceneOf(component) ?? Global;
 
         /// <summary>
@@ -81,7 +83,7 @@ namespace NgoUyenNguyen
         {
             var scene = component.gameObject.scene;
 
-            if (SceneContainers.TryGetValue(scene, out var container) 
+            if (SceneContainers.TryGetValue(scene, out var container)
                 && container != component)
             {
                 return container;
@@ -89,6 +91,27 @@ namespace NgoUyenNguyen
 
             return Global;
         }
+
+        /// <summary>
+        /// Retrieves the <see cref="ServiceLocator"/> associated with the specified <see cref="Scene"/>.
+        /// </summary>
+        /// <param name="scene">The Scene for which the ServiceLocator is being requested.</param>
+        /// <returns>
+        /// Returns the <see cref="ServiceLocator"/> associated with the specified scene.
+        /// If no ServiceLocator exists for the scene, the global ServiceLocator is returned as a fallback.
+        /// </returns>
+        public static ServiceLocator ForScene(Scene scene) =>
+            SceneContainers.GetValueOrDefault(scene, Global);
+
+        /// <summary>
+        /// Retrieves the <see cref="ServiceLocator"/> instance associated with the specified scene by name.
+        /// </summary>
+        /// <param name="sceneName">The name of the scene for which the ServiceLocator is being retrieved.</param>
+        /// <returns>
+        /// Returns the <see cref="ServiceLocator"/> for the specified scene if found; otherwise, returns the global ServiceLocator.
+        /// </returns>
+        public static ServiceLocator ForScene(string sceneName) =>
+            SceneContainers.GetValueOrDefault(SceneManager.GetSceneByName(sceneName), Global);
 
         /// <summary>
         /// Registers a service instance of type <typeparamref name="T"/> with the current <see cref="ServiceLocator"/>.
@@ -155,6 +178,7 @@ namespace NgoUyenNguyen
         public T Get<T>()
         {
             if (services.Has<T>()) return services.Get<T>();
+
             return TryGetNextInHierarchy(out var container) ? container.Get<T>() : default;
         }
 
@@ -171,6 +195,7 @@ namespace NgoUyenNguyen
         public bool TryGet<T>(out T service)
         {
             if (services.TryGet(out service)) return true;
+
             return TryGetNextInHierarchy(out var container) && container.TryGet(out service);
         }
 
@@ -185,6 +210,7 @@ namespace NgoUyenNguyen
         public bool Has<T>()
         {
             if (services.Has<T>()) return true;
+
             return TryGetNextInHierarchy(out var container) && container.Has<T>();
         }
 
@@ -199,6 +225,7 @@ namespace NgoUyenNguyen
         public bool Has(Type serviceType)
         {
             if (services.Has(serviceType)) return true;
+
             return TryGetNextInHierarchy(out var container) && container.Has(serviceType);
         }
 
@@ -233,10 +260,12 @@ namespace NgoUyenNguyen
             if (this == Global)
             {
                 container = null;
+
                 return false;
             }
 
             container = transform.parent.OrNull()?.GetComponentInParent<ServiceLocator>().OrNull() ?? ForSceneOf(this);
+
             return container != null;
         }
 
@@ -247,7 +276,7 @@ namespace NgoUyenNguyen
             {
                 if (service is IDisposable disposable) disposable.Dispose();
             }
-        } 
+        }
 
         private void OnDestroy()
         {
@@ -261,7 +290,7 @@ namespace NgoUyenNguyen
             {
                 SceneContainers.Remove(gameObject.scene);
             }
-            
+
             OnDestroyEvent?.Invoke();
         }
     }

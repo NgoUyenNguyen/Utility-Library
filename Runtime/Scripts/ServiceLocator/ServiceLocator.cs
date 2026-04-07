@@ -59,11 +59,11 @@ namespace NgoUyenNguyen
         public bool AutoDisposeServicesOnDestroy { get; set; } = true;
 
         /// <summary>
-        /// Retrieves the closest <see cref="ServiceLocator"/> instance associated with the specified <see cref="MonoBehaviour"/>.
+        /// Retrieves the closest <see cref="ServiceLocator"/> instance associated with the specified <see cref="Component"/>.
         /// </summary>
         /// <param name="component">The Component instance for which the ServiceLocator is being retrieved.</param>
         /// <returns>
-        /// Returns the <see cref="ServiceLocator"/> found for the specified MonoBehaviour.
+        /// Returns the <see cref="ServiceLocator"/> found for the specified Component.
         /// This method checks the parent hierarchy for a ServiceLocator, falls back to the scene-specific ServiceLocator,
         /// and ultimately defaults to the global instance if no other locator is found.
         /// </returns>
@@ -71,7 +71,19 @@ namespace NgoUyenNguyen
             component?.GetComponentInParent<ServiceLocator>() ?? ForSceneOf(component) ?? Global;
 
         /// <summary>
-        /// Retrieves the <see cref="ServiceLocator"/> instance associated with the scene of the specified <see cref="MonoBehaviour"/>.
+        /// Retrieves the closest <see cref="ServiceLocator"/> instance associated with the specified <see cref="GameObject"/>.
+        /// </summary>
+        /// <param name="gameObject">The GameObject instance for which the ServiceLocator is being retrieved.</param>
+        /// <returns>
+        /// Returns the <see cref="ServiceLocator"/> found for the specified GameObject.
+        /// This method checks the parent hierarchy for a ServiceLocator, falls back to the scene-specific ServiceLocator,
+        /// and ultimately defaults to the global instance if no other locator is found.
+        /// </returns>
+        public static ServiceLocator For(GameObject gameObject) =>
+            gameObject?.GetComponentInParent<ServiceLocator>() ?? ForSceneOf(gameObject) ?? Global;
+
+        /// <summary>
+        /// Retrieves the <see cref="ServiceLocator"/> instance associated with the scene of the specified <see cref="Component"/>.
         /// If no dedicated scene-specific ServiceLocator is found, returns the global instance.
         /// </summary>
         /// <param name="component">The Component for which the scene's ServiceLocator is being retrieved.</param>
@@ -90,6 +102,20 @@ namespace NgoUyenNguyen
             }
 
             return Global;
+        }
+
+        /// <summary>
+        /// Retrieves the <see cref="ServiceLocator"/> instance associated with the scene of the specified <see cref="GameObject"/>.
+        /// </summary>
+        /// <param name="gameObject">The GameObject for which the ServiceLocator is being retrieved.</param>
+        /// <returns>
+        /// Returns the <see cref="ServiceLocator"/> corresponding to the scene of the specified GameObject.
+        /// If no ServiceLocator is found for the scene, the global ServiceLocator is returned as a fallback.
+        /// </returns>
+        public static ServiceLocator ForSceneOf(GameObject gameObject)
+        {
+            var scene = gameObject.scene;
+            return SceneContainers.GetValueOrDefault(scene, Global);
         }
 
         /// <summary>

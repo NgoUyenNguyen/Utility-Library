@@ -17,18 +17,19 @@ namespace NgoUyenNguyen.ScriptableObjects
         [SerializeField] private List<AssetReference> references = new();
 
         private readonly Dictionary<int, AsyncOperationHandle> loadedHandles = new();
+        private readonly Dictionary<int, UniTask<Object>> loadingTasks = new();
 
         public int Count => references.Count;
         public List<AssetReference> References => references;
-        
+
         public bool Remove(AssetReference reference) => references.Remove(reference);
         public void RemoveAt(int index) => references.RemoveAt(index);
-        
+
         public void Add(AssetReference reference) => references.Add(reference);
 
         public AssetReference this[int index] => index >= 0 && index < references.Count
-                ? references[index]
-                : null;
+            ? references[index]
+            : null;
 
         #region IEnumerable
 
@@ -43,45 +44,70 @@ namespace NgoUyenNguyen.ScriptableObjects
                 .AsValueEnumerable()
                 .FirstOrDefault(r => r != null && r.AssetGUID == guid);
 
-        public async UniTask<T> LoadAsync<T>(int index, 
-            float delaySeconds = 0f, 
+        public async UniTask<T> LoadAsync<T>(int index,
+            float delaySeconds = 0f,
             CancellationToken cancellationToken = default) where T : Object
         {
             if (index < 0 || index >= references.Count) return null;
 
             var reference = references[index];
             if (reference == null) return null;
+            
+            if (loadedHandles.TryGetValue(index, out var cached) 
+                && cached.IsValid()
+                && cached.Status == AsyncOperationStatus.Succeeded)
+                return cached.Result as T;
+            if (loadingTasks.TryGetValue(index, out var pendingTask))
+                return await pendingTask as T;
 
-            if (loadedHandles.TryGetValue(index, out var cached)) return cached.Result as T;
+            var loadTask = InternalLoadAsync(index, reference, delaySeconds, cancellationToken);
+            loadingTasks[index] = loadTask;
 
-            var handle = reference.LoadAssetAsync<T>();
+            try
+            {
+                return await loadTask as T;
+            }
+            finally
+            {
+                loadingTasks.Remove(index);
+            }
+        }
+
+        private async UniTask<Object> InternalLoadAsync(int index,
+            AssetReference reference,
+            float delaySeconds,
+            CancellationToken cancellationToken)
+        {
+            var handle = reference.LoadAssetAsync<Object>();
             loadedHandles[index] = handle;
 
             try
             {
                 await handle.ToUniTask(cancellationToken: cancellationToken);
+
+                if (handle.Status != AsyncOperationStatus.Succeeded)
+                {
+                    Debug.LogError($"Load failed for index {index}: {handle.OperationException}");
+                    Release(index);
+                    return null;
+                }
+
+                if (delaySeconds > 0f)
+                    await UniTask.Delay(TimeSpan.FromSeconds(delaySeconds), cancellationToken: cancellationToken);
+
+                return handle.Result;
             }
             catch (OperationCanceledException)
             {
-                if (handle.IsValid())
-                    Addressables.Release(handle);
-
-                loadedHandles.Remove(index);
-                return null;
+                Release(index); 
+                throw; 
             }
-
-
-            if (handle.Status != AsyncOperationStatus.Succeeded)
+            catch (Exception e)
             {
-                Debug.LogException(handle.OperationException);
-                loadedHandles.Remove(index);
+                Debug.LogException(e);
+                Release(index);
                 return null;
             }
-
-            if (delaySeconds > 0f) 
-                await UniTask.Delay(TimeSpan.FromSeconds(delaySeconds), cancellationToken: cancellationToken);
-
-            return handle.Result;
         }
 
         public async UniTask<T> InstantiateAsync<T>(int index,
@@ -96,7 +122,7 @@ namespace NgoUyenNguyen.ScriptableObjects
             return instances[0];
         }
 
-        public async UniTask<T> InstantiateAsync<T>(int index, 
+        public async UniTask<T> InstantiateAsync<T>(int index,
             int count = 1,
             InstantiateParameters parameters = default,
             float delaySeconds = 0f,
@@ -107,7 +133,7 @@ namespace NgoUyenNguyen.ScriptableObjects
             return instances[0];
         }
 
-        public async UniTask<T> InstantiateAsync<T>(int index, 
+        public async UniTask<T> InstantiateAsync<T>(int index,
             int count = 1,
             Transform parent = null,
             Vector3 position = default,
